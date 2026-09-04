@@ -225,7 +225,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-int main() 
+int main(void)
 {
     GLFWwindow* window; // GLFW3 window
     TwBar *bar;         // Pointer to a tweak bar
@@ -249,7 +249,7 @@ int main()
     // Disable Retina scaling for now
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     // Create window
-    window = glfwCreateWindow(800, 600, "AntTweakBar + GLFW3", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "AntTweakBar + GLFW3 (OpenGL 3.3 Core)", NULL, NULL);
     if (!window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();

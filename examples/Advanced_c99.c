@@ -1,21 +1,35 @@
 //  ---------------------------------------------------------------------------
 //
-//  @file       TwAdvanced1.cpp
+//  @file       Advanced_c99.c
 //  @brief      An example showing many features of AntTweakBar,
-//              including variable accessed by callbacks and
+//              including variables accessed by callbacks and
 //              the definition of a custom structure type.
 //              It also uses OpenGL and GLFW windowing system
 //              but could be easily adapted to other frameworks.
 //
+//              This is the strict-C99 sibling of Advanced_cpp.cpp: same
+//              scene, same AntTweakBar usage, same behavior - only the
+//              language changed. The C++ `class Scene` (constructor/
+//              destructor/methods) became a plain `struct Scene` plus
+//              free `Scene_*` functions taking a `Scene *` first
+//              parameter; `Light`'s and `Scene`'s nested C++ enums
+//              (`Light::AnimMode`, `Scene::RotMode`) became file-scope
+//              `typedef enum`s; `new[]`/`delete[]` became `malloc`/`free`;
+//              `static_cast<T>` became a plain C-style cast; and
+//              TW_TYPE_BOOLCPP - a C++-only type sized to match a real
+//              C++ `bool` - became TW_TYPE_BOOL32, the plain 32-bit
+//              boolean type, with its two bound variables (`Light::Active`,
+//              `Scene::Wireframe`) widened from `bool` to `int` to match
+//              TW_TYPE_BOOL32's expected storage size (the same fix
+//              already made in examples/Sponge.c).
+//
 //              AntTweakBar: http://anttweakbar.sourceforge.net/doc
 //              OpenGL:      http://www.opengl.org
 //              GLFW:        http://www.glfw.org
-//  
 //
-//              This example draws a simple scene that can be re-tesselated 
-//              interactively, and illuminated dynamically by an adjustable 
+//              This example draws a simple scene that can be re-tesselated
+//              interactively, and illuminated dynamically by an adjustable
 //              number of moving lights.
-//
 //
 //  @author     Philippe Decaudin
 //  @date       2006/05/20
@@ -26,12 +40,21 @@
 #include <GLFW/glfw3.h>
 #include <AntTweakBar.h>
 
-#include <cmath>
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
+#include <stdbool.h>
+#include <stddef.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #if !defined(_WIN32) && !defined(_WIN64)
 #   define _snprintf snprintf
+#endif
+
+// M_PI is a common extension, not part of strict C99 - some libcs (e.g.
+// glibc under -std=c99 with no _DEFAULT_SOURCE) hide it. Defined here so
+// this file builds the same way on every supported platform.
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
 #endif
 
 float g_cameraPosX = 0.0f;
@@ -58,7 +81,7 @@ double g_lastMouseY = 0.0;
 double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
 
 // Window content scale (see fontscaling comment near TwInit() in main()),
-// stashed here so Scene::CreateBar() - which runs later, from Scene::Init(),
+// stashed here so Scene_CreateBar() - which runs later, from Scene_Init(),
 // with no access to main()'s locals - can scale its own bar's panel size the
 // same way main() scales the "Main" bar's.
 float g_ContentScaleX = 1.0f, g_ContentScaleY = 1.0f;
@@ -114,7 +137,7 @@ static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32
         glfwSetCursor(window, g_StandardCursors[_Cursor]);
 }
 
-static void DestroyGLFWCursorCache()
+static void DestroyGLFWCursorCache(void)
 {
     for (int i = 0; i < TW_CURSOR_CUSTOM; ++i) {
         if (g_StandardCursors[i] != NULL) {
@@ -128,130 +151,140 @@ static void DestroyGLFWCursorCache()
     }
 }
 
-const char* title = "AntTweakBar example: TwAdvanced1";
+const char* title = "AntTweakBar example: Advanced (C99)";
+
+// Light animation mode. A C++ nested `enum Light::AnimMode` in the original;
+// hoisted to file scope here since C has no nested-type/qualified-name
+// concept for enums declared inside a struct.
+typedef enum { ANIM_FIXED, ANIM_BOUNCE, ANIM_ROTATE, ANIM_COMBINED } LightAnimMode;
 
 // Light structure: embeds light parameters
-struct Light
+typedef struct Light
 {
-    bool    Active;     // light On or Off
+    int     Active;     // light On or Off (TW_TYPE_BOOL32-bound: must be int, not bool)
     float   Pos[4];     // light position (in homogeneous coordinates, ie. Pos[4]=1)
     float   Color[4];   // light color (no alpha, ie. Color[4]=1)
-    float   Radius;     // radius of the light influence area 
+    float   Radius;     // radius of the light influence area
     float   Dist0, Angle0, Height0, Speed0; // light initial cylindrical coordinates and speed
     char    Name[4];    // light short name (will be named "1", "2", "3",...)
-    enum    AnimMode { ANIM_FIXED, ANIM_BOUNCE, ANIM_ROTATE, ANIM_COMBINED };
-    AnimMode Animation; // light animation mode
-};
+    LightAnimMode Animation; // light animation mode
+} Light;
 
+// Scene rotation mode. A C++ nested `enum Scene::RotMode` in the original;
+// hoisted to file scope for the same reason as LightAnimMode above.
+typedef enum { ROT_OFF, ROT_CW, ROT_CCW } SceneRotMode;
 
-// Class that describes the scene and its methods
-class Scene
+// Structure that describes the scene. A plain C struct: the original C++
+// `class Scene` had no invariant that required hiding its fields, so every
+// field is public here too - only its methods became free functions
+// (Scene_*, below), each taking a `Scene *` (or `const Scene *`) first
+// parameter in place of the implicit `this`.
+typedef struct Scene
 {
-public:
-    bool    Wireframe;  // draw scene in wireframe or filled
+    int     Wireframe;  // draw scene in wireframe or filled (TW_TYPE_BOOL32-bound: must be int, not bool)
     int     Subdiv;     // number of subdivisions used to tessellate the scene
     int     NumLights;  // number of dynamic lights
     float   BgColor0[3], BgColor1[3]; // top and bottom background colors
-    float   Ambient;    // scene ambient factor 
+    float   Ambient;    // scene ambient factor
     float   Reflection; // ground plane reflection factor (0=no reflection, 1=full reflection)
     double  RotYAngle;  // rotation angle of the scene around its Y axis (in degree)
-    enum    RotMode { ROT_OFF, ROT_CW, ROT_CCW };
-    RotMode Rotation;   // scene rotation mode (off, clockwise, counter-clockwise)
-
-            Scene();                        // constructor
-            ~Scene();                       // destructor
-    void    Init(bool changeLightPos);      // (re)initialize the scene
-    void    Draw() const;                   // draw scene
-    void    Update(double time);            // move lights
-
-private:
-    void    CreateBar();                    // create a tweak bar for lights
-
-    // Some drawing subroutines
-    void    DrawSubdivPlaneY(float xMin, float xMax, float y, float zMin, float zMax, int xSubdiv, int zSubdiv) const;
-    void    DrawSubdivCylinderY(float xCenter, float yBottom, float zCenter, float height, float radiusBottom, float radiusTop, int sideSubdiv, int ySubdiv) const;
-    void    DrawSubdivHaloZ(float x, float y, float z, float radius, int subdiv) const;
-    void    DrawHalos(bool reflected) const;
+    SceneRotMode Rotation; // scene rotation mode (off, clockwise, counter-clockwise)
 
     GLuint  objList, groundList, haloList;  // OpenGL display list IDs
     int     maxLights;                      // maximum number of dynamic lights allowed by the graphic card
-    Light * lights;                         // array of lights
-    TwBar * lightsBar;                      // pointer to the tweak bar for lights created by CreateBar()
-};
+    Light * lights;                         // array of lights (malloc'ed in Scene_Init, freed in Scene_Destruct)
+    TwBar * lightsBar;                      // pointer to the tweak bar for lights created by Scene_CreateBar()
+} Scene;
 
+// Forward declarations (the C++ class body served this purpose in
+// Advanced_cpp.cpp; C has no equivalent, so every Scene_* function used
+// before its own definition further down needs one here).
+static void Scene_Construct(Scene *scene);
+static void Scene_Destruct(Scene *scene);
+static void Scene_Init(Scene *scene, bool changeLights);
+static void Scene_Draw(const Scene *scene);
+static void Scene_Update(Scene *scene, double time);
+static void Scene_CreateBar(Scene *scene);
+static void Scene_DrawHalos(const Scene *scene, bool reflected);
+// These three drawing subroutines never touch Scene state (verified by
+// reading Advanced_cpp.cpp's own DrawSubdivPlaneY/DrawSubdivCylinderY/
+// DrawSubdivHaloZ bodies) - they were private methods only for namespacing,
+// so they become plain file-scope functions with no Scene* parameter,
+// rather than carrying an unused one.
+static void DrawSubdivPlaneY(float xMin, float xMax, float y, float zMin, float zMax, int xSubdiv, int zSubdiv);
+static void DrawSubdivCylinderY(float xCenter, float yBottom, float zCenter, float height, float radiusBottom, float radiusTop, int sideSubdiv, int ySubdiv);
+static void DrawSubdivHaloZ(float x, float y, float z, float radius, int subdiv);
 
 // Constructor
-Scene::Scene()
+static void Scene_Construct(Scene *scene)
 {
     // Set scene members.
-    // The scene will be created by Scene::Init( )
-    Wireframe = false;
-    Subdiv = 20;
-    NumLights = 0;
-    BgColor0[0] = 0.9f;
-    BgColor0[1] = 0.0f;
-    BgColor0[2] = 0.0f;
-    BgColor1[0] = 0.3f;
-    BgColor1[1] = 0.0f;
-    BgColor1[2] = 0.0f;
-    Ambient = 0.2f;
-    Reflection = 0.5f;
-    RotYAngle = 0;
-    Rotation = ROT_CCW;
-    objList = 0;
-    groundList = 0;
-    haloList = 0;
-    maxLights = 0;
-    lights = NULL;
-    lightsBar = NULL;
+    // The scene will be created by Scene_Init()
+    scene->Wireframe = 0;
+    scene->Subdiv = 20;
+    scene->NumLights = 0;
+    scene->BgColor0[0] = 0.9f;
+    scene->BgColor0[1] = 0.0f;
+    scene->BgColor0[2] = 0.0f;
+    scene->BgColor1[0] = 0.3f;
+    scene->BgColor1[1] = 0.0f;
+    scene->BgColor1[2] = 0.0f;
+    scene->Ambient = 0.2f;
+    scene->Reflection = 0.5f;
+    scene->RotYAngle = 0;
+    scene->Rotation = ROT_CCW;
+    scene->objList = 0;
+    scene->groundList = 0;
+    scene->haloList = 0;
+    scene->maxLights = 0;
+    scene->lights = NULL;
+    scene->lightsBar = NULL;
 }
-
 
 // Destructor
-Scene::~Scene() 
-{ 
-    // delete all lights
-    if( lights ) 
-        delete[] lights;
+static void Scene_Destruct(Scene *scene)
+{
+    // free all lights
+    if (scene->lights)
+        free(scene->lights);
 }
 
-
 // Create the scene, and (re)initialize lights if changeLights is true
-void Scene::Init(bool changeLights)
+static void Scene_Init(Scene *scene, bool changeLights)
 {
     // Get the max number of lights allowed by the graphic card
-    glGetIntegerv(GL_MAX_LIGHTS, &maxLights);
-    if( maxLights>16 )
-        maxLights = 16;
+    glGetIntegerv(GL_MAX_LIGHTS, &scene->maxLights);
+    if (scene->maxLights > 16)
+        scene->maxLights = 16;
 
     // Create the lights array
-    if( lights==NULL && maxLights>0 )
+    if (scene->lights == NULL && scene->maxLights > 0)
     {
-        lights = new Light[maxLights];
-        NumLights = 3;               // default number of lights
-        if( NumLights>maxLights )
-            NumLights = maxLights;
+        scene->lights = (Light *)malloc((size_t)scene->maxLights * sizeof(Light));
+        scene->NumLights = 3;               // default number of lights
+        if (scene->NumLights > scene->maxLights)
+            scene->NumLights = scene->maxLights;
         changeLights = true;         // force lights initialization
 
         // Create a tweak bar for lights
-        CreateBar();
+        Scene_CreateBar(scene);
     }
 
     // (Re)initialize lights if needed (uses random values)
-    if( changeLights )
-        for(int i=0; i<maxLights; ++i)
+    if (changeLights)
+        for (int i = 0; i < scene->maxLights; ++i)
         {
-            lights[i].Dist0     = 0.5f*(float)rand()/RAND_MAX + 0.55f;
-            lights[i].Angle0    = 2*M_PI*((float)rand()/RAND_MAX);
-            lights[i].Height0   = 2*M_PI*(float)rand()/RAND_MAX;
-            lights[i].Speed0    = 4.0f*(float)rand()/RAND_MAX - 2.0f;
-            lights[i].Animation = (Light::AnimMode)(Light::ANIM_BOUNCE + (rand()%3));
-            lights[i].Radius    = (float)rand()/RAND_MAX+0.05f;
-            lights[i].Color[0]  = (float)rand()/RAND_MAX;
-            lights[i].Color[1]  = (float)rand()/RAND_MAX;
-            lights[i].Color[2]  = (lights[i].Color[0]>lights[i].Color[1]) ? 1.0f-lights[i].Color[1] : 1.0f-lights[i].Color[0];
-            lights[i].Color[3]  = 1;
-            lights[i].Active    = true;
+            scene->lights[i].Dist0     = 0.5f*(float)rand()/RAND_MAX + 0.55f;
+            scene->lights[i].Angle0    = 2*M_PI*((float)rand()/RAND_MAX);
+            scene->lights[i].Height0   = 2*M_PI*(float)rand()/RAND_MAX;
+            scene->lights[i].Speed0    = 4.0f*(float)rand()/RAND_MAX - 2.0f;
+            scene->lights[i].Animation = (LightAnimMode)(ANIM_BOUNCE + (rand()%3));
+            scene->lights[i].Radius    = (float)rand()/RAND_MAX+0.05f;
+            scene->lights[i].Color[0]  = (float)rand()/RAND_MAX;
+            scene->lights[i].Color[1]  = (float)rand()/RAND_MAX;
+            scene->lights[i].Color[2]  = (scene->lights[i].Color[0]>scene->lights[i].Color[1]) ? 1.0f-scene->lights[i].Color[1] : 1.0f-scene->lights[i].Color[0];
+            scene->lights[i].Color[3]  = 1;
+            scene->lights[i].Active    = 1;
         }
 
     // Initialize some OpenGL states
@@ -268,31 +301,31 @@ void Scene::Init(bool changeLights)
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
     // Create objects display list using the current Subdiv parameter to control the tesselation
-    if( objList>0 )
-        glDeleteLists(objList, 1);      // delete previously created display list
-    objList = glGenLists(1);
-    glNewList(objList, GL_COMPILE);
-    DrawSubdivCylinderY(-0.9f, 0, -0.9f, 1.4f, 0.15f, 0.12f, Subdiv/2+8, Subdiv);
-    DrawSubdivCylinderY(+0.9f, 0, -0.9f, 1.4f, 0.15f, 0.12f, Subdiv/2+8, Subdiv);
-    DrawSubdivCylinderY(+0.9f, 0, +0.9f, 1.4f, 0.15f, 0.12f, Subdiv/2+8, Subdiv);
-    DrawSubdivCylinderY(-0.9f, 0, +0.9f, 1.4f, 0.15f, 0.12f, Subdiv/2+8, Subdiv);
-    DrawSubdivCylinderY(0, 0, 0, 0.4f, 0.5f, 0.3f, Subdiv+16, Subdiv/8+1);
-    DrawSubdivCylinderY(0, 0.4f, 0, 0.05f, 0.3f, 0.0f, Subdiv+16, Subdiv/16+1);
+    if (scene->objList > 0)
+        glDeleteLists(scene->objList, 1);      // delete previously created display list
+    scene->objList = glGenLists(1);
+    glNewList(scene->objList, GL_COMPILE);
+    DrawSubdivCylinderY(-0.9f, 0, -0.9f, 1.4f, 0.15f, 0.12f, scene->Subdiv/2+8, scene->Subdiv);
+    DrawSubdivCylinderY(+0.9f, 0, -0.9f, 1.4f, 0.15f, 0.12f, scene->Subdiv/2+8, scene->Subdiv);
+    DrawSubdivCylinderY(+0.9f, 0, +0.9f, 1.4f, 0.15f, 0.12f, scene->Subdiv/2+8, scene->Subdiv);
+    DrawSubdivCylinderY(-0.9f, 0, +0.9f, 1.4f, 0.15f, 0.12f, scene->Subdiv/2+8, scene->Subdiv);
+    DrawSubdivCylinderY(0, 0, 0, 0.4f, 0.5f, 0.3f, scene->Subdiv+16, scene->Subdiv/8+1);
+    DrawSubdivCylinderY(0, 0.4f, 0, 0.05f, 0.3f, 0.0f, scene->Subdiv+16, scene->Subdiv/16+1);
     glEndList();
 
     // Create ground display list
-    if( groundList>0 )
-        glDeleteLists(groundList, 1);   // delete previously created display list
-    groundList = glGenLists(1);
-    glNewList(groundList, GL_COMPILE);
-    DrawSubdivPlaneY(-1.2f, 1.2f, 0, -1.2f, 1.2f, (3*Subdiv)/2, (3*Subdiv)/2);
+    if (scene->groundList > 0)
+        glDeleteLists(scene->groundList, 1);   // delete previously created display list
+    scene->groundList = glGenLists(1);
+    glNewList(scene->groundList, GL_COMPILE);
+    DrawSubdivPlaneY(-1.2f, 1.2f, 0, -1.2f, 1.2f, (3*scene->Subdiv)/2, (3*scene->Subdiv)/2);
     glEndList();
 
     // Create display list to draw light halos
-    if( haloList>0 )
-        glDeleteLists(haloList, 1);     // delete previously created display list
-    haloList = glGenLists(1);
-    glNewList(haloList, GL_COMPILE);
+    if (scene->haloList > 0)
+        glDeleteLists(scene->haloList, 1);     // delete previously created display list
+    scene->haloList = glGenLists(1);
+    glNewList(scene->haloList, GL_COMPILE);
     DrawSubdivHaloZ(0, 0, 0, 1, 32);
     glEndList();
 }
@@ -455,58 +488,58 @@ void TW_CALL ResetCubePosition(void *clientData)
 // Callback function associated to the 'Change lights' button of the lights tweak bar.
 void TW_CALL ReinitCB(void *clientData)
 {
-    Scene *scene = static_cast<Scene *>(clientData); // scene pointer is stored in clientData
-    scene->Init(true);                               // re-initialize the scene
+    Scene *scene = (Scene *)clientData; // scene pointer is stored in clientData
+    Scene_Init(scene, true);            // re-initialize the scene
 }
 
 
 // Create a tweak bar for lights.
 // New enum type and struct type are defined and used by this bar.
-void Scene::CreateBar()
+static void Scene_CreateBar(Scene *scene)
 {
     // Create a new tweak bar and change its label, position and transparency
-    lightsBar = TwNewBar("Lights");
+    scene->lightsBar = TwNewBar("Lights");
     TwDefine(" Lights label='Lights TweakBar' position='580 16' alpha=0 help='Use this bar to edit the lights in the scene.' ");
     // This bar has no explicit size='...' either, so - like 'Main' above -
     // its panel needs the same explicit HiDPI scaling of TwBar's fixed
     // 200x320 default (see the fontscaling/g_ContentScaleX comment in main()).
     {
         int lightsBarSize[2] = { (int)(200 * g_ContentScaleX + 0.5f), (int)(320 * g_ContentScaleY + 0.5f) };
-        TwSetParam(lightsBar, NULL, "size", TW_PARAM_INT32, 2, lightsBarSize);
+        TwSetParam(scene->lightsBar, NULL, "size", TW_PARAM_INT32, 2, lightsBarSize);
     }
 
     // Add a variable of type int to control the number of lights
-    TwAddVarRW(lightsBar, "NumLights", TW_TYPE_INT32, &NumLights, 
+    TwAddVarRW(scene->lightsBar, "NumLights", TW_TYPE_INT32, &scene->NumLights,
                " label='Number of lights' keyIncr=l keyDecr=L help='Changes the number of lights in the scene.' ");
 
     // Set the NumLights min value (=0) and max value (depends on the user graphic card)
     int zero = 0;
-    TwSetParam(lightsBar, "NumLights", "min", TW_PARAM_INT32, 1, &zero);
-    TwSetParam(lightsBar, "NumLights", "max", TW_PARAM_INT32, 1, &maxLights);
+    TwSetParam(scene->lightsBar, "NumLights", "min", TW_PARAM_INT32, 1, &zero);
+    TwSetParam(scene->lightsBar, "NumLights", "max", TW_PARAM_INT32, 1, &scene->maxLights);
     // Note, TwDefine could also have been used for that pupose like this:
     //   char def[256];
-    //   _snprintf(def, 255, "Lights/NumLights min=0 max=%d", maxLights);
+    //   _snprintf(def, 255, "Lights/NumLights min=0 max=%d", scene->maxLights);
     //   TwDefine(def); // min and max are defined using a definition string
 
 
     // Add a button to re-initialize the lights; this button calls the ReinitCB callback function
-    TwAddButton(lightsBar, "Reinit", ReinitCB, this, 
+    TwAddButton(scene->lightsBar, "Reinit", ReinitCB, scene,
                 " label='Change lights' key=c help='Random changes of lights parameters.' ");
 
     // Define a new enum type for the tweak bar
-    TwEnumVal modeEV[] = // array used to describe the Scene::AnimMode enum values
+    TwEnumVal modeEV[] = // array used to describe the LightAnimMode enum values
     {
-        { Light::ANIM_FIXED,    "Fixed"     }, 
-        { Light::ANIM_BOUNCE,   "Bounce"    }, 
-        { Light::ANIM_ROTATE,   "Rotate"    }, 
-        { Light::ANIM_COMBINED, "Combined"  }
+        { ANIM_FIXED,    "Fixed"     },
+        { ANIM_BOUNCE,   "Bounce"    },
+        { ANIM_ROTATE,   "Rotate"    },
+        { ANIM_COMBINED, "Combined"  }
     };
     TwType modeType = TwDefineEnum("Mode", modeEV, 4);  // create a new TwType associated to the enum defined by the modeEV array
 
     // Define a new struct type: light variables are embedded in this structure
     TwStructMember lightMembers[] = // array used to describe tweakable variables of the Light structure
     {
-        { "Active",    TW_TYPE_BOOLCPP, offsetof(Light, Active),    " help='Enable/disable the light.' " },   // Light::Active is a C++ boolean value
+        { "Active",    TW_TYPE_BOOL32,  offsetof(Light, Active),    " help='Enable/disable the light.' " },   // Light::Active is bound as a plain 32-bit boolean
         { "Color",     TW_TYPE_COLOR4F, offsetof(Light, Color),     " noalpha help='Light color.' " },        // Light::Color is represented by 4 floats, but alpha channel should be ignored
         { "Radius",    TW_TYPE_FLOAT,   offsetof(Light, Radius),    " min=0 max=4 step=0.02 help='Light radius.' " },
         { "Animation", modeType,        offsetof(Light, Animation), " help='Change the animation mode.' " },  // use the enum 'modeType' created before to tweak the Light::Animation variable
@@ -515,56 +548,56 @@ void Scene::CreateBar()
     TwType lightType = TwDefineStruct("Light", lightMembers, 5, sizeof(Light), NULL, NULL);  // create a new TwType associated to the struct defined by the lightMembers array
 
     // Use the newly created 'lightType' to add variables associated with lights
-    for(int i=0; i<maxLights; ++i)  // Add 'maxLights' variables of type lightType; 
-    {                               // unused lights variables (over NumLights) will hidden by Scene::Update( )
-        _snprintf(lights[i].Name, sizeof(lights[i].Name), "%d", i+1); // Create a name for each light ("1", "2", "3",...)
-        TwAddVarRW(lightsBar, lights[i].Name, lightType, &lights[i], " group='Edit lights' "); // Add a lightType variable and group it into the 'Edit lights' group
+    for (int i = 0; i < scene->maxLights; ++i)  // Add 'maxLights' variables of type lightType;
+    {                               // unused lights variables (over NumLights) will hidden by Scene_Update()
+        _snprintf(scene->lights[i].Name, sizeof(scene->lights[i].Name), "%d", i+1); // Create a name for each light ("1", "2", "3",...)
+        TwAddVarRW(scene->lightsBar, scene->lights[i].Name, lightType, &scene->lights[i], " group='Edit lights' "); // Add a lightType variable and group it into the 'Edit lights' group
 
         // Set 'label' and 'help' parameters of the light
         char paramValue[64];
         _snprintf(paramValue, sizeof(paramValue), "Light #%d", i+1);
-        TwSetParam(lightsBar, lights[i].Name, "label", TW_PARAM_CSTRING, 1, paramValue); // Set label
+        TwSetParam(scene->lightsBar, scene->lights[i].Name, "label", TW_PARAM_CSTRING, 1, paramValue); // Set label
         _snprintf(paramValue, sizeof(paramValue), "Parameters of the light #%d", i+1);
-        TwSetParam(lightsBar, lights[i].Name, "help", TW_PARAM_CSTRING, 1, paramValue);  // Set help
+        TwSetParam(scene->lightsBar, scene->lights[i].Name, "help", TW_PARAM_CSTRING, 1, paramValue);  // Set help
 
         // Note, parameters could also have been set using the define string of TwAddVarRW like this:
         //   char def[256];
         //   _snprintf(def, sizeof(def), "group='Edit lights' label='Light #%d' help='Parameters of the light #%d' ", i+1, i+1);
-        //   TwAddVarRW(lightsBar, lights[i].Name, lightType, &lights[i], def); // Add a lightType variable, group it into the 'Edit lights' group, and name it 'Light #n'
+        //   TwAddVarRW(scene->lightsBar, scene->lights[i].Name, lightType, &scene->lights[i], def); // Add a lightType variable, group it into the 'Edit lights' group, and name it 'Light #n'
     }
 }
 
 
 // Move lights
-void Scene::Update(double time)
+static void Scene_Update(Scene *scene, double time)
 {
     float horizSpeed, vertSpeed;
-    for(int i=0; i<NumLights; ++i)
+    for (int i = 0; i < scene->NumLights; ++i)
     {
         // Change light position according to its current animation mode
 
-        if( lights[i].Animation==Light::ANIM_ROTATE || lights[i].Animation==Light::ANIM_COMBINED )
-            horizSpeed = lights[i].Speed0;
+        if (scene->lights[i].Animation==ANIM_ROTATE || scene->lights[i].Animation==ANIM_COMBINED)
+            horizSpeed = scene->lights[i].Speed0;
         else
             horizSpeed = 0;
 
-        if( lights[i].Animation==Light::ANIM_BOUNCE || lights[i].Animation==Light::ANIM_COMBINED )
+        if (scene->lights[i].Animation==ANIM_BOUNCE || scene->lights[i].Animation==ANIM_COMBINED)
             vertSpeed = 1;
         else
             vertSpeed = 0;
 
-        lights[i].Pos[0] = lights[i].Dist0 * (float)cos(horizSpeed*time + lights[i].Angle0);
-        lights[i].Pos[1] = (float)fabs(cos(vertSpeed*time + lights[i].Height0));
-        lights[i].Pos[2] = lights[i].Dist0 * (float)sin(horizSpeed*time + lights[i].Angle0);
-        lights[i].Pos[3] = 1;
+        scene->lights[i].Pos[0] = scene->lights[i].Dist0 * (float)cos(horizSpeed*time + scene->lights[i].Angle0);
+        scene->lights[i].Pos[1] = (float)fabs(cos(vertSpeed*time + scene->lights[i].Height0));
+        scene->lights[i].Pos[2] = scene->lights[i].Dist0 * (float)sin(horizSpeed*time + scene->lights[i].Angle0);
+        scene->lights[i].Pos[3] = 1;
     }
 }
 
 
-// Activate OpenGL lights; hide unused lights in the Lights tweak bar; 
+// Activate OpenGL lights; hide unused lights in the Lights tweak bar;
 // and draw the scene. The scene is reflected by the ground plane, so it is
 // drawn two times: first reflected, and second normal (unreflected).
-void Scene::Draw() const
+static void Scene_Draw(const Scene *scene)
 {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -608,32 +641,32 @@ void Scene::Draw() const
     glMultMatrixd(m);
     glTranslated(-eyeX, -eyeY, -eyeZ);
     glTranslated(g_cameraPosX, g_cameraPosY, -g_cameraPosZ);
-    
+
     // Rotate the scene
-    glRotated(RotYAngle, 0, 1, 0);
+    glRotated(scene->RotYAngle, 0, 1, 0);
 
     // Hide/active lights
     int i, lightVisible;
-    for(i=0; i<maxLights; ++i)
+    for (i = 0; i < scene->maxLights; ++i)
     {
-        if( i<NumLights )
+        if (i < scene->NumLights)
         {
             // Lights under NumLights are shown in the Lights tweak bar
             lightVisible = 1;
 
             // Tell OpenGL to enable or disable the light
-            if( lights[i].Active )
+            if (scene->lights[i].Active)
                 glEnable(GL_LIGHT0+i);
             else
                 glDisable(GL_LIGHT0+i);
 
             // Update OpenGL light parameters (for the reflected scene)
-            float reflectPos[4] = { lights[i].Pos[0], -lights[i].Pos[1], lights[i].Pos[2], lights[i].Pos[3] };
+            float reflectPos[4] = { scene->lights[i].Pos[0], -scene->lights[i].Pos[1], scene->lights[i].Pos[2], scene->lights[i].Pos[3] };
             glLightfv(GL_LIGHT0+i, GL_POSITION, reflectPos);
-            glLightfv(GL_LIGHT0+i, GL_DIFFUSE, lights[i].Color);
+            glLightfv(GL_LIGHT0+i, GL_DIFFUSE, scene->lights[i].Color);
             glLightf(GL_LIGHT0+i, GL_CONSTANT_ATTENUATION, 1);
             glLightf(GL_LIGHT0+i, GL_LINEAR_ATTENUATION, 0);
-            glLightf(GL_LIGHT0+i, GL_QUADRATIC_ATTENUATION, 1.0f/(lights[i].Radius*lights[i].Radius));
+            glLightf(GL_LIGHT0+i, GL_QUADRATIC_ATTENUATION, 1.0f/(scene->lights[i].Radius*scene->lights[i].Radius));
         }
         else
         {
@@ -642,28 +675,28 @@ void Scene::Draw() const
 
             // Disable the OpenGL light
             glDisable(GL_LIGHT0+i);
-            
+
         }
 
         // Show or hide the light variable in the Lights tweak bar
-        TwSetParam(lightsBar, lights[i].Name, "visible", TW_PARAM_INT32, 1, &lightVisible);
+        TwSetParam(scene->lightsBar, scene->lights[i].Name, "visible", TW_PARAM_INT32, 1, &lightVisible);
     }
 
     // Set global ambient and clear screen and depth buffer
-    float ambient[4] = { Ambient*(BgColor0[0]+BgColor1[0])/2, Ambient*(BgColor0[1]+BgColor1[1])/2, 
-                         Ambient*(BgColor0[2]+BgColor1[2])/2, 1 };
+    float ambient[4] = { scene->Ambient*(scene->BgColor0[0]+scene->BgColor1[0])/2, scene->Ambient*(scene->BgColor0[1]+scene->BgColor1[1])/2,
+                         scene->Ambient*(scene->BgColor0[2]+scene->BgColor1[2])/2, 1 };
     glClearColor(ambient[0], ambient[1], ambient[2], 1);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
 
     // Draw the reflected scene
-    glPolygonMode(GL_FRONT_AND_BACK, (Wireframe ? GL_LINE : GL_FILL));
+    glPolygonMode(GL_FRONT_AND_BACK, (scene->Wireframe ? GL_LINE : GL_FILL));
     glCullFace(GL_FRONT);
     glPushMatrix();
     glScalef(1, -1, 1);
     glColor3f(1, 1, 1);
-    glCallList(objList);
-    DrawHalos(true);
+    glCallList(scene->objList);
+    Scene_DrawHalos(scene, true);
     glPopMatrix();
     glCullFace(GL_BACK);
 
@@ -671,8 +704,8 @@ void Scene::Draw() const
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Draw the ground plane (using the Reflection parameter as transparency)
-    glColor4f(1, 1, 1, 1.0f-Reflection);
-    glCallList(groundList);
+    glColor4f(1, 1, 1, 1.0f-scene->Reflection);
+    glCallList(scene->groundList);
 
     // Draw the gradient background (requires to switch to screen-space normalized coordinates)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -684,11 +717,11 @@ void Scene::Draw() const
     glPushMatrix();
     glLoadIdentity();
     glBegin(GL_QUADS);
-        glColor3f(BgColor0[0], BgColor0[1], BgColor0[2]);
-        glVertex3f(-1, -1, 0.9f); 
-        glVertex3f(1, -1, 0.9f); 
-        glColor3f(BgColor1[0], BgColor1[1], BgColor1[2]);
-        glVertex3f(1, 1, 0.9f); 
+        glColor3f(scene->BgColor0[0], scene->BgColor0[1], scene->BgColor0[2]);
+        glVertex3f(-1, -1, 0.9f);
+        glVertex3f(1, -1, 0.9f);
+        glColor3f(scene->BgColor1[0], scene->BgColor1[1], scene->BgColor1[2]);
+        glVertex3f(1, 1, 0.9f);
         glVertex3f(-1, 1, 0.9f);
     glEnd();
     glMatrixMode(GL_PROJECTION);
@@ -698,19 +731,19 @@ void Scene::Draw() const
     glEnable(GL_LIGHTING);
 
     // Update light positions for unreflected scene
-    for(i=0; i<NumLights; ++i)
-        glLightfv(GL_LIGHT0+i, GL_POSITION, lights[i].Pos);
+    for (i = 0; i < scene->NumLights; ++i)
+        glLightfv(GL_LIGHT0+i, GL_POSITION, scene->lights[i].Pos);
 
     // Draw the unreflected scene
-    glPolygonMode(GL_FRONT_AND_BACK, (Wireframe ? GL_LINE : GL_FILL));
+    glPolygonMode(GL_FRONT_AND_BACK, (scene->Wireframe ? GL_LINE : GL_FILL));
     glColor3f(1, 1, 1);
-    glCallList(objList);
-    DrawHalos(false);
+    glCallList(scene->objList);
+    Scene_DrawHalos(scene, false);
 }
 
 
 // Subroutine used to draw halos around light positions
-void Scene::DrawHalos(bool reflected) const
+static void Scene_DrawHalos(const Scene *scene, bool reflected)
 {
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDepthMask(GL_FALSE);
@@ -718,22 +751,22 @@ void Scene::DrawHalos(bool reflected) const
     glGetFloatv(GL_LIGHT_MODEL_AMBIENT, prevAmbient);
     glPushMatrix();
     glLoadIdentity();
-    if( reflected )
+    if (reflected)
         glScalef(1, -1 ,1);
     float black[4] = {0, 0, 0, 1};
-    float cr = (float)cos(2*M_PI*RotYAngle/360.0f);
-    float sr = (float)sin(2*M_PI*RotYAngle/360.0f);
-    for(int i=0; i<NumLights; ++i)
+    float cr = (float)cos(2*M_PI*scene->RotYAngle/360.0f);
+    float sr = (float)sin(2*M_PI*scene->RotYAngle/360.0f);
+    for (int i = 0; i < scene->NumLights; ++i)
     {
-        if( lights[i].Active )
-            glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lights[i].Color);
+        if (scene->lights[i].Active)
+            glLightModelfv(GL_LIGHT_MODEL_AMBIENT, scene->lights[i].Color);
         else
             glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
         glPushMatrix();
-        glTranslatef(cr*lights[i].Pos[0]+sr*lights[i].Pos[2], lights[i].Pos[1], -sr*lights[i].Pos[0]+cr*lights[i].Pos[2]);
+        glTranslatef(cr*scene->lights[i].Pos[0]+sr*scene->lights[i].Pos[2], scene->lights[i].Pos[1], -sr*scene->lights[i].Pos[0]+cr*scene->lights[i].Pos[2]);
         //glScalef(0.5f*lights[i].Radius, 0.5f*lights[i].Radius, 1);
         glScalef(0.05f, 0.05f, 1);
-        glCallList(haloList);
+        glCallList(scene->haloList);
         glPopMatrix();
     }
     glPopMatrix();
@@ -744,15 +777,15 @@ void Scene::DrawHalos(bool reflected) const
 
 
 // Subroutine used to build the ground plane display list (mesh subdivision is adjustable)
-void Scene::DrawSubdivPlaneY(float xMin, float xMax, float y, float zMin, float zMax, int xSubdiv, int zSubdiv) const
+static void DrawSubdivPlaneY(float xMin, float xMax, float y, float zMin, float zMax, int xSubdiv, int zSubdiv)
 {
     const float FLOAT_EPS = 1.0e-5f;
     float dx = (xMax-xMin)/xSubdiv;
     float dz = (zMax-zMin)/zSubdiv;
     glBegin(GL_QUADS);
     glNormal3f(0, -1, 0);
-    for( float z=zMin; z<zMax-FLOAT_EPS; z+=dz )
-        for( float x=xMin; x<xMax-FLOAT_EPS; x+=dx )
+    for (float z=zMin; z<zMax-FLOAT_EPS; z+=dz)
+        for (float x=xMin; x<xMax-FLOAT_EPS; x+=dx)
         {
             glVertex3f(x, y, z);
             glVertex3f(x, y, z+dz);
@@ -764,13 +797,13 @@ void Scene::DrawSubdivPlaneY(float xMin, float xMax, float y, float zMin, float 
 
 
 // Subroutine used to build objects display list (mesh subdivision is adjustable)
-void Scene::DrawSubdivCylinderY(float xCenter, float yBottom, float zCenter, float height, float radiusBottom, float radiusTop, int sideSubdiv, int ySubdiv) const
+static void DrawSubdivCylinderY(float xCenter, float yBottom, float zCenter, float height, float radiusBottom, float radiusTop, int sideSubdiv, int ySubdiv)
 {
     float h0, h1, y0, y1, r0, r1, a0, a1, cosa0, sina0, cosa1, sina1;
     glBegin(GL_QUADS);
     glNormal3f(0, 1, 0);
-    for( int j=0; j<ySubdiv; ++j )
-        for( int i=0; i<sideSubdiv; ++i )
+    for (int j=0; j<ySubdiv; ++j)
+        for (int i=0; i<sideSubdiv; ++i)
         {
             h0 = (float)j/ySubdiv;
             h1 = (float)(j+1)/ySubdiv;
@@ -798,13 +831,13 @@ void Scene::DrawSubdivCylinderY(float xCenter, float yBottom, float zCenter, flo
 
 
 // Subroutine used to build halo display list
-void Scene::DrawSubdivHaloZ(float x, float y, float z, float radius, int subdiv) const
+static void DrawSubdivHaloZ(float x, float y, float z, float radius, int subdiv)
 {
     glBegin(GL_TRIANGLE_FAN);
     glNormal3f(0, 0, 0);
     glColor4f(1, 1, 1, 1);
     glVertex3f(x, y, z);
-    for( int i=0; i<=subdiv; ++i )
+    for (int i=0; i<=subdiv; ++i)
     {
         glColor4f(1, 1, 1, 0);
         glVertex3f(x+radius*(float)cos(2*M_PI*(float)i/subdiv), x+radius*(float)sin(2*M_PI*(float)i/subdiv), z);
@@ -816,25 +849,25 @@ void Scene::DrawSubdivHaloZ(float x, float y, float z, float radius, int subdiv)
 // Callback function called when the 'Subdiv' variable value of the main tweak bar has changed.
 void TW_CALL SetSubdivCB(const void *value, void *clientData)
 {
-    Scene *scene = static_cast<Scene *>(clientData);    // scene pointer is stored in clientData
-    scene->Subdiv = *static_cast<const int *>(value);   // copy value to scene->Subdiv
-    scene->Init(false);                                 // re-init scene with the new Subdiv parameter
+    Scene *scene = (Scene *)clientData;       // scene pointer is stored in clientData
+    scene->Subdiv = *(const int *)value;      // copy value to scene->Subdiv
+    Scene_Init(scene, false);                 // re-init scene with the new Subdiv parameter
 }
 
 
 // Callback function called by the main tweak bar to get the 'Subdiv' value
 void TW_CALL GetSubdivCB(void *value, void *clientData)
 {
-    Scene *scene = static_cast<Scene *>(clientData);    // scene pointer is stored in clientData
-    *static_cast<int *>(value) = scene->Subdiv;         // copy scene->Subdiv to value
+    Scene *scene = (Scene *)clientData;  // scene pointer is stored in clientData
+    *(int *)value = scene->Subdiv;       // copy scene->Subdiv to value
 }
 
 
 // Main function
-int main() 
+int main(void)
 {
     GLFWwindow* window; // GLFW3 window
-    // Intialize GLFW   
+    // Intialize GLFW
     if (!glfwInit()) {
         fprintf(stderr, "GLFW initialization failed\n");
         return 1;
@@ -885,7 +918,7 @@ int main()
     // given) is a fixed pixel constant that does NOT derive from font
     // metrics, so it does not grow on its own to match the now-larger scaled
     // content - it has to be scaled explicitly too, via TwSetParam after
-    // each TwNewBar() (see "Main" below and Scene::CreateBar()'s "Lights"),
+    // each TwNewBar() (see "Main" below and Scene_CreateBar()'s "Lights"),
     // or the bigger post-fontscaling rows/labels would get clipped by an
     // unchanged panel size.
     glfwGetWindowContentScale(window, &g_ContentScaleX, &g_ContentScaleY);
@@ -909,7 +942,8 @@ int main()
 
     // Initialize the 3D scene
     Scene scene;
-    scene.Init(true);
+    Scene_Construct(&scene);
+    Scene_Init(&scene, true);
 
     // Create a tweak bar called 'Main' and change its refresh rate, position, size and transparency
     TwBar *mainBar = TwNewBar("Main");
@@ -924,30 +958,30 @@ int main()
     }
 
     // Add some variables to the Main tweak bar
-    TwAddVarRW(mainBar, "Wireframe", TW_TYPE_BOOLCPP, &scene.Wireframe, 
+    TwAddVarRW(mainBar, "Wireframe", TW_TYPE_BOOL32, &scene.Wireframe,
                " group='Display' key=w help='Toggle wireframe display mode.' "); // 'Wireframe' is put in the group 'Display' (which is then created)
-    TwAddVarRW(mainBar, "BgTop", TW_TYPE_COLOR3F, &scene.BgColor1, 
+    TwAddVarRW(mainBar, "BgTop", TW_TYPE_COLOR3F, &scene.BgColor1,
                " group='Background' help='Change the top background color.' ");  // 'BgTop' and 'BgBottom' are put in the group 'Background' (which is then created)
-    TwAddVarRW(mainBar, "BgBottom", TW_TYPE_COLOR3F, &scene.BgColor0, 
+    TwAddVarRW(mainBar, "BgBottom", TW_TYPE_COLOR3F, &scene.BgColor0,
                " group='Background' help='Change the bottom background color.' ");
     TwDefine(" Main/Background group='Display' ");  // The group 'Background' of bar 'Main' is put in the group 'Display'
-    TwAddVarCB(mainBar, "Subdiv", TW_TYPE_INT32, SetSubdivCB, GetSubdivCB, &scene, 
+    TwAddVarCB(mainBar, "Subdiv", TW_TYPE_INT32, SetSubdivCB, GetSubdivCB, &scene,
                " group='Scene' label='Meshes subdivision' min=1 max=50 keyincr=s keyDecr=S help='Subdivide the meshes more or less (switch to wireframe to see the effect).' ");
-    TwAddVarRW(mainBar, "Ambient", TW_TYPE_FLOAT, &scene.Ambient, 
+    TwAddVarRW(mainBar, "Ambient", TW_TYPE_FLOAT, &scene.Ambient,
                " label='Ambient factor' group='Scene' min=0 max=1 step=0.001 keyIncr=a keyDecr=A help='Change scene ambient.' ");
-    TwAddVarRW(mainBar, "Reflection", TW_TYPE_FLOAT, &scene.Reflection, 
+    TwAddVarRW(mainBar, "Reflection", TW_TYPE_FLOAT, &scene.Reflection,
                " label='Reflection factor' group='Scene' min=0 max=1 step=0.001 keyIncr=r keyDecr=R help='Change ground reflection.' ");
 
-    // Create a new TwType called rotationType associated with the Scene::RotMode enum, and use it
-    TwEnumVal rotationEV[] = { { Scene::ROT_OFF, "Stopped"}, 
-                               { Scene::ROT_CW,  "Clockwise" }, 
-                               { Scene::ROT_CCW, "Counter-clockwise" } };
+    // Create a new TwType called rotationType associated with the SceneRotMode enum, and use it
+    TwEnumVal rotationEV[] = { { ROT_OFF, "Stopped"},
+                               { ROT_CW,  "Clockwise" },
+                               { ROT_CCW, "Counter-clockwise" } };
     TwType rotationType = TwDefineEnum( "Rotation Mode", rotationEV, 3 );
-    TwAddVarRW(mainBar, "Rotation", rotationType, &scene.Rotation, 
+    TwAddVarRW(mainBar, "Rotation", rotationType, &scene.Rotation,
                " group='Scene' keyIncr=Backspace keyDecr=SHIFT+Backspace help='Stop or change the rotation mode.' ");
 
     // Add a read-only float variable; its precision is 0 which means that the fractionnal part of the float value will not be displayed
-    TwAddVarRO(mainBar, "RotYAngle", TW_TYPE_DOUBLE, &scene.RotYAngle, 
+    TwAddVarRO(mainBar, "RotYAngle", TW_TYPE_DOUBLE, &scene.RotYAngle,
                " group='Scene' label='Rot angle (degree)' precision=0 help='Animated rotation angle' ");
 
     glfwSetKeyCallback(window, keyCallback);
@@ -969,16 +1003,16 @@ int main()
         time += dt;
 
         // Rotate scene
-        if( scene.Rotation==Scene::ROT_CW )
+        if (scene.Rotation==ROT_CW)
             scene.RotYAngle -= 5.0*dt;
-        else if( scene.Rotation==Scene::ROT_CCW )
+        else if (scene.Rotation==ROT_CCW)
             scene.RotYAngle += 5.0*dt;
 
         // Move lights
-        scene.Update(time);
+        Scene_Update(&scene, time);
 
         // Draw scene
-        scene.Draw();
+        Scene_Draw(&scene);
 
         // Draw tweak bar only
         TwDraw();
@@ -989,7 +1023,7 @@ int main()
         // Estimate framerate
         frameCount++;
         frameDTime += dt;
-        if( frameDTime>1.0 )
+        if (frameDTime>1.0)
         {
             fps = frameCount/frameDTime;
             char newTitle[128];
@@ -999,7 +1033,8 @@ int main()
         }
     }
 
-    // Terminate AntTweakBar and GLFW
+    // Terminate the scene, AntTweakBar, and GLFW
+    Scene_Destruct(&scene);
     TwTerminate();
     DestroyGLFWCursorCache();
     glfwTerminate();

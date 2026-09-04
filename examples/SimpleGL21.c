@@ -1,20 +1,28 @@
 //  ---------------------------------------------------------------------------
 //
-//  @file       TwSimpleGLFW.c
-//  @brief      A simple example that uses AntTweakBar with 
-//              OpenGL and the GLFW windowing system.
+//  @file       SimpleGL21.c
+//  @brief      A simple example that uses AntTweakBar with
+//              OpenGL 2.1 (compatibility profile) and the GLFW3 windowing
+//              system.
+//
+//              Also demonstrates a temporary, self-contained dialog bar:
+//              pressing [Esc] shows a "Quit the application?" bar with
+//              Yes/No buttons, built at that moment with TwNewBar() and
+//              torn down again with TwDeleteBar() - see ShowConfirmQuitBar()
+//              below. Ported from the legacy GLFW2 example of (nearly) the
+//              same name, which used the same dialog technique against
+//              glfwOpenWindow()'s implicit-context API.
 //
 //              AntTweakBar: http://anttweakbar.sourceforge.net/doc
 //              OpenGL:      http://www.opengl.org
 //              GLFW:        http://www.glfw.org
-//  
+//
 //  @author     Philippe Decaudin
 //  @date       2006/05/20
 //
 //  ---------------------------------------------------------------------------
 
 #include <glad/glad.h>
-// #include <GL/glu.h>
 #include <GLFW/glfw3.h>
 #include <AntTweakBar.h>
 #include <stdlib.h>
@@ -97,13 +105,95 @@ bool g_cameraDragging = false;
 double g_lastMouseX = 0.0;
 double g_lastMouseY = 0.0;
 
-// char g_userText[256] = "Hello AntTweakBar!\n";
 char *g_userText = NULL; // Will be malloc'ed on first use
+
+// Quit-confirmation dialog state (see ShowConfirmQuitBar() below).
+static TwBar *g_ConfirmBar = NULL; // the "ConfirmQuit" bar, or NULL when not shown
+
+static void CloseConfirmQuitBar(void);
+
+void TW_CALL ConfirmQuitYesCB(void *clientData)
+{
+    glfwSetWindowShouldClose((GLFWwindow *)clientData, GLFW_TRUE);
+}
+
+void TW_CALL ConfirmQuitNoCB(void *clientData)
+{
+    (void)clientData;
+    CloseConfirmQuitBar();
+}
+
+// Hides (or shows again) every bar that currently exists - including the
+// built-in help bar, which is only ever minimized by default and would
+// otherwise still be reachable while the confirmation dialog is up - so
+// nothing but the dialog itself can react to input.
+static void SetAllBarsVisible(int visible)
+{
+    int i, barCount = TwGetBarCount();
+    char def[128];
+    for( i=0; i<barCount; ++i )
+    {
+        TwBar *b = TwGetBarByIndex(i);
+        if( b == g_ConfirmBar )
+            continue;
+        snprintf(def, sizeof(def), " %s visible=%s ", TwGetBarName(b), visible ? "true" : "false");
+        TwDefine(def);
+    }
+}
+
+// Creates a small centered "Quit the application?" bar with Yes/No buttons,
+// and hides every other bar so none of their widgets can react to input
+// while the question is pending (AntTweakBar has no built-in modal dialog -
+// hiding the other bars is how this demo approximates one).
+static void ShowConfirmQuitBar(GLFWwindow *window)
+{
+    char def[160];
+    int winWidth, winHeight, barWidth, barHeight, posX, posY;
+
+    if( g_ConfirmBar != NULL )
+        return; // already showing
+
+    SetAllBarsVisible(0);
+
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    barWidth  = 220;
+    barHeight = 80;
+    posX = (winWidth  - barWidth)  / 2; if( posX < 0 ) posX = 0;
+    posY = (winHeight - barHeight) / 2; if( posY < 0 ) posY = 0;
+
+    g_ConfirmBar = TwNewBar("ConfirmQuit");
+    snprintf(def, sizeof(def),
+             " ConfirmQuit label='Confirm' size='%d %d' position='%d %d' "
+             "resizable=false movable=false iconifiable=false ",
+             barWidth, barHeight, posX, posY);
+    TwDefine(def);
+
+    TwAddButton(g_ConfirmBar, "Msg", NULL, NULL, " label='Quit the application?' ");
+    TwAddButton(g_ConfirmBar, "Yes", ConfirmQuitYesCB, window, " label='Yes' ");
+    TwAddButton(g_ConfirmBar, "No",  ConfirmQuitNoCB,  NULL,   " label='No' ");
+    TwSetTopBar(g_ConfirmBar);
+}
+
+static void CloseConfirmQuitBar(void)
+{
+    if( g_ConfirmBar == NULL )
+        return;
+    TwDeleteBar(g_ConfirmBar);
+    g_ConfirmBar = NULL;
+    SetAllBarsVisible(1);
+}
 
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
   if (action == GLFW_PRESS || action == GLFW_REPEAT)
   {
+    if (key == GLFW_KEY_ESCAPE)
+    {
+      if (g_ConfirmBar == NULL)
+        ShowConfirmQuitBar(window);
+      return;
+    }
+
     int twMod = 0;
     bool ctrl;
     if (mods & GLFW_MOD_SHIFT) twMod |= TW_KMOD_SHIFT;
@@ -118,7 +208,6 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
     //case GLFW_KEY_???: twKey = TW_KEY_CLEAR; break;
     case GLFW_KEY_ENTER: twKey = TW_KEY_RETURN; break;
     case GLFW_KEY_PAUSE: twKey = TW_KEY_PAUSE; break;
-    case GLFW_KEY_ESCAPE: twKey = TW_KEY_ESCAPE; break;
     case GLFW_KEY_SPACE: twKey = TW_KEY_SPACE; break;
     case GLFW_KEY_DELETE: twKey = TW_KEY_DELETE; break;
     case GLFW_KEY_UP: twKey = TW_KEY_UP; break;
@@ -213,23 +302,6 @@ static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yo
   if (TwEventMouseWheelGLFW((int)pos)) return;
 }
 
-// static void framebufferSizeCallback(GLFWwindow* window, int fb_width, int fb_height)
-// {
-//     if (fb_height == 0) fb_height = 1;
-//     float aspect = (float)fb_width / (float)fb_height;
-//     float near = 1.0f, far = 100.0f;
-//     float fov = 45.0f;
-//     float top = tan(fov * 0.01745329251f) * near;
-//     float bottom = -top;
-//     float right = top * aspect;
-//     float left = -right;
-
-//     glViewport(0, 0, fb_width, fb_height);
-//     glMatrixMode(GL_PROJECTION);
-//     glLoadIdentity();
-//     glFrustum(left, right, bottom, top, near, far);
-// }
-
 static void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
   if (height == 0) height = 1;
@@ -272,7 +344,7 @@ void TW_CALL PrintTextCallback(void *clientData)
     fflush(stdout);
 }
 
-// This example program draws a possibly transparent cube 
+// This example program draws a possibly transparent cube
 void DrawModel(int _wireframe)
 {
   int pass, numPass;
@@ -287,15 +359,15 @@ void DrawModel(int _wireframe)
   glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
   glEnable(GL_LINE_SMOOTH);
   glLineWidth(3.0);
-  
+
   if( _wireframe )
   {
-      glDisable(GL_CULL_FACE);    
+      glDisable(GL_CULL_FACE);
       glDisable(GL_LIGHTING);
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       numPass = 1;
   }else{
-      glEnable(GL_CULL_FACE); 
+      glEnable(GL_CULL_FACE);
       glFrontFace(GL_CCW);
       glEnable(GL_LIGHTING);
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -363,23 +435,23 @@ void error_callback(int error, const char* description)
 
 
 // Main
-int main() 
-{  
+int main(void)
+{
   GLFWwindow* window; // GLFW3 window
   TwBar *bar;         // Pointer to a tweak bar
-    
+
   double time = 0, dt;// Current time and enlapsed time
   double turn = 0;    // Model turn counter
   double speed = 0.3; // Model rotation speed
   int wire = 0;       // Draw model in wireframe?
-  float bgColor[] = { 73.0/255, 25.0/255, 100.0/255 };         // Background color 
+  float bgColor[] = { 73.0/255, 25.0/255, 100.0/255 };         // Background color
   unsigned char cubeColor[] = { 255, 170, 0, 250 }; // Model color (32bits RGBA)
 
 
   // Set error callback
   glfwSetErrorCallback(error_callback);
 
-  // Intialize GLFW   
+  // Intialize GLFW
   if(!glfwInit())
   {
       fprintf(stderr, "GLFW initialization failed\n");
@@ -387,8 +459,8 @@ int main()
   }
 
   // Disable Retina scaling for now
-  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);  
-  window = glfwCreateWindow(800, 600, "AntTweakBar + GLFW2", NULL, NULL);
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+  window = glfwCreateWindow(800, 600, "AntTweakBar + GLFW3 (OpenGL 2.1)", NULL, NULL);
   if(!window)
   {
       fprintf(stderr, "Cannot open GLFW window\n");
@@ -397,7 +469,7 @@ int main()
   }
 
   glfwMakeContextCurrent(window);
-  if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) 
+  if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
       fprintf(stderr, "Failed to initialize GLAD\n");
       return -2;
@@ -414,33 +486,31 @@ int main()
   TwSetCursorCallback(GLFWCursorCB, window);
   {
     int width, hight;
-    // glfwGetFramebufferSize(window, &width, &hight);
-    // framebufferSizeCallback(window, width, hight);
-    glfwGetWindowSize(window, &width, &hight); 
+    glfwGetWindowSize(window, &width, &hight);
     windowSizeCallback(window, width, hight);
   }
   TwCopyCDStringToClientFunc(CopyCDStringToClient);
-    
+
   // Create a tweak bar
   bar = TwNewBar("TweakBar");
-  TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' "); // Message added to the help bar.
+  TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL 2.1. Press [Esc] to quit (with a confirmation dialog).' "); // Message added to the help bar.
   TwDefine(" TweakBar size='220 530' color='100 100 50' alpha=200 ");
   // Add 'speed' to 'bar': it is a modifable (RW) variable of type TW_TYPE_DOUBLE. Its key shortcuts are [s] and [S].
-  TwAddVarRW(bar, "speed", TW_TYPE_DOUBLE, &speed, 
+  TwAddVarRW(bar, "speed", TW_TYPE_DOUBLE, &speed,
               " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ");
 
   // Add 'wire' to 'bar': it is a modifable variable of type TW_TYPE_BOOL32 (32 bits boolean). Its key shortcut is [w].
-  TwAddVarRW(bar, "wire", TW_TYPE_BOOL32, &wire, 
+  TwAddVarRW(bar, "wire", TW_TYPE_BOOL32, &wire,
               " label='Wireframe mode' key=w help='Toggle wireframe display mode.' ");
 
   // Add 'time' to 'bar': it is a read-only (RO) variable of type TW_TYPE_DOUBLE, with 1 precision digit
-  TwAddVarRO(bar, "time", TW_TYPE_DOUBLE, &time, " label='Time' precision=1 help='Time (in seconds).' ");         
+  TwAddVarRO(bar, "time", TW_TYPE_DOUBLE, &time, " label='Time' precision=1 help='Time (in seconds).' ");
 
   // Add 'bgColor' to 'bar': it is a modifable variable of type TW_TYPE_COLOR3F (3 floats color)
   TwAddVarRW(bar, "bgColor", TW_TYPE_COLOR3F, &bgColor, " label='Background color' ");
 
   // Add 'cubeColor' to 'bar': it is a modifable variable of type TW_TYPE_COLOR32 (32 bits color) with alpha
-  TwAddVarRW(bar, "cubeColor", TW_TYPE_COLOR32, &cubeColor, 
+  TwAddVarRW(bar, "cubeColor", TW_TYPE_COLOR32, &cubeColor,
               " label='Cube color' alpha help='Color and transparency of the cube.' ");
 
   // Add a button to reset the cube position
@@ -460,12 +530,12 @@ int main()
   glfwSetCursorPosCallback(window, mousePosCallback);
   glfwSetScrollCallback(window, mouseScrollCallback);
   glfwSetWindowSizeCallback(window, windowSizeCallback);
-  // glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   // Initialize time
   time = glfwGetTime();
 
-  // Main loop (repeated while window is not closed and [ESC] is not pressed)
+  // Main loop (repeated while window is not closed - [Esc] shows a
+  // confirmation dialog instead of quitting immediately, see keyCallback())
   while (!glfwWindowShouldClose(window))
   {
     // Clear frame buffer
@@ -484,7 +554,7 @@ int main()
     GLfloat light_pos[] = { 1.0f, 1.0f, 5.0f, 1.0f }; // w=1.0 = positional light
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
-    glTranslated(g_cameraPosX, g_cameraPosY, -g_cameraPosZ); 
+    glTranslated(g_cameraPosX, g_cameraPosY, -g_cameraPosZ);
     glRotated(360.0 * turn, 0.4, 1, 0.2);
 
     // Draw model

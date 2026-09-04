@@ -1,0 +1,305 @@
+//  ---------------------------------------------------------------------------
+//
+//  @file       Triangle.c
+//  @brief      A simple example that uses AntTweakBar with GLFW3 and OpenGL.
+//              Draws a triangle and allows the user to tweak its vertex
+//              positions and colors, using a custom TwDefineStruct'd 2D point.
+//              Ported from the legacy GLFW2 example TwTriangleGLFW.c (itself
+//              ported from TwSimpleDX10.cpp, originally Direct3D10-based).
+//
+//              AntTweakBar: http://anttweakbar.sourceforge.net/doc
+//              OpenGL:      http://www.opengl.org
+//              GLFW:        http://www.glfw.org
+//
+//  ---------------------------------------------------------------------------
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <AntTweakBar.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+
+#define NB_VERTS 3
+
+typedef struct { float X, Y; } Point;
+
+static int g_Angle = 0;
+static float g_Scale = 1;
+static Point g_Positions[NB_VERTS] = { {0.0f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5f} };
+static float g_Colors[NB_VERTS][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1} };
+static int g_Width = 640, g_Height = 480;
+
+// GLFW3 cursor binding (see docs/glfw3-cursor-integration.md): AntTweakBar
+// predates cursor-ownership models like GLFW3's and sets the system cursor
+// directly, which GLFW3 toolkits that reassert their own cursor on every
+// mouse move (e.g. macOS's Cocoa backend) silently overwrite. Installing
+// this as AntTweakBar's cursor callback (TwSetCursorCallback, below) routes
+// every cursor change through glfwSetCursor() instead, so GLFW3 owns it.
+static GLFWcursor* g_StandardCursors[TW_CURSOR_CUSTOM] = { NULL };
+static GLFWcursor* g_LastCustomCursor = NULL;
+
+static int GLFWStandardCursorShape(ETwCursor _Cursor)
+{
+    switch (_Cursor) {
+    case TW_CURSOR_ARROW:        return GLFW_ARROW_CURSOR;
+    case TW_CURSOR_MOVE:         return GLFW_RESIZE_ALL_CURSOR;
+    case TW_CURSOR_RESIZE_WE:    return GLFW_RESIZE_EW_CURSOR;
+    case TW_CURSOR_RESIZE_NS:    return GLFW_RESIZE_NS_CURSOR;
+    case TW_CURSOR_RESIZE_NESW:  return GLFW_RESIZE_NESW_CURSOR;
+    case TW_CURSOR_RESIZE_NWSE:  return GLFW_RESIZE_NWSE_CURSOR;
+    case TW_CURSOR_HAND:         return GLFW_POINTING_HAND_CURSOR;
+    case TW_CURSOR_CROSS:        return GLFW_CROSSHAIR_CURSOR;
+    case TW_CURSOR_IBEAM:        return GLFW_IBEAM_CURSOR;
+    case TW_CURSOR_NO:           return GLFW_NOT_ALLOWED_CURSOR;
+    default:                     return GLFW_ARROW_CURSOR; // TW_CURSOR_HELP/UPARROW: no dedicated GLFW shape
+    }
+}
+
+static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
+{
+    GLFWwindow *window = (GLFWwindow *)_ClientData;
+    if (_Cursor == TW_CURSOR_CUSTOM && _RGBA32x32 != NULL) {
+        GLFWimage img;
+        img.width = 32; img.height = 32;
+        img.pixels = (unsigned char *)_RGBA32x32; // glfwCreateCursor only reads it
+        GLFWcursor *cur = glfwCreateCursor(&img, _HotX, _HotY);
+        if (cur != NULL) {
+            // Set the new cursor before destroying the old one: destroying
+            // a cursor still current for a window resets that window to
+            // the default arrow, which would undo this if done first.
+            glfwSetCursor(window, cur);
+            if (g_LastCustomCursor != NULL)
+                glfwDestroyCursor(g_LastCustomCursor);
+            g_LastCustomCursor = cur;
+        }
+        return;
+    }
+    if (g_StandardCursors[_Cursor] == NULL)
+        g_StandardCursors[_Cursor] = glfwCreateStandardCursor(GLFWStandardCursorShape(_Cursor));
+    if (g_StandardCursors[_Cursor] != NULL)
+        glfwSetCursor(window, g_StandardCursors[_Cursor]);
+}
+
+static void DestroyGLFWCursorCache(void)
+{
+    for (int i = 0; i < TW_CURSOR_CUSTOM; ++i) {
+        if (g_StandardCursors[i] != NULL) {
+            glfwDestroyCursor(g_StandardCursors[i]);
+            g_StandardCursors[i] = NULL;
+        }
+    }
+    if (g_LastCustomCursor != NULL) {
+        glfwDestroyCursor(g_LastCustomCursor);
+        g_LastCustomCursor = NULL;
+    }
+}
+
+static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  if (action == GLFW_PRESS || action == GLFW_REPEAT)
+  {
+    if (key == GLFW_KEY_ESCAPE)
+    {
+      glfwSetWindowShouldClose(window, GLFW_TRUE);
+      return;
+    }
+
+    int twMod = 0;
+    bool ctrl;
+    if (mods & GLFW_MOD_SHIFT) twMod |= TW_KMOD_SHIFT;
+    if ((ctrl = (mods & GLFW_MOD_CONTROL))) twMod |= TW_KMOD_CTRL;
+    if (mods & GLFW_MOD_ALT) twMod |= TW_KMOD_ALT;
+
+    int twKey = 0;
+    switch (key)
+    {
+    case GLFW_KEY_BACKSPACE: twKey = TW_KEY_BACKSPACE; break;
+    case GLFW_KEY_TAB: twKey = TW_KEY_TAB; break;
+    case GLFW_KEY_ENTER: twKey = TW_KEY_RETURN; break;
+    case GLFW_KEY_PAUSE: twKey = TW_KEY_PAUSE; break;
+    case GLFW_KEY_SPACE: twKey = TW_KEY_SPACE; break;
+    case GLFW_KEY_DELETE: twKey = TW_KEY_DELETE; break;
+    case GLFW_KEY_UP: twKey = TW_KEY_UP; break;
+    case GLFW_KEY_DOWN: twKey = TW_KEY_DOWN; break;
+    case GLFW_KEY_RIGHT: twKey = TW_KEY_RIGHT; break;
+    case GLFW_KEY_LEFT: twKey = TW_KEY_LEFT; break;
+    case GLFW_KEY_INSERT: twKey = TW_KEY_INSERT; break;
+    case GLFW_KEY_HOME: twKey = TW_KEY_HOME; break;
+    case GLFW_KEY_END: twKey = TW_KEY_END; break;
+    case GLFW_KEY_PAGE_UP: twKey = TW_KEY_PAGE_UP; break;
+    case GLFW_KEY_PAGE_DOWN: twKey = TW_KEY_PAGE_DOWN; break;
+    case GLFW_KEY_F1: twKey = TW_KEY_F1; break;
+    case GLFW_KEY_F2: twKey = TW_KEY_F2; break;
+    case GLFW_KEY_F3: twKey = TW_KEY_F3; break;
+    case GLFW_KEY_F4: twKey = TW_KEY_F4; break;
+    case GLFW_KEY_F5: twKey = TW_KEY_F5; break;
+    case GLFW_KEY_F6: twKey = TW_KEY_F6; break;
+    case GLFW_KEY_F7: twKey = TW_KEY_F7; break;
+    case GLFW_KEY_F8: twKey = TW_KEY_F8; break;
+    case GLFW_KEY_F9: twKey = TW_KEY_F9; break;
+    case GLFW_KEY_F10: twKey = TW_KEY_F10; break;
+    case GLFW_KEY_F11: twKey = TW_KEY_F11; break;
+    case GLFW_KEY_F12: twKey = TW_KEY_F12; break;
+    case GLFW_KEY_F13: twKey = TW_KEY_F13; break;
+    case GLFW_KEY_F14: twKey = TW_KEY_F14; break;
+    case GLFW_KEY_F15: twKey = TW_KEY_F15; break;
+    }
+    if (twKey == 0 && ctrl && key < 128)
+    {
+      twKey = key;
+    }
+    if (twKey != 0)
+    {
+      if (TwKeyPressed(twKey, twMod)) return;
+    }
+  }
+}
+
+static void charCallback(GLFWwindow* window, unsigned int key)
+{
+  if (TwKeyPressed(key, 0)) return;
+}
+
+static void mousebuttonCallback(GLFWwindow* _window, int _button, int _action, int _mods)
+{
+    if (TwEventMouseButtonGLFW(_button, _action)) return;
+}
+
+static void mousePosCallback(GLFWwindow* _window, double _xpos, double _ypos)
+{
+    if (TwEventMousePosGLFW((int)_xpos, (int)_ypos)) return;
+}
+
+static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yoffset)
+{
+    static double pos = 0;
+    pos += _yoffset;
+    if (TwEventMouseWheelGLFW((int)pos)) return;
+}
+
+static void windowSizeCallback(GLFWwindow* window, int width, int height)
+{
+    if (height == 0) height = 1;
+    g_Width = width;
+    g_Height = height;
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (width >= height) {
+        double aspect = (double)width / height;
+        glOrtho(-aspect, aspect, -1.0, 1.0, -1.0, 1.0);
+    } else {
+        double aspect = (double)height / width;
+        glOrtho(-1.0, 1.0, -aspect, aspect, -1.0, 1.0);
+    }
+    glMatrixMode(GL_MODELVIEW);
+    TwWindowSize(width, height);
+}
+
+void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "GLFW error %d: %s\n", error, description);
+    fflush(stderr);
+}
+
+int main(void)
+{
+    GLFWwindow* window; // GLFW3 window
+
+    glfwSetErrorCallback(error_callback);
+
+    if (!glfwInit()) {
+        fprintf(stderr, "GLFW initialization failed\n");
+        return 1;
+    }
+
+    // Disable Retina scaling for now
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+    window = glfwCreateWindow(g_Width, g_Height, "AntTweakBar + GLFW3 (Triangle)", NULL, NULL);
+    if (!window) {
+        fprintf(stderr, "Cannot open GLFW window\n");
+        glfwTerminate();
+        return 1;
+    }
+
+    glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        fprintf(stderr, "Failed to initialize GLAD\n");
+        return 1;
+    }
+
+    if (!TwInit(TW_OPENGL, NULL)) {
+        fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
+        return 1;
+    }
+    // Give GLFW3 authoritative cursor ownership (see GLFWCursorCB above).
+    TwSetCursorCallback(GLFWCursorCB, window);
+
+    {
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        windowSizeCallback(window, width, height);
+    }
+
+    TwBar *bar = TwNewBar("TweakBar");
+    {
+        // Demonstrates TwSetParam() as an alternative to TwDefine() for
+        // setting a single bar attribute (here, "size").
+        int barSize[2] = { 200, 320 };
+        TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+    }
+    TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL.' ");
+
+    TwAddVarRW(bar, "Rotation", TW_TYPE_INT32, &g_Angle,
+               " KeyIncr=r KeyDecr=R Help='Rotates the triangle (angle in degree).' ");
+    TwAddVarRW(bar, "Scale", TW_TYPE_FLOAT, &g_Scale,
+               " Min=-2 Max=2 Step=0.01 KeyIncr=s KeyDecr=S Help='Scales the triangle (1=original size).' ");
+
+    TwStructMember pointMembers[] = {
+        { "X", TW_TYPE_FLOAT, offsetof(Point, X), " Min=-1 Max=1 Step=0.01 " },
+        { "Y", TW_TYPE_FLOAT, offsetof(Point, Y), " Min=-1 Max=1 Step=0.01 " }
+    };
+    TwType pointType = TwDefineStruct("POINT", pointMembers, 2, sizeof(Point), NULL, NULL);
+
+    TwAddVarRW(bar, "Color0", TW_TYPE_COLOR4F, &g_Colors[0], " Alpha HLS Group='Vertex 0' Label=Color ");
+    TwAddVarRW(bar, "Pos0", pointType, &g_Positions[0], " Group='Vertex 0' Label='Position' ");
+    TwAddVarRW(bar, "Color1", TW_TYPE_COLOR4F, &g_Colors[1], " Alpha HLS Group='Vertex 1' Label=Color ");
+    TwAddVarRW(bar, "Pos1", pointType, &g_Positions[1], " Group='Vertex 1' Label='Position' ");
+    TwAddVarRW(bar, "Color2", TW_TYPE_COLOR4F, &g_Colors[2], " Alpha HLS Group='Vertex 2' Label=Color ");
+    TwAddVarRW(bar, "Pos2", pointType, &g_Positions[2], " Group='Vertex 2' Label='Position' ");
+
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetCharCallback(window, charCallback);
+    glfwSetMouseButtonCallback(window, mousebuttonCallback);
+    glfwSetCursorPosCallback(window, mousePosCallback);
+    glfwSetScrollCallback(window, mouseScrollCallback);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+
+    while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.125f, 0.125f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        float a = (float)g_Angle * (3.14159265358979f / 180.0f);
+        float ca = cosf(a), sa = sinf(a);
+        glBegin(GL_TRIANGLES);
+        for (int i = 0; i < NB_VERTS; ++i) {
+            float x = g_Scale * (ca * g_Positions[i].X - sa * g_Positions[i].Y);
+            float y = g_Scale * (sa * g_Positions[i].X + ca * g_Positions[i].Y);
+            glColor4fv(g_Colors[i]);
+            glVertex2f(x, y);
+        }
+        glEnd();
+
+        TwDraw();
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    TwTerminate();
+    DestroyGLFWCursorCache();
+    glfwTerminate();
+    return 0;
+}

@@ -9,17 +9,20 @@
 #define LIB_FOLDER           "lib/"
 #define NOB_HEADER           "vendor/nob/nob.h"
 
-#define LIB_STATIC LIB_FOLDER "libAntTweakBarGLFW3.a"
+// Named libAntTweakBarC99, not libAntTweakBarGLFW3, to avoid colliding with
+// the sibling AntTweakBarGLFW3 fork's own build of the (still C++) library
+// of the same name - this is the C99 rewrite's distinct artifact name.
+#define LIB_STATIC LIB_FOLDER "libAntTweakBarC99.a"
 
 #if defined(_WIN32)
-#define LIB_SHARED LIB_FOLDER "libAntTweakBarGLFW3.dll"
-#define LIB_IMPORT LIB_FOLDER "libAntTweakBarGLFW3.dll.a"
+#define LIB_SHARED LIB_FOLDER "libAntTweakBarC99.dll"
+#define LIB_IMPORT LIB_FOLDER "libAntTweakBarC99.dll.a"
 #elif defined(__APPLE__)
-#define LIB_SHARED LIB_FOLDER "libAntTweakBarGLFW3.dylib"
+#define LIB_SHARED LIB_FOLDER "libAntTweakBarC99.dylib"
 #else
-#define LIB_SHARED        LIB_FOLDER "libAntTweakBarGLFW3.so"
-#define LIB_SHARED_SONAME LIB_FOLDER "libAntTweakBarGLFW3.so.1"
-#define LIB_SHARED_SONAME_NAME "libAntTweakBarGLFW3.so.1"
+#define LIB_SHARED        LIB_FOLDER "libAntTweakBarC99.so"
+#define LIB_SHARED_SONAME LIB_FOLDER "libAntTweakBarC99.so.1"
+#define LIB_SHARED_SONAME_NAME "libAntTweakBarC99.so.1"
 #endif
 
 #define EXAMPLES_FOLDER       "examples/"
@@ -30,17 +33,17 @@
 // upstream, which used GLEW/gl3.h) as well as by every example, so it's
 // compiled twice: once per library object-set (see common_sources below)
 // and once more for the examples (see build_glad_for_examples()).
-#define GLAD_INCLUDE  "external/glad/include/"
-#define GLAD_SRC      "external/glad/src/glad.c"
+#define GLAD_INCLUDE  "vendor/glad/include/"
+#define GLAD_SRC      "vendor/glad/src/glad.c"
 #define GLAD_OBJ      EXAMPLES_BUILD_FOLDER "glad.o"
 
-// GLFW3 is vendored (unity build, see external/glfw/glfw_unity.c, already
+// GLFW3 is vendored (unity build, see vendor/glfw/glfw_unity.c, already
 // present in this repo and written in anticipation of this function - its
 // own header comment names append_glfw_flags() by name) so examples need no
 // system GLFW3 install on any platform. The library itself does not link
 // GLFW at all (TwEventGLFW.c only needs the private MiniGLFW.h constants).
-#define GLFW_INCLUDE  "external/glfw/include/"
-#define GLFW_SRC      "external/glfw/glfw_unity.c"
+#define GLFW_INCLUDE  "vendor/glfw/include/"
+#define GLFW_SRC      "vendor/glfw/glfw_unity.c"
 #define GLFW_OBJ      EXAMPLES_BUILD_FOLDER "glfw.o"
 
 #if defined(_WIN32)
@@ -49,19 +52,36 @@
 #define EXE_EXT ""
 #endif
 
-// This project builds only these four examples, adapted to
-// GLFW3+glad+Core Profile. The GLUT-based examples (TwSimpleGLUT.c,
-// TwDualGLUT.c, TwString.cpp), the SDL/SFML examples, and the untouched
-// legacy DirectX9/10/11 examples have been removed from examples/ -
-// external/freeglut/ has no buildable source for Linux/macOS (headers +
-// prebuilt Windows DLLs only), and DirectX/SDL/SFML are out of scope for
-// this GLFW3/Core-Profile-focused project (see
-// docs/plans/nob-build-system.md).
+// This project builds these GLFW3+glad examples only, named for what they
+// demonstrate rather than a legacy toolkit/version (dropped the "Tw" prefix
+// and any GLFW-version-looking suffix). See
+// docs/plans/examples-consolidation.md for the full survey and per-file
+// mapping of the legacy GLFW2
+// (TwSimpleGLFW.c/TwSimpleGLFW2.c/TwMultiCubesGLFW.c/TwParticlesGLFW.c/
+// TwQuadGLFW.c/TwStripGLFW.c/TwTriangleGLFW.c/TwSpongeGLFW.cpp) and GLUT
+// (TwSimpleGLUT.c/TwDualGLUT.c/TwString.cpp) sources some of these were
+// ported from: all have been removed from examples/, their unique content
+// preserved by porting to GLFW3+C99, except TwQuadGLFW.c, dropped outright
+// as a redundant subset of Shapes.c's superset demo. The SDL/SFML examples
+// and the untouched legacy DirectX9/10/11 examples were already removed -
+// vendored FreeGLUT (formerly external/freeglut/, removed entirely) had no
+// buildable source for Linux/macOS anyway (headers + prebuilt Windows DLLs
+// only), and DirectX/SDL/SFML are out of scope for this GLFW3/Core-Profile-
+// focused project (see docs/plans/nob-build-system.md).
 static const char *examples[] = {
-    EXAMPLES_FOLDER "TwSimpleGLFW21.c",
-    EXAMPLES_FOLDER "TwSimpleGLFW33.c",
-    EXAMPLES_FOLDER "TwSimpleGLFW41.c",
-    EXAMPLES_FOLDER "TwAdvanced1.cpp",
+    EXAMPLES_FOLDER "SimpleGL21.c",
+    EXAMPLES_FOLDER "SimpleGL33.c",
+    EXAMPLES_FOLDER "SimpleGL41.c",
+    EXAMPLES_FOLDER "Shapes.c",
+    EXAMPLES_FOLDER "MultiCubes.c",
+    EXAMPLES_FOLDER "Particles.c",
+    EXAMPLES_FOLDER "Strip.c",
+    EXAMPLES_FOLDER "Triangle.c",
+    EXAMPLES_FOLDER "Sponge.c",
+    EXAMPLES_FOLDER "String.c",
+    EXAMPLES_FOLDER "MultiWindow.c",
+    EXAMPLES_FOLDER "Advanced_c99.c",
+    EXAMPLES_FOLDER "Advanced_cpp.cpp",
 };
 
 // Sources common to every platform, matching src/Makefile's SRC_COMMON.
@@ -398,7 +418,7 @@ static bool build_glad_for_examples(const char *nob_exe)
     return nob_cmd_run(&cmd);
 }
 
-// Compiles the vendored GLFW3 unity build (external/glfw/glfw_unity.c, see
+// Compiles the vendored GLFW3 unity build (vendor/glfw/glfw_unity.c, see
 // its own header comment - this file already named this function before it
 // existed) into a single object, following raylib's rglfw.c pattern (the
 // same one AntTweakBar-Legacy's vendor/glfw/glfw_unity.c uses).
@@ -461,7 +481,7 @@ static bool build_example(const char *source, const char *nob_exe)
     Nob_Cmd cmd = {0};
     // Always use the C++ driver here (regardless of the example's own
     // source extension): this step both compiles and links against
-    // lib/libAntTweakBarGLFW3.a, which always contains C++ object code
+    // lib/libAntTweakBarC99.a, which always contains C++ object code
     // (TwBar.cpp, TwMgr.cpp, etc.), so the link needs libstdc++ pulled in
     // automatically. Using "cc" for a .c-sourced example leaves operator
     // new/delete, RTTI, and exception symbols undefined on Linux (found and
@@ -475,7 +495,7 @@ static bool build_example(const char *source, const char *nob_exe)
     append_glfw_libs(&cmd);
 
 #if defined(__APPLE__)
-    // libAntTweakBarGLFW3.a uses NSCursor/NSImage internally (compiled as
+    // libAntTweakBarC99.a uses NSCursor/NSImage internally (compiled as
     // Objective-C++); a plain C/C++ example linking it needs the ObjC
     // runtime explicitly since its own translation unit isn't ObjC.
     nob_cmd_append(&cmd, "-framework", "AppKit", "-framework", "Foundation", "-lobjc");
@@ -531,7 +551,7 @@ static void usage(const char *program)
 {
     printf("usage: %s [-clean] [-examples] [-help]\n", program);
     printf("  -clean     remove generated build files and exit\n");
-    printf("  -examples  build the example programs against lib/libAntTweakBarGLFW3.a\n");
+    printf("  -examples  build the example programs against lib/libAntTweakBarC99.a\n");
     printf("             (requires the library to already be built with ./nob)\n");
     printf("  -help      print this help and exit\n");
 }
