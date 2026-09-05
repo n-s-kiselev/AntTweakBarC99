@@ -23,26 +23,29 @@
 #   define _CRT_SECURE_NO_DEPRECATE // visual 8 secure crt warning
 #endif
 
-#include <cstdio>
-#include <cassert>
-#include <cmath>
-#include <cfloat>
-#include <cstring>
-#include <cstdlib>
+#include <stdio.h>
+#include <assert.h>
+#include <math.h>
+#include <float.h>
+#include <string.h>
+#include <stdlib.h>
 #include <memory.h>
+#include <ctype.h>
 
-#if defined(_MSC_VER) && _MSC_VER<=1200
-#   pragma warning(push, 3)
+// min/max: TwBar.c/TwMgr.c used to get these from <algorithm> transitively
+// (via <vector>/<map>/... plus `using namespace std;`) now that those C++
+// headers are gone. #ifndef-guarded so a platform header that already
+// defines them as macros (e.g. Windows' windows.h, included below, unless
+// the includer defines NOMINMAX first) keeps taking precedence, unchanged
+// from before this file dropped its C++ standard-library includes.
+#ifndef min
+#   define min(a, b) ((a)<(b) ? (a) : (b))
 #endif
-#include <string>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <list>
-#include <set>
-#if defined(_MSC_VER) && _MSC_VER<=1200
-#   pragma warning(pop)
+#ifndef max
+#   define max(a, b) ((a)>(b) ? (a) : (b))
 #endif
+
+#include "sds.h" // replaces std::string for the library's own internal string storage
 
 #if defined(_UNIX)
 #   define ANT_UNIX
@@ -62,10 +65,6 @@
 #elif defined(_MACOSX)
 #   define ANT_OSX
 #   include <unistd.h>
-#   include <Foundation/Foundation.h>
-#   include <AppKit/NSImage.h>
-#   include <AppKit/NSCursor.h>
-#   include <AppKit/NSPasteboard.h>
 #   undef _WIN32
 #   undef WIN32
 #   undef _WIN64

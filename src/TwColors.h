@@ -21,15 +21,20 @@
 typedef unsigned int color32;
 
 
-const color32 COLOR32_BLACK     = 0xff000000;   // Black 
-const color32 COLOR32_WHITE     = 0xffffffff;   // White 
-const color32 COLOR32_ZERO      = 0x00000000;   // Zero 
-const color32 COLOR32_RED       = 0xffff0000;   // Red 
-const color32 COLOR32_GREEN     = 0xff00ff00;   // Green 
-const color32 COLOR32_BLUE      = 0xff0000ff;   // Blue 
-   
+// static: each translation unit gets its own copy (plain C99 has no
+// cross-TU-merged inline const the way C++ does); safe here since the only
+// code that takes their address (CTwVar's m_ColorPtr/m_BgColorPtr in
+// TwBar.cpp) stores and dereferences it within that same translation unit -
+// no cross-TU pointer-identity comparison exists anywhere in this codebase.
+static const color32 COLOR32_BLACK     = 0xff000000;   // Black
+static const color32 COLOR32_WHITE     = 0xffffffff;   // White
+static const color32 COLOR32_ZERO      = 0x00000000;   // Zero
+static const color32 COLOR32_RED       = 0xffff0000;   // Red
+static const color32 COLOR32_GREEN     = 0xff00ff00;   // Green
+static const color32 COLOR32_BLUE      = 0xff0000ff;   // Blue
 
-template <typename _T> inline const _T& TClamp(const _T& _X, const _T& _Limit1, const _T& _Limit2)
+
+static inline int TClampInt(int _X, int _Limit1, int _Limit2)
 {
     if( _Limit1<_Limit2 )
         return (_X<=_Limit1) ? _Limit1 : ( (_X>=_Limit2) ? _Limit2 : _X );
@@ -37,17 +42,25 @@ template <typename _T> inline const _T& TClamp(const _T& _X, const _T& _Limit1, 
         return (_X<=_Limit2) ? _Limit2 : ( (_X>=_Limit1) ? _Limit1 : _X );
 }
 
-inline color32 Color32FromARGBi(int _A, int _R, int _G, int _B)
+static inline float TClampFloat(float _X, float _Limit1, float _Limit2)
 {
-    return (((color32)TClamp(_A, 0, 255))<<24) | (((color32)TClamp(_R, 0, 255))<<16) | (((color32)TClamp(_G, 0, 255))<<8) | ((color32)TClamp(_B, 0, 255));
+    if( _Limit1<_Limit2 )
+        return (_X<=_Limit1) ? _Limit1 : ( (_X>=_Limit2) ? _Limit2 : _X );
+    else
+        return (_X<=_Limit2) ? _Limit2 : ( (_X>=_Limit1) ? _Limit1 : _X );
 }
 
-inline color32 Color32FromARGBf(float _A, float _R, float _G, float _B)
+static inline color32 Color32FromARGBi(int _A, int _R, int _G, int _B)
 {
-    return (((color32)TClamp(_A*256.0f, 0.0f, 255.0f))<<24) | (((color32)TClamp(_R*256.0f, 0.0f, 255.0f))<<16) | (((color32)TClamp(_G*256.0f, 0.0f, 255.0f))<<8) | ((color32)TClamp(_B*256.0f, 0.0f, 255.0f));
+    return (((color32)TClampInt(_A, 0, 255))<<24) | (((color32)TClampInt(_R, 0, 255))<<16) | (((color32)TClampInt(_G, 0, 255))<<8) | ((color32)TClampInt(_B, 0, 255));
 }
 
-inline void Color32ToARGBi(color32 _Color, int *_A, int *_R, int *_G, int *_B)
+static inline color32 Color32FromARGBf(float _A, float _R, float _G, float _B)
+{
+    return (((color32)TClampFloat(_A*256.0f, 0.0f, 255.0f))<<24) | (((color32)TClampFloat(_R*256.0f, 0.0f, 255.0f))<<16) | (((color32)TClampFloat(_G*256.0f, 0.0f, 255.0f))<<8) | ((color32)TClampFloat(_B*256.0f, 0.0f, 255.0f));
+}
+
+static inline void Color32ToARGBi(color32 _Color, int *_A, int *_R, int *_G, int *_B)
 {
     if(_A) *_A = (_Color>>24)&0xff;
     if(_R) *_R = (_Color>>16)&0xff;
@@ -55,12 +68,12 @@ inline void Color32ToARGBi(color32 _Color, int *_A, int *_R, int *_G, int *_B)
     if(_B) *_B = _Color&0xff;
 }
 
-inline void Color32ToARGBf(color32 _Color, float *_A, float *_R, float *_G, float *_B)
+static inline void Color32ToARGBf(color32 _Color, float *_A, float *_R, float *_G, float *_B)
 {
-    if(_A) *_A = (1.0f/255.0f)*float((_Color>>24)&0xff);
-    if(_R) *_R = (1.0f/255.0f)*float((_Color>>16)&0xff);
-    if(_G) *_G = (1.0f/255.0f)*float((_Color>>8)&0xff);
-    if(_B) *_B = (1.0f/255.0f)*float(_Color&0xff);
+    if(_A) *_A = (1.0f/255.0f)*(float)((_Color>>24)&0xff);
+    if(_R) *_R = (1.0f/255.0f)*(float)((_Color>>16)&0xff);
+    if(_G) *_G = (1.0f/255.0f)*(float)((_Color>>8)&0xff);
+    if(_B) *_B = (1.0f/255.0f)*(float)(_Color&0xff);
 }
 
 void ColorRGBToHLSf(float _R, float _G, float _B, float *_Hue, float *_Light, float *_Saturation);

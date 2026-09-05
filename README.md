@@ -19,7 +19,16 @@ See also this repository [AntTweakBar-Legacy](https://github.com/n-s-kiselev/Ant
 
 The fork of ATB that you can use with modern version of GLFW3 can be found here, [AntTweakBarGLFW3](https://github.com/n-s-kiselev/AntTweakBarGLFW3).
 
-***Keep in mind that the rewrite is in progress!***
+**The C99 rewrite of the core library is complete.** Every file `./nob`
+builds — including `src/TwBar.c`/`TwMgr.c`, by far the largest share of
+the rewrite — compiles cleanly as strict, pedantic C99
+(`-std=c99 -pedantic -Wall -Wextra`), with no C++ and no Objective-C
+anywhere in the library, on any platform. All 13 examples have been
+manually exercised on macOS (every interactive widget, including the
+color and quaternion/direction-vector visualizations) with no problems
+found; Windows and Linux have not yet been interactively tested by a
+human. See [`docs/plans/c99-rewrite.md`](docs/plans/c99-rewrite.md) for
+the full record and remaining limitations.
 
 
 ## How to build
@@ -50,7 +59,10 @@ Then:
 `build/examples/`.
 
 Note, no system GLFW3 install is needed. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source.
-DirectX9/10/11 and SDL/SFML remain out of scope for this fork. 
+GLFW3 is this library's only supported event backend — the original
+GLUT/SDL/SFML/X11 event-translation sources have been removed outright
+(not ported), since nothing else in this fork ever used them. DirectX9/10/11
+remain out of scope for this fork.
 
 **Supported platforms:** Linux, macOS, and Windows (MinGW).
 

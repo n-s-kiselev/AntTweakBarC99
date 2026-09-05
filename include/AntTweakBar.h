@@ -26,14 +26,6 @@
 
 
 #ifdef  __cplusplus
-#   if defined(_MSC_VER)
-#       pragma warning(push)
-#       pragma warning(disable: 4995 4530)
-#       include <string>
-#       pragma warning(pop)
-#   else
-#       include <string>
-#   endif
     extern "C" {
 #endif  // __cplusplus
 
@@ -122,13 +114,11 @@ typedef enum ETwType
     TW_TYPE_COLOR3F,    // 3 floats color. Order is RGB.
     TW_TYPE_COLOR4F,    // 4 floats color. Order is RGBA.
     TW_TYPE_CDSTRING,   // Null-terminated C Dynamic String (pointer to an array of char dynamically allocated with malloc/realloc/strdup)
-#ifdef __cplusplus
-# if defined(_MSC_VER) && (_MSC_VER == 1600)
-    TW_TYPE_STDSTRING = (0x2ffe0000+sizeof(std::string)),  // VS2010 C++ STL string (std::string)
-# else
-    TW_TYPE_STDSTRING = (0x2fff0000+sizeof(std::string)),  // C++ STL string (std::string)
-# endif
-#endif // __cplusplus
+    // TW_TYPE_STDSTRING (binding a client's std::string directly) was
+    // removed as part of the C99 rewrite - std::string cannot be named in
+    // a C99 header. TW_TYPE_CDSTRING remains for dynamic strings. The
+    // TW_TYPE_CDSTRING+2 gap below is preserved so TW_TYPE_QUAT4F's
+    // numeric value doesn't shift for existing client code.
     TW_TYPE_QUAT4F = TW_TYPE_CDSTRING+2, // 4 floats encoding a quaternion {qx,qy,qz,qs}
     TW_TYPE_QUAT4D,     // 4 doubles encoding a quaternion {qx,qy,qz,qs}
     TW_TYPE_DIR3F,      // direction vector represented by 3 floats
@@ -170,11 +160,8 @@ TW_API TwType   TW_CALL TwDefineStruct(const char *name, const TwStructMember *s
 typedef void (TW_CALL * TwCopyCDStringToClient)(char **destinationClientStringPtr, const char *sourceString);
 TW_API void     TW_CALL TwCopyCDStringToClientFunc(TwCopyCDStringToClient copyCDStringFunc);
 TW_API void     TW_CALL TwCopyCDStringToLibrary(char **destinationLibraryStringPtr, const char *sourceClientString);
-#ifdef __cplusplus
-typedef void (TW_CALL * TwCopyStdStringToClient)(std::string& destinationClientString, const std::string& sourceString);
-TW_API void     TW_CALL TwCopyStdStringToClientFunc(TwCopyStdStringToClient copyStdStringToClientFunc);
-TW_API void     TW_CALL TwCopyStdStringToLibrary(std::string& destinationLibraryString, const std::string& sourceClientString);
-#endif // __cplusplus
+// TwCopyStdStringToClient/TwCopyStdStringToClientFunc/TwCopyStdStringToLibrary
+// (std::string-based) were removed along with TW_TYPE_STDSTRING - see above.
 
 typedef enum ETwParamValueType
 {

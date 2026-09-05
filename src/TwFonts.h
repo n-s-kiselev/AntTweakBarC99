@@ -17,16 +17,16 @@
 //#include <AntTweakBar.h>
 
 /*
-A source bitmap includes 224 characters starting from ascii char 32 (i.e. space) 
+A source bitmap includes 224 characters starting from ascii char 32 (i.e. space)
 to ascii char 255 (extended ASCII Latin1/CP1252):
-  
+
  !"#$%&'()*+,-./0123456789:;<=>?
 @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
-`abcdefghijklmnopqrstuvwxyz{|}~
-€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ
- ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿
-ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß
-àáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ
+`abcdefghijklmnopqrstuvwxyz{|}~
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 First pixel column of a source bitmap is a delimiter with color=zero at the end of each line of characters.
 Last pixel row of a line of characters is a delimiter with color=zero at the last pixel of each character.
@@ -46,13 +46,20 @@ struct CTexFont
     int             m_CharWidth[256];
     int             m_CharHeight;
     int             m_NbCharRead;
-
-    CTexFont();
-    ~CTexFont();
 };
+typedef struct CTexFont CTexFont;
+
+// CTexFont no longer has C++ constructor/destructor - plain C99 init/free
+// functions instead. Both are safe to call with _Font==NULL (matching C++
+// new/delete's NULL-safety), and only used internally by TwFonts.c itself -
+// no other file constructs/destroys a CTexFont (only ever holds/reads
+// `const CTexFont *` pointers returned by TwGenerateFont(), confirmed by
+// inspection during the C99 port).
+void TwTexFont_Init(CTexFont *_Font);
+void TwTexFont_Free(CTexFont *_Font);
 
 
-CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeight, float _Scaling=1.0f);
+CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeight, float _Scaling);
 
 
 extern CTexFont *g_DefaultSmallFont;
@@ -60,8 +67,8 @@ extern CTexFont *g_DefaultNormalFont;
 extern CTexFont *g_DefaultLargeFont;
 extern CTexFont *g_DefaultFixed1Font;
 
-void TwGenerateDefaultFonts(float _Scaling=1.0f);
-void TwDeleteDefaultFonts();
+void TwGenerateDefaultFonts(float _Scaling);
+void TwDeleteDefaultFonts(void);
 
 
 #endif  // !defined ANT_TW_FONTS_INCLUDED

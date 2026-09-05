@@ -1,6 +1,6 @@
 //  ---------------------------------------------------------------------------
 //
-//  @file       TwFonts.cpp
+//  @file       TwFonts.c
 //  @author     Philippe Decaudin
 //  @license    This file is part of the AntTweakBar library.
 //              For conditions of distribution and use, see License.txt
@@ -8,42 +8,65 @@
 //  ---------------------------------------------------------------------------
 
 
-#include "TwPrecomp.h"
-#include "TwMgr.h"
+#include <AntTweakBar.h>
 #include "TwFonts.h"
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-// Fedora patch: memset()
-using std::memset;
+// TwMgrGetGraphAPI/TwSetLastError: internal C-linkage bridges into the
+// still-C++ CTwMgr (see their declarations in TwMgr.h, next to each
+// other) - this file is plain C99 and cannot include TwMgr.h itself (it
+// declares C++ classes), so both are forward-declared here instead,
+// matching the exact extern "C" signatures TwMgr.h already gives them.
+// The #ifdef __cplusplus guard matters today even though this file is
+// plain C99: nob.c currently compiles every source, .c included, with the
+// C++ driver on macOS (until the rewrite reaches Step 8), and a bare
+// `extern` declaration compiled as C++ gets C++ name mangling applied,
+// which would then mismatch TwMgr.h's real extern "C" symbol at link time.
+#ifdef __cplusplus
+extern "C" {
+#endif
+int TwMgrGetGraphAPI(void);
+int TwSetLastError(const char *_StaticErrorMessage);
+#ifdef __cplusplus
+}
+#endif
 
 //  ---------------------------------------------------------------------------
 
-CTexFont::CTexFont()
+void TwTexFont_Init(CTexFont *_Font)
 {
-    for( int i=0; i<256; ++i )
+    int i;
+    if( !_Font )
+        return;
+    for( i=0; i<256; ++i )
     {
-        m_CharU0[i] = 0;
-        m_CharU1[i] = 0;
-        m_CharV0[i] = 0;
-        m_CharV1[i] = 0;
-        m_CharWidth[i] = 0;
+        _Font->m_CharU0[i] = 0;
+        _Font->m_CharU1[i] = 0;
+        _Font->m_CharV0[i] = 0;
+        _Font->m_CharV1[i] = 0;
+        _Font->m_CharWidth[i] = 0;
     }
-    m_TexWidth = 0;
-    m_TexHeight = 0;
-    m_TexBytes = NULL;
-    m_NbCharRead = 0;
-    m_CharHeight = 0;
+    _Font->m_TexWidth = 0;
+    _Font->m_TexHeight = 0;
+    _Font->m_TexBytes = NULL;
+    _Font->m_NbCharRead = 0;
+    _Font->m_CharHeight = 0;
 }
 
 //  ---------------------------------------------------------------------------
 
-CTexFont::~CTexFont()
+void TwTexFont_Free(CTexFont *_Font)
 {
-    if( m_TexBytes )
-        delete[] m_TexBytes;
-    m_TexBytes = NULL;
-    m_TexWidth = 0;
-    m_TexHeight = 0;
-    m_NbCharRead = 0;
+    if( !_Font )
+        return;
+    if( _Font->m_TexBytes )
+        free(_Font->m_TexBytes);
+    _Font->m_TexBytes = NULL;
+    _Font->m_TexWidth = 0;
+    _Font->m_TexHeight = 0;
+    _Font->m_NbCharRead = 0;
 }
 
 //  ---------------------------------------------------------------------------
@@ -59,6 +82,7 @@ static int NextPow2(int _n)
 //  ---------------------------------------------------------------------------
 
 const char *g_ErrBadFontHeight = "Cannot determine font height while reading font bitmap (check first pixel column)";
+const char *g_ErrOutOfMemory = "Out of memory while generating a font";
 
 CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeight, float _Scaling)
 {
@@ -71,7 +95,7 @@ CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeig
         {
             if( (hh<=0 && h<=0) || (h!=hh && h>0 && hh>0) )
             {
-                g_TwMgr->SetLastError(g_ErrBadFontHeight);
+                TwSetLastError(g_ErrBadFontHeight);
                 return NULL;
             }
             else if( h<=0 )
@@ -129,32 +153,47 @@ CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeig
             lmax = l;
     }
     // A little empty margin is added between chars to avoid artefact when antialiasing is on
-    const int MARGIN_X = 2; 
+    const int MARGIN_X = 2;
     const int MARGIN_Y = 2;
     lmax += 16*MARGIN_X;
     // - Second, build the texture
-    CTexFont *TexFont = new CTexFont;
+    CTexFont *TexFont = (CTexFont *)malloc(sizeof(CTexFont));
+    if( !TexFont )
+    {
+        TwSetLastError(g_ErrOutOfMemory);
+        return NULL;
+    }
+    TwTexFont_Init(TexFont);
     TexFont->m_NbCharRead = ch-32;
     TexFont->m_CharHeight = (int)(_Scaling*h+0.5f);
     TexFont->m_TexWidth = NextPow2(lmax);
     TexFont->m_TexHeight = NextPow2(14*(h+MARGIN_Y));
-    TexFont->m_TexBytes = new unsigned char[TexFont->m_TexWidth*TexFont->m_TexHeight];
-    memset(TexFont->m_TexBytes, 0, TexFont->m_TexWidth*TexFont->m_TexHeight);
+    TexFont->m_TexBytes = (unsigned char *)malloc((size_t)(TexFont->m_TexWidth*TexFont->m_TexHeight));
+    if( !TexFont->m_TexBytes )
+    {
+        free(TexFont);
+        TwSetLastError(g_ErrOutOfMemory);
+        return NULL;
+    }
+    memset(TexFont->m_TexBytes, 0, (size_t)(TexFont->m_TexWidth*TexFont->m_TexHeight));
     int xx;
     float du = 0.4f;
     float dv = 0.4f;
-    assert( g_TwMgr!=NULL );
-    if( g_TwMgr )
     {
-        if( g_TwMgr->m_GraphAPI==TW_OPENGL || g_TwMgr->m_GraphAPI==TW_OPENGL_CORE )
+        int graphAPI = TwMgrGetGraphAPI();
+        assert( graphAPI>=0 );
+        if( graphAPI>=0 )
         {
-            du = 0;
-            dv = 0;
-        }
-        else    // texel alignement for D3D
-        {
-            du = 0.5f;
-            dv = 0.5f;
+            if( graphAPI==TW_OPENGL || graphAPI==TW_OPENGL_CORE )
+            {
+                du = 0;
+                dv = 0;
+            }
+            else    // texel alignement for D3D
+            {
+                du = 0.5f;
+                dv = 0.5f;
+            }
         }
     }
     float alpha;
@@ -169,11 +208,11 @@ CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeig
                         //alpha = alpha*sqrtf(alpha); // powf(alpha, 1.5f);   // some gamma correction
                         TexFont->m_TexBytes[(xx+x-x0[ch])+(r*(h+MARGIN_Y)+y)*TexFont->m_TexWidth] = (unsigned char)(alpha*256.0f);
                     }
-                TexFont->m_CharU0[ch+32] = (float(xx)+du)/float(TexFont->m_TexWidth);
+                TexFont->m_CharU0[ch+32] = ((float)xx+du)/(float)TexFont->m_TexWidth;
                 xx += x1[ch]-x0[ch]+1;
-                TexFont->m_CharU1[ch+32] = (float(xx)+du)/float(TexFont->m_TexWidth);
-                TexFont->m_CharV0[ch+32] = (float(r*(h+MARGIN_Y))+dv)/float(TexFont->m_TexHeight);
-                TexFont->m_CharV1[ch+32] = (float(r*(h+MARGIN_Y)+h)+dv)/float(TexFont->m_TexHeight);
+                TexFont->m_CharU1[ch+32] = ((float)xx+du)/(float)TexFont->m_TexWidth;
+                TexFont->m_CharV0[ch+32] = ((float)(r*(h+MARGIN_Y))+dv)/(float)TexFont->m_TexHeight;
+                TexFont->m_CharV1[ch+32] = ((float)(r*(h+MARGIN_Y)+h)+dv)/(float)TexFont->m_TexHeight;
                 TexFont->m_CharWidth[ch+32] = (int)(_Scaling*(x1[ch]-x0[ch]+1)+0.5f);
                 xx += MARGIN_X;
             }
@@ -4867,8 +4906,6 @@ static const unsigned char s_FontFixed1[] = {
     ,127,127,127,127,127,0,127,127,127,127,127,127,127,0,127,127,127,127,127,127,
     127,0,127,127,127,127,127,127,127,0
 };
-
-
 void TwGenerateDefaultFonts(float _Scaling)
 {
     g_DefaultSmallFont = TwGenerateFont(s_Font0, FONT0_BM_W, FONT0_BM_H, _Scaling);
@@ -4883,15 +4920,19 @@ void TwGenerateDefaultFonts(float _Scaling)
 
 //  ---------------------------------------------------------------------------
 
-void TwDeleteDefaultFonts()
+void TwDeleteDefaultFonts(void)
 {
-    delete g_DefaultSmallFont;
+    TwTexFont_Free(g_DefaultSmallFont);
+    free(g_DefaultSmallFont);
     g_DefaultSmallFont = NULL;
-    delete g_DefaultNormalFont;
+    TwTexFont_Free(g_DefaultNormalFont);
+    free(g_DefaultNormalFont);
     g_DefaultNormalFont = NULL;
-    delete g_DefaultLargeFont;
+    TwTexFont_Free(g_DefaultLargeFont);
+    free(g_DefaultLargeFont);
     g_DefaultLargeFont = NULL;
-    delete g_DefaultFixed1Font;
+    TwTexFont_Free(g_DefaultFixed1Font);
+    free(g_DefaultFixed1Font);
     g_DefaultFixed1Font = NULL;
 }
 

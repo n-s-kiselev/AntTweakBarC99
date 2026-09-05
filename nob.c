@@ -28,6 +28,13 @@
 #define EXAMPLES_FOLDER       "examples/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
 
+// sds (Simple Dynamic Strings, vendored from https://github.com/antirez/sds,
+// BSD-2-Clause) replaces std::string for the library's own internal string
+// storage as part of the C99 rewrite - see docs/plans/sds-string-migration.md.
+// Needed only by the library itself, not by examples.
+#define SDS_INCLUDE "vendor/sds/"
+#define SDS_SRC     "vendor/sds/sds.c"
+
 // GLAD is needed by the library itself (TwOpenGLCore.cpp's Core Profile
 // renderer includes <glad/glad.h> - a fork-specific change from stock
 // upstream, which used GLEW/gl3.h) as well as by every example, so it's
@@ -90,46 +97,30 @@ static const char *examples[] = {
 // content), already excluded by this repo's own src/Makefile.
 static const char *common_sources[] = {
     GLAD_SRC,
-    SRC_FOLDER "TwColors.cpp",
-    SRC_FOLDER "TwFonts.cpp",
-    SRC_FOLDER "TwOpenGL.cpp",
-    SRC_FOLDER "TwOpenGLCore.cpp",
-    SRC_FOLDER "TwBar.cpp",
-    SRC_FOLDER "TwMgr.cpp",
-    SRC_FOLDER "LoadOGL.cpp",
-    SRC_FOLDER "LoadOGLCore.cpp",
+    SDS_SRC,
+    SRC_FOLDER "TwColors.c",
+    SRC_FOLDER "TwFonts.c",
+    SRC_FOLDER "TwOpenGL.c",
+    SRC_FOLDER "TwOpenGLCore.c",
+    SRC_FOLDER "TwBar.c",
+    SRC_FOLDER "TwMgr.c",
     SRC_FOLDER "TwEventGLFW.c",
-    SRC_FOLDER "TwEventGLUT.c",
-    SRC_FOLDER "TwEventSDL.c",
-    SRC_FOLDER "TwEventSDL12.c",
-    SRC_FOLDER "TwEventSDL13.c",
-    SRC_FOLDER "TwEventSFML.cpp",
 };
 
-// TwEventX11.c on Linux only. src/Makefile's own "non-Windows" check would
-// also compile it on macOS, but TwEventX11.c unconditionally #includes
-// <X11/Xlib.h> (no internal platform guard) - a real gap in the existing
-// Makefile (X11 isn't part of macOS without XQuartz), not a deliberate
-// choice worth preserving. Nothing is added on Windows, matching
-// src/Makefile exactly (it does not add TwEventWin.c there).
-#if defined(_WIN32) || defined(__APPLE__)
-static const char *platform_sources[] = { NULL };
-#define PLATFORM_SOURCES_COUNT 0
-#else
-static const char *platform_sources[] = { SRC_FOLDER "TwEventX11.c" };
-#endif
-
-#if !defined(PLATFORM_SOURCES_COUNT)
-#define PLATFORM_SOURCES_COUNT NOB_ARRAY_LEN(platform_sources)
-#endif
+// TwEventGLUT.c/TwEventSDL.c/TwEventSDL12.c/TwEventSDL13.c/TwEventSFML.cpp
+// (and TwEventX11.c, formerly the sole platform_sources entry on
+// non-Windows/non-macOS) were translators for toolkits other than GLFW3.
+// Deleted outright (not ported) now that the core library formally
+// hard-depends on GLFW3 and TwEventGLFW.c is the only event backend that
+// serves any remaining purpose - see docs/plans/c99-rewrite.md Step 7.
+// Their private stand-in headers (MiniGLUT.h/MiniSDL12.h/MiniSDL13.h/
+// MiniSFML16.h) were deleted alongside them; MiniGLFW.h stays, still used
+// by the kept TwEventGLFW.c.
 
 static void collect_sources(Nob_File_Paths *sources)
 {
     for (size_t i = 0; i < NOB_ARRAY_LEN(common_sources); ++i) {
         nob_da_append(sources, common_sources[i]);
-    }
-    for (size_t i = 0; i < PLATFORM_SOURCES_COUNT; ++i) {
-        nob_da_append(sources, platform_sources[i]);
     }
 }
 
@@ -222,17 +213,34 @@ static bool is_cpp_source(const char *source)
     return nob_sv_ends_with_cstr(nob_sv_from_cstr(source), ".cpp");
 }
 
+// sds.c (vendor/sds/, see docs/plans/sds-string-migration.md) is pure C99.
+// Compiling it as C++ fails outright: sds.h's SDS_HDR_VAR macro and several
+// s_malloc/s_realloc call sites rely on C99's implicit void*->T* conversion,
+// valid and idiomatic C, but ill-formed in C++ - and this is vendored,
+// unmodified upstream code (AGENTS.md SS4), not something to patch with
+// defensive casts the way this project's own new C99 files already are.
+// Compile it as plain C on every platform (is_sds_source's own special case
+// below still matters for that reason - is_cpp_source's own default would
+// already say "cc" for a .c file, but is_sds_source is kept as an explicit,
+// separately-reasoned check rather than folded away).
+static bool is_sds_source(const char *source)
+{
+    return strcmp(source, SDS_SRC) == 0;
+}
+
 static const char *compiler_for_source(const char *source)
 {
-#if defined(__APPLE__)
-    // src/Makefile compiles every source (including the plain .c helpers)
-    // as Objective-C++ on macOS (-ObjC++), since TwPrecomp.h pulls in
-    // Foundation/AppKit there.
-    (void)source;
-    return "c++";
-#else
+    if (is_sds_source(source)) return "cc";
+    // TwPrecomp.h (TwBar.c/TwMgr.c's shared header) used to pull in
+    // Foundation/AppKit on macOS for native Cocoa cursor code, forcing every
+    // source through Objective-C++ (-x objective-c++) on that platform,
+    // even plain .c helpers with no Objective-C content of their own. The
+    // C99 rewrite deleted that native cursor code entirely (TwSetCursorCallback()
+    // is now the only cursor-shape mechanism everywhere) and confirmed
+    // (by grep, not assumption) that neither TwBar.c nor TwMgr.c reference
+    // any Objective-C/Cocoa symbol anymore - so macOS no longer needs any
+    // special-casing here at all.
     return is_cpp_source(source) ? "c++" : "cc";
-#endif
 }
 
 static void append_platform_defines(Nob_Cmd *cmd)
@@ -240,8 +248,6 @@ static void append_platform_defines(Nob_Cmd *cmd)
 #if defined(_WIN32)
     nob_cmd_append(cmd, "-D_WIN32");
 #elif defined(__APPLE__)
-    // Objective-C++ mode itself is requested via "-x objective-c++" below,
-    // where it's added (not here) since it applies to a subset of callers.
     nob_cmd_append(cmd, "-D_MACOSX");
 #else
     nob_cmd_append(cmd, "-D_UNIX");
@@ -265,23 +271,32 @@ static bool build_object(const char *source, const char *folder, const char *tw_
     }
 
     Nob_Cmd cmd = {0};
-    nob_cmd_append(&cmd, compiler_for_source(source));
+    const char *compiler = compiler_for_source(source);
+    nob_cmd_append(&cmd, compiler);
     // Matches src/Makefile's CPPCFG: unconditional -fPIC (not just for the
     // shared object set - harmless for the static archive, and matches this
     // repo's own established convention).
-    // -I GLFW_INCLUDE: TwBar.cpp's EditInPlaceGetClipboard/SetClipboard call
+    // -I GLFW_INCLUDE: TwBar.c's EditInPlaceGetClipboard/SetClipboard call
     // glfwGetClipboardString/glfwSetClipboardString directly (see its own
     // header comment) - only the header is needed here, not GLFW_OBJ. The
     // symbols stay undefined in LIB_STATIC/LIB_SHARED and resolve at
     // final-link time against whichever single GLFW instance the consuming
     // application itself initializes (see docs/plans/
     // reapply-fork-changes-on-legacy-baseline.md Step 4b).
-    nob_cmd_append(&cmd, "-Wall", "-O3", "-fno-strict-aliasing", "-fPIC",
-                        "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE, "-I" GLFW_INCLUDE, tw_define);
+    nob_cmd_append(&cmd, "-Wall", "-Wextra", "-O3", "-fno-strict-aliasing", "-fPIC",
+                        "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE, "-I" GLFW_INCLUDE, "-I" SDS_INCLUDE, tw_define);
+    // The whole library is real C99 now (Clusters 1-4 + Step 7 complete -
+    // every common_sources entry compiles with "cc", not "c++"; nothing
+    // left in this build needs a C++ standard at all) - request it
+    // explicitly rather than relying on the compiler's own default C
+    // dialect. -std=c99 is meaningless (and would be rejected as
+    // conflicting) for a genuine C++ compile, which can't happen here in
+    // practice (is_cpp_source has nothing left to say "c++" to in
+    // common_sources) but guard on `compiler` anyway rather than assume.
+    if (strcmp(compiler, "cc") == 0) {
+        nob_cmd_append(&cmd, "-std=c99", "-pedantic");
+    }
     append_platform_defines(&cmd);
-#if defined(__APPLE__)
-    nob_cmd_append(&cmd, "-x", "objective-c++");
-#endif
     nob_cmd_append(&cmd, "-c", source, "-o", output);
     return nob_cmd_run(&cmd);
 }
@@ -365,6 +380,7 @@ static bool build_all(const char *nob_exe)
     if (!collect_tree_files(&common_deps, SRC_FOLDER)) return false;
     if (!collect_tree_files(&common_deps, INCLUDE_FOLDER)) return false;
     if (!collect_tree_files(&common_deps, GLAD_INCLUDE)) return false;
+    if (!collect_tree_files(&common_deps, SDS_INCLUDE)) return false;
     add_common_build_deps(&common_deps, nob_exe);
 
     Nob_File_Paths static_objects = {0};
@@ -480,12 +496,12 @@ static bool build_example(const char *source, const char *nob_exe)
 
     Nob_Cmd cmd = {0};
     // Always use the C++ driver here (regardless of the example's own
-    // source extension): this step both compiles and links against
-    // lib/libAntTweakBarC99.a, which always contains C++ object code
-    // (TwBar.cpp, TwMgr.cpp, etc.), so the link needs libstdc++ pulled in
-    // automatically. Using "cc" for a .c-sourced example leaves operator
-    // new/delete, RTTI, and exception symbols undefined on Linux (found and
-    // fixed the same way in AntTweakBar-Legacy's nob.c).
+    // source extension): some kept examples (e.g. Advanced_cpp.cpp) are
+    // themselves real C++ sources, so this step needs a driver that can
+    // compile those too. lib/libAntTweakBarC99.a itself is pure C99 now
+    // (TwEventSFML.cpp, its one remaining C++ object, was deleted in
+    // Step 7 - see docs/plans/c99-rewrite.md) - only the example sources,
+    // not the library, motivate "c++" here.
     nob_cmd_append(&cmd, "c++");
     nob_cmd_append(&cmd, "-Wall", "-O2", "-DTW_STATIC", "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE);
     append_glfw_flags(&cmd);
@@ -493,13 +509,6 @@ static bool build_example(const char *source, const char *nob_exe)
     nob_cmd_append(&cmd, source, GLAD_OBJ, LIB_STATIC);
     nob_cmd_append(&cmd, "-o", output);
     append_glfw_libs(&cmd);
-
-#if defined(__APPLE__)
-    // libAntTweakBarC99.a uses NSCursor/NSImage internally (compiled as
-    // Objective-C++); a plain C/C++ example linking it needs the ObjC
-    // runtime explicitly since its own translation unit isn't ObjC.
-    nob_cmd_append(&cmd, "-framework", "AppKit", "-framework", "Foundation", "-lobjc");
-#endif
 
     return nob_cmd_run(&cmd);
 }
