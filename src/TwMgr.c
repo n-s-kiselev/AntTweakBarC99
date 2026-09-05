@@ -20,9 +20,6 @@
 // (TwBar.cpp includes it directly for clipboard access).
 #include <GLFW/glfw3.h>
 #ifdef ANT_WINDOWS
-#   include "TwDirect3D9.h"
-#   include "TwDirect3D10.h"
-#   include "TwDirect3D11.h"
 #   include "resource.h"
 #   ifdef _DEBUG
 #       include <crtdbg.h>
@@ -1752,45 +1749,13 @@ static int TwCreateGraph(ETwGraphAPI _GraphAPI)
     case TW_OPENGL_CORE:
         g_TwMgr->m_Graph = TwGraphOpenGLCore_Create();
         break;
-    case TW_DIRECT3D9:
-        // TW_NO_DIRECT3D: this build (see nob.c) targets the OpenGL backend
-        // only (README.md) and doesn't compile/link TwDirect3D9/10/11.cpp -
-        // without this guard, ANT_WINDOWS alone is enough for this
-        // unconditional "new CTwGraphDirect3D9" to require those classes'
-        // vtables at link time even though no example ever requests
-        // TW_DIRECT3D9. TwInit() falls through to the "unknown API" error
-        // below instead, same as any other unsupported ETwGraphAPI value.
-        #if defined(ANT_WINDOWS) && !defined(TW_NO_DIRECT3D)
-            if( g_TwMgr->m_Device!=NULL )
-                g_TwMgr->m_Graph = new CTwGraphDirect3D9;
-            else
-            {
-                CTwMgr_SetLastError(g_TwMgr, g_ErrBadDevice);
-                return 0;
-            }
-        #endif // ANT_WINDOWS && !TW_NO_DIRECT3D
-        break;
-    case TW_DIRECT3D10:
-        #if defined(ANT_WINDOWS) && !defined(TW_NO_DIRECT3D)
-            if( g_TwMgr->m_Device!=NULL )
-                g_TwMgr->m_Graph = new CTwGraphDirect3D10;
-            else
-            {
-                CTwMgr_SetLastError(g_TwMgr, g_ErrBadDevice);
-                return 0;
-            }
-        #endif // ANT_WINDOWS && !TW_NO_DIRECT3D
-        break;
-    case TW_DIRECT3D11:
-        #if defined(ANT_WINDOWS) && !defined(TW_NO_DIRECT3D)
-            if( g_TwMgr->m_Device!=NULL )
-                g_TwMgr->m_Graph = new CTwGraphDirect3D11;
-            else
-            {
-                CTwMgr_SetLastError(g_TwMgr, g_ErrBadDevice);
-                return 0;
-            }
-        #endif // ANT_WINDOWS && !TW_NO_DIRECT3D
+    // TW_DIRECT3D9/10/11 are deliberately not handled here: this build (see
+    // nob.c) targets the OpenGL backend only (README.md), and
+    // TwDirect3D9/10/11.cpp were never ported to C99 (out of scope for this
+    // rewrite - see AGENTS.md). Falling through to the "unknown API" error
+    // below is the same behavior any other unsupported ETwGraphAPI value
+    // already gets.
+    default:
         break;
     }
 
