@@ -2335,6 +2335,12 @@ CTwMgr *CTwMgr_Create(ETwGraphAPI _GraphAPI, void *_Device, int _WndID)
     Mgr->m_Enums.count = 0;
     Mgr->m_Enums.capacity = 0;
 
+    // m_Structs likewise no longer has a std::vector<CStruct> default
+    // constructor to rely on.
+    Mgr->m_Structs.items = NULL;
+    Mgr->m_Structs.count = 0;
+    Mgr->m_Structs.capacity = 0;
+
     // m_StructProxies/m_MemberProxies likewise no longer have a std::list
     // default constructor to rely on - both start as empty lists (NULL
     // head), freed node-by-node in CTwMgr_Destroy.
