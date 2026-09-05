@@ -306,7 +306,7 @@ TW_API void     TW_CALL TwHandleErrors(TwErrorHandler errorHandler);
 //  Helper functions to translate events from some common window management
 //  frameworks to AntTweakBar.
 //  They call TwKeyPressed, TwMouse* and TwWindowSize for you (implemented in
-//  files TwEventWin.c TwEventSDL*.c TwEventGLFW.c TwEventGLUT.c)
+//  files TwEventWin.c TwEventGLFW.c)
 // ----------------------------------------------------------------------------
 
 // For Windows message proc
@@ -319,9 +319,6 @@ TW_API void     TW_CALL TwHandleErrors(TwErrorHandler errorHandler);
     TW_API int  TW_CALL TwEventWin(void *wnd, unsigned int msg, unsigned int _W64 wParam, int _W64 lParam);
 #endif
 #define TwEventWin32    TwEventWin // For compatibility with AntTweakBar versions prior to 1.11
-
-// For libSDL event loop
-TW_API int      TW_CALL TwEventSDL(const void *sdlEvent, unsigned char sdlMajorVersion, unsigned char sdlMinorVersion);
 
 // For GLFW event callbacks
 // You should define GLFW_CDECL before including AntTweakBar.h if your version of GLFW uses cdecl calling convensions
@@ -344,35 +341,14 @@ TW_API int      TW_CALL TwEventSDL(const void *sdlEvent, unsigned char sdlMajorV
 #   define TwEventMouseWheelGLFW   TwMouseWheel
 #endif
 
-// For GLUT event callbacks (Windows calling convention for GLUT callbacks is cdecl)
-#if defined(_WIN32) || defined(_WIN64)
-#   define TW_GLUT_CALL TW_CDECL_CALL
-#else
-#   define TW_GLUT_CALL
-#endif
-TW_API int TW_GLUT_CALL TwEventMouseButtonGLUT(int glutButton, int glutState, int mouseX, int mouseY);
-TW_API int TW_GLUT_CALL TwEventMouseMotionGLUT(int mouseX, int mouseY);
-TW_API int TW_GLUT_CALL TwEventKeyboardGLUT(unsigned char glutKey, int mouseX, int mouseY);
-TW_API int TW_GLUT_CALL TwEventSpecialGLUT(int glutKey, int mouseX, int mouseY);
-TW_API int TW_CALL      TwGLUTModifiersFunc(int (TW_CALL *glutGetModifiersFunc)(void));
-typedef void (TW_GLUT_CALL *GLUTmousebuttonfun)(int glutButton, int glutState, int mouseX, int mouseY);
-typedef void (TW_GLUT_CALL *GLUTmousemotionfun)(int mouseX, int mouseY);
-typedef void (TW_GLUT_CALL *GLUTkeyboardfun)(unsigned char glutKey, int mouseX, int mouseY);
-typedef void (TW_GLUT_CALL *GLUTspecialfun)(int glutKey, int mouseX, int mouseY);
-
-// For SFML event loop
-TW_API int      TW_CALL TwEventSFML(const void *sfmlEvent, unsigned char sfmlMajorVersion, unsigned char sfmlMinorVersion);
-
 // For X11 event loop
 #if defined(_UNIX)
-    TW_API int TW_CDECL_CALL TwEventX11(void *xevent);
-
     // Answers CLIPBOARD/PRIMARY SelectionRequest (and SelectionClear) XEvents
     // with the text most recently copied from an AntTweakBar edit-in-place
     // field, so Edit-in-place copy/paste interoperates with the desktop
-    // clipboard. TwEventX11() already forwards these for you; only call this
-    // directly if your application pumps X11 events through some other path
-    // (e.g. a windowing library's own event loop instead of TwEventX11()).
+    // clipboard. Call this directly from your application's own X11 event
+    // loop (this library no longer provides its own TwEventX11() helper -
+    // GLFW3 is the only event backend this library ships).
     // Returns 1 if the event was a selection event and was handled, 0
     // otherwise. Has no effect on non-X11 platforms.
     TW_API int TW_CALL TwHandleX11SelectionRequest(void *xevent);

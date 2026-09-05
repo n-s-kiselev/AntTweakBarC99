@@ -7975,9 +7975,9 @@ int TW_CALL TwHandleX11SelectionRequest(void *_XEvent)
     // AntTweakBar no longer claims the X11 CLIPBOARD/PRIMARY selection
     // itself (see EditInPlaceSetClipboard, above - GLFW3's own X11 backend
     // does that internally now), so there is nothing left to answer here.
-    // Kept as a no-op (rather than removed) so existing callers
-    // (TwEventX11.c) and the public API (AntTweakBar.h) keep compiling and
-    // linking unchanged.
+    // Kept as a no-op (rather than removed) since it's still a documented
+    // part of the public API (AntTweakBar.h) for callers pumping X11
+    // events through their own event loop.
     (void)_XEvent;
     return 0;
 }
