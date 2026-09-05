@@ -330,7 +330,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_LineRectVS = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(self->m_LineRectVS, 1, lineRectVS, NULL);
-    CompileShader(self->m_LineRectVS);
+    self->m_LineRectVS = CompileShader(self->m_LineRectVS);
 
     const GLchar *lineRectFS[] = {
         "#version 150 core\n"
@@ -341,14 +341,14 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_LineRectFS = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(self->m_LineRectFS, 1, lineRectFS, NULL);
-    CompileShader(self->m_LineRectFS);
+    self->m_LineRectFS = CompileShader(self->m_LineRectFS);
 
     self->m_LineRectProgram = glCreateProgram();
     glAttachShader(self->m_LineRectProgram, self->m_LineRectVS);
     glAttachShader(self->m_LineRectProgram, self->m_LineRectFS);
     glBindAttribLocation(self->m_LineRectProgram, 0, "vertex");
     glBindAttribLocation(self->m_LineRectProgram, 1, "color");
-    LinkProgram(self->m_LineRectProgram);
+    self->m_LineRectProgram = LinkProgram(self->m_LineRectProgram);
 
     // Create line/rect vertex buffer
     const GLfloat lineRectInitVertices[] = { 0,0,0, 0,0,0, 0,0,0, 0,0,0 };
@@ -374,7 +374,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_TriVS = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(self->m_TriVS, 1, triVS, NULL);
-    CompileShader(self->m_TriVS);
+    self->m_TriVS = CompileShader(self->m_TriVS);
 
     const GLchar *triUniVS[] = {
         "#version 150 core\n"
@@ -387,7 +387,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_TriUniVS = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(self->m_TriUniVS, 1, triUniVS, NULL);
-    CompileShader(self->m_TriUniVS);
+    self->m_TriUniVS = CompileShader(self->m_TriUniVS);
 
     self->m_TriFS = self->m_TriUniFS = self->m_LineRectFS;
 
@@ -396,7 +396,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glAttachShader(self->m_TriProgram, self->m_TriFS);
     glBindAttribLocation(self->m_TriProgram, 0, "vertex");
     glBindAttribLocation(self->m_TriProgram, 1, "color");
-    LinkProgram(self->m_TriProgram);
+    self->m_TriProgram = LinkProgram(self->m_TriProgram);
     self->m_TriLocationOffset = glGetUniformLocation(self->m_TriProgram, "offset");
     self->m_TriLocationWndSize = glGetUniformLocation(self->m_TriProgram, "wndSize");
 
@@ -405,7 +405,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glAttachShader(self->m_TriUniProgram, self->m_TriUniFS);
     glBindAttribLocation(self->m_TriUniProgram, 0, "vertex");
     glBindAttribLocation(self->m_TriUniProgram, 1, "color");
-    LinkProgram(self->m_TriUniProgram);
+    self->m_TriUniProgram = LinkProgram(self->m_TriUniProgram);
     self->m_TriUniLocationOffset = glGetUniformLocation(self->m_TriUniProgram, "offset");
     self->m_TriUniLocationWndSize = glGetUniformLocation(self->m_TriUniProgram, "wndSize");
     self->m_TriUniLocationColor = glGetUniformLocation(self->m_TriUniProgram, "color");
@@ -427,7 +427,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_TriTexFS = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(self->m_TriTexFS, 1, triTexFS, NULL);
-    CompileShader(self->m_TriTexFS);
+    self->m_TriTexFS = CompileShader(self->m_TriTexFS);
 
     const GLchar *triTexVS[] = {
         "#version 150 core\n"
@@ -442,7 +442,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_TriTexVS = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(self->m_TriTexVS, 1, triTexVS, NULL);
-    CompileShader(self->m_TriTexVS);
+    self->m_TriTexVS = CompileShader(self->m_TriTexVS);
 
     const GLchar *triTexUniVS[] = {
         "#version 150 core\n"
@@ -457,7 +457,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     };
     self->m_TriTexUniVS = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(self->m_TriTexUniVS, 1, triTexUniVS, NULL);
-    CompileShader(self->m_TriTexUniVS);
+    self->m_TriTexUniVS = CompileShader(self->m_TriTexUniVS);
 
     self->m_TriTexUniFS = self->m_TriTexFS;
 
@@ -467,7 +467,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glBindAttribLocation(self->m_TriTexProgram, 0, "vertex");
     glBindAttribLocation(self->m_TriTexProgram, 1, "uv");
     glBindAttribLocation(self->m_TriTexProgram, 2, "color");
-    LinkProgram(self->m_TriTexProgram);
+    self->m_TriTexProgram = LinkProgram(self->m_TriTexProgram);
     self->m_TriTexLocationOffset = glGetUniformLocation(self->m_TriTexProgram, "offset");
     self->m_TriTexLocationWndSize = glGetUniformLocation(self->m_TriTexProgram, "wndSize");
     self->m_TriTexLocationTexture = glGetUniformLocation(self->m_TriTexProgram, "tex");
@@ -478,7 +478,7 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glBindAttribLocation(self->m_TriTexUniProgram, 0, "vertex");
     glBindAttribLocation(self->m_TriTexUniProgram, 1, "uv");
     glBindAttribLocation(self->m_TriTexUniProgram, 2, "color");
-    LinkProgram(self->m_TriTexUniProgram);
+    self->m_TriTexUniProgram = LinkProgram(self->m_TriTexUniProgram);
     self->m_TriTexUniLocationOffset = glGetUniformLocation(self->m_TriTexUniProgram, "offset");
     self->m_TriTexUniLocationWndSize = glGetUniformLocation(self->m_TriTexUniProgram, "wndSize");
     self->m_TriTexUniLocationColor = glGetUniformLocation(self->m_TriTexUniProgram, "color");
@@ -490,6 +490,19 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glGenBuffers(1, &self->m_TriUVs);
     glGenBuffers(1, &self->m_TriColors);
     ResizeTriBuffers(self, 16384); // set initial size
+
+    // CompileShader/LinkProgram report failure by returning 0 for the
+    // handle they were given; check every one of them now instead of
+    // reporting Init() success while every subsequent draw call would
+    // silently render nothing/garbage with a broken shader/program.
+    if(    self->m_LineRectVS==0 || self->m_LineRectFS==0 || self->m_LineRectProgram==0
+        || self->m_TriVS==0 || self->m_TriUniVS==0 || self->m_TriProgram==0 || self->m_TriUniProgram==0
+        || self->m_TriTexFS==0 || self->m_TriTexVS==0 || self->m_TriTexUniVS==0
+        || self->m_TriTexProgram==0 || self->m_TriTexUniProgram==0 )
+    {
+        TwSetLastError("Failed to compile or link one or more OpenGL Core Profile shaders (see stderr for the compiler/linker log)");
+        return 0;
+    }
 
     CHECK_GL_ERROR;
     return 1;
