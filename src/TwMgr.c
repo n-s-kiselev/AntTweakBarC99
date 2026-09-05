@@ -5022,7 +5022,7 @@ void ANT_CALL CStruct_DefaultSummary(char *_SummaryString, size_t _SummaryMaxLen
                         else if (strcmp(valString, "1")==0)
                             valString = sdscpy(valString, "\x7f"); // check sign
                     }
-                    strncat(_SummaryString, valString, _SummaryMaxLength-l);
+                    strncat(_SummaryString, valString, _SummaryMaxLength-l-1);
                     sdsfree(valString);
                     separator = true;
                 }
@@ -5033,9 +5033,9 @@ void ANT_CALL CStruct_DefaultSummary(char *_SummaryString, size_t _SummaryMaxLen
         size_t l = strlen(_SummaryString);
         if( l>_SummaryMaxLength-2 )
         {
+            _SummaryString[_SummaryMaxLength-3] = '.';
             _SummaryString[_SummaryMaxLength-2] = '.';
-            _SummaryString[_SummaryMaxLength-1] = '.';
-            _SummaryString[_SummaryMaxLength+0] = '\0';
+            _SummaryString[_SummaryMaxLength-1] = '\0';
         }
         else
         {
