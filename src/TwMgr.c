@@ -5208,19 +5208,23 @@ bool TwGetKeyCode(int *_Code, int *_Modif, const char *_String)
     bool Ok = true;
     *_Modif = TW_KMOD_NONE;
     *_Code = 0;
-    size_t Start = strlen(_String)-1;
-    if( Start<0 )
+    size_t StrLen = strlen(_String);
+    if( StrLen==0 )
         return false;
+    size_t Start = StrLen-1;
     while( Start>0 && _String[Start-1]!='+' )
         --Start;
     while( _String[Start]==' ' || _String[Start]=='\t' )
         ++Start;
     char *CodeStr = _strdup(_String+Start);
-    for( size_t i=strlen(CodeStr)-1; i>=0; ++i )
+    for( size_t i=strlen(CodeStr); i>0; )
+    {
+        --i;
         if( CodeStr[i]==' ' || CodeStr[i]=='\t' )
             CodeStr[i] = '\0';
         else
             break;
+    }
 
     /*
     if( strstr(_String, "SHIFT")!=NULL || strstr(_String, "shift")!=NULL )
