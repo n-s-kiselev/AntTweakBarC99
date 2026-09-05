@@ -228,16 +228,6 @@ void CTwVarAtom_Free(CTwVarAtom *_Atom)
     }
     // TW_TYPE_CDSTDSTRING (the internal type TW_TYPE_STDSTRING variables
     // were converted to) cleanup removed along with TW_TYPE_STDSTRING.
-    /*
-    else if( m_Type==TW_TYPE_ENUM8 || m_Type==TW_TYPE_ENUM16 || m_Type==TW_TYPE_ENUM32 )
-    {
-        if( m_Val.m_Enum.m_Entries!=NULL )
-        {
-            delete m_Val.m_Enum.m_Entries;
-            m_Val.m_Enum.m_Entries = NULL;
-        }
-    }
-    */
     CTwVar_FreeBase(&_Atom->m_Base);
 }
 
@@ -511,58 +501,6 @@ void CTwVarAtom_ValueToString(const CTwVarAtom *_Atom, sds *_Str)
         }
         break;
     // TW_TYPE_STDSTRING case removed along with the type itself.
-    /*
-    case TW_TYPE_ENUM8:
-    case TW_TYPE_ENUM16:
-    case TW_TYPE_ENUM32:
-        {
-            unsigned int d = 0;
-            if( _Atom->m_Type==TW_TYPE_ENUM8 )
-            {
-                unsigned char Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned char *)_Atom->m_Ptr;
-                d = Val;
-            }
-            else if( _Atom->m_Type==TW_TYPE_ENUM16 )
-            {
-                unsigned short Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned short *)_Atom->m_Ptr;
-                d = Val;
-            }
-            else
-            {
-                assert(_Atom->m_Type==TW_TYPE_ENUM32);
-                unsigned int Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned int *)_Atom->m_Ptr;
-                d = Val;
-            }
-            bool Found = false;
-            if( _Atom->m_Val.m_Enum.m_Entries!=NULL )
-            {
-                UVal::CEnumVal::CEntries::iterator It = _Atom->m_Val.m_Enum.m_Entries->find(d);
-                if( It!=_Atom->m_Val.m_Enum.m_Entries->end() )
-                {
-                    *_Str = sdscpy(*_Str, It->second);
-                    Found = true;
-                }
-            }
-            if( !Found )
-            {
-                sprintf(Tmp, "%u", d);
-                *_Str = sdscpy(*_Str, Tmp);
-            }
-        }
-        break;
-    */
     default:
         if( IsEnumType(_Atom->m_Type) )
         {
@@ -783,44 +721,6 @@ double CTwVarAtom_ValueToDouble(const CTwVarAtom *_Atom)
             return Val;
         }
         break;
-    /*
-    case TW_TYPE_ENUM8:
-    case TW_TYPE_ENUM16:
-    case TW_TYPE_ENUM32:
-        {
-            unsigned int d = 0;
-            if( _Atom->m_Type==TW_TYPE_ENUM8 )
-            {
-                unsigned char Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned char *)_Atom->m_Ptr;
-                d = Val;
-            }
-            else if( _Atom->m_Type==TW_TYPE_ENUM16 )
-            {
-                unsigned short Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned short *)_Atom->m_Ptr;
-                d = Val;
-            }
-            else
-            {
-                assert(_Atom->m_Type==TW_TYPE_ENUM32);
-                unsigned int Val = 0;
-                if( UseGet )
-                    _Atom->m_GetCallback(&Val, _Atom->m_ClientData);
-                else
-                    Val = *(unsigned int *)_Atom->m_Ptr;
-                d = Val;
-            }
-            return d;
-        }
-        break;
-    */
     default:
         if( IsEnumType(_Atom->m_Type) )
         {
@@ -1226,12 +1126,6 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
             CTwBar_NotUpToDate(_Bar);
         }
         return 1;
-    /*
-    case V_READONLY:
-        CTwVar_SetReadOnly(_Var, true);
-        CTwBar_NotUpToDate(_Bar);
-        return 1;
-    */
     case V_READWRITE: // for backward compatibility
         CTwVar_SetReadOnly(_Var, false);
         CTwBar_NotUpToDate(_Bar);
@@ -1658,9 +1552,6 @@ int CTwVarAtom_SetAttrib(CTwVarAtom *_Atom, int _AttribID, const char *_Value, T
                         ++i;
                     if( s[i]==Sep )
                     {
-                        //if( _Atom->m_Val.m_Enum.m_Entries==NULL )
-                        //  _Atom->m_Val.m_Enum.m_Entries = new UVal::CEnumVal::CEntries;
-                        //UVal::CEnumVal::CEntries::value_type v(u, "");
                         // CEnum_InsertOrReplaceLen already overwrites the
                         // label if u is already present (was: insert, then
                         // erase+reinsert on collision).
@@ -2217,119 +2108,6 @@ void CTwVarAtom_Increment(CTwVarAtom *_Atom, int _Step)
                 _Atom->m_SetCallback(&v, _Atom->m_ClientData);
         }
         break;
-    /*
-    case TW_TYPE_ENUM8:
-        {
-            assert(_Step==1 || _Step==-1);
-            unsigned char v = 0;
-            if( _Atom->m_Ptr!=NULL )
-                v = *((unsigned char *)_Atom->m_Ptr);
-            else if( _Atom->m_GetCallback!=NULL )
-                _Atom->m_GetCallback(&v, _Atom->m_ClientData);
-            if( _Atom->m_Val.m_Enum.m_Entries!=NULL )
-            {
-                UVal::CEnumVal::CEntries::iterator It = _Atom->m_Val.m_Enum.m_Entries->find(v);
-                if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                    It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                else if( _Step==1 )
-                {
-                    ++It;
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                }
-                else if( _Step==-1 )
-                {
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->end();
-                    if( It!=_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        --It;
-                }
-                if( It != _Atom->m_Val.m_Enum.m_Entries->end() )
-                {
-                    v = (unsigned char)(It->first);
-                    if( _Atom->m_Ptr!=NULL )
-                        *((unsigned char *)_Atom->m_Ptr) = v;
-                    else if( _Atom->m_SetCallback!=NULL )
-                        _Atom->m_SetCallback(&v, _Atom->m_ClientData);
-                }
-            }
-        }
-        break;
-    case TW_TYPE_ENUM16:
-        {
-            assert(_Step==1 || _Step==-1);
-            unsigned short v = 0;
-            if( _Atom->m_Ptr!=NULL )
-                v = *((unsigned short *)_Atom->m_Ptr);
-            else if( _Atom->m_GetCallback!=NULL )
-                _Atom->m_GetCallback(&v, _Atom->m_ClientData);
-            if( _Atom->m_Val.m_Enum.m_Entries!=NULL )
-            {
-                UVal::CEnumVal::CEntries::iterator It = _Atom->m_Val.m_Enum.m_Entries->find(v);
-                if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                    It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                else if( _Step==1 )
-                {
-                    ++It;
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                }
-                else if( _Step==-1 )
-                {
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->end();
-                    if( It!=_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        --It;
-                }
-                if( It != _Atom->m_Val.m_Enum.m_Entries->end() )
-                {
-                    v = (unsigned short)(It->first);
-                    if( _Atom->m_Ptr!=NULL )
-                        *((unsigned short *)_Atom->m_Ptr) = v;
-                    else if( _Atom->m_SetCallback!=NULL )
-                        _Atom->m_SetCallback(&v, _Atom->m_ClientData);
-                }
-            }
-        }
-        break;
-    case TW_TYPE_ENUM32:
-        {
-            assert(_Step==1 || _Step==-1);
-            unsigned int v = 0;
-            if( _Atom->m_Ptr!=NULL )
-                v = *((unsigned int *)_Atom->m_Ptr);
-            else if( _Atom->m_GetCallback!=NULL )
-                _Atom->m_GetCallback(&v, _Atom->m_ClientData);
-            if( _Atom->m_Val.m_Enum.m_Entries!=NULL )
-            {
-                UVal::CEnumVal::CEntries::iterator It = _Atom->m_Val.m_Enum.m_Entries->find(v);
-                if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                    It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                else if( _Step==1 )
-                {
-                    ++It;
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->end() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->begin();
-                }
-                else if( _Step==-1 )
-                {
-                    if( It==_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        It = _Atom->m_Val.m_Enum.m_Entries->end();
-                    if( It!=_Atom->m_Val.m_Enum.m_Entries->begin() )
-                        --It;
-                }
-                if( It!=_Atom->m_Val.m_Enum.m_Entries->end() )
-                {
-                    v = (unsigned int)(It->first);
-                    if( _Atom->m_Ptr!=NULL )
-                        *((unsigned int *)_Atom->m_Ptr) = v;
-                    else if( _Atom->m_SetCallback!=NULL )
-                        _Atom->m_SetCallback(&v, _Atom->m_ClientData);
-                }
-            }
-        }
-        break;
-    */
     default:
         if( _Atom->m_Type==TW_TYPE_BUTTON )
         {
@@ -2465,13 +2243,6 @@ void CTwVarAtom_SetDefaults(CTwVarAtom *_Atom)
     case TW_TYPE_CDSTRING:
         _Atom->m_NoSlider = true;
         break;
-    /*
-    case TW_TYPE_ENUM8:
-    case TW_TYPE_ENUM16:
-    case TW_TYPE_ENUM32:
-        _Atom->m_NoSlider = true;
-        break;
-    */
     default:
         {} // nothing
     }
@@ -2484,30 +2255,6 @@ void CTwVarAtom_SetDefaults(CTwVarAtom *_Atom)
         || IsCustomType(_Atom->m_Type) ) // (_Atom->m_Type>=TW_TYPE_CUSTOM_BASE && _Atom->m_Type<TW_TYPE_CUSTOM_BASE+(int)g_TwMgr->m_Customs.size()) )
         _Atom->m_NoSlider = true;
 }
-
-//  ---------------------------------------------------------------------------
-
-/*
-int CTwVarAtom::DefineEnum(const TwEnumVal *_EnumValues, unsigned int _NbValues)
-{
-    assert(_EnumValues!=NULL);
-    if( m_Type!=TW_TYPE_ENUM8 && m_Type!=TW_TYPE_ENUM16 && m_Type!=TW_TYPE_ENUM32 )
-    {
-        CTwMgr_SetLastError(g_TwMgr, g_ErrNotEnum);
-        return 0;
-    }
-    if( m_Val.m_Enum.m_Entries==NULL )
-        m_Val.m_Enum.m_Entries = new UVal::CEnumVal::CEntries;
-    for(unsigned int i=0; i<_NbValues; ++i)
-    {
-        UVal::CEnumVal::CEntries::value_type Entry(_EnumValues[i].Value, (_EnumValues[i].Label!=NULL)?_EnumValues[i].Label:"");
-        pair<UVal::CEnumVal::CEntries::iterator, bool> Result = m_Val.m_Enum.m_Entries->insert(Entry);
-        if( !Result.second )
-            (Result.first)->second = Entry.second;
-    }
-    return 1;
-}
-*/
 
 //  ---------------------------------------------------------------------------
 
@@ -3070,12 +2817,6 @@ size_t CTwVar_GetDataSize(TwType _Type)
         {
             const CStruct *s = &g_TwMgr->m_Structs.items[_Type-TW_TYPE_STRUCT_BASE];
             return s->m_Size;
-            /*
-            size_t size = 0;
-            for( size_t i=0; i<s.m_Members.size(); ++i )
-                size += s.m_Members[i].m_Size;
-            return size;
-            */
         }
         else if( g_TwMgr && IsEnumType(_Type) )
             return 4;
@@ -4024,90 +3765,6 @@ void CTwBar_UpdateColors(CTwBar *_Bar)
     _Bar->m_ColStaticText = _Bar->m_ColHelpText;
 }
 
-/*
-void CTwBar::UpdateColors()
-{
-    float a, r, g, b, h, l, s;
-    Color32ToARGBf(m_Color, &a, &r, &g, &b);
-    ColorRGBToHLSf(r, g, b, &h, &l, &s);
-    bool lightText = !m_DarkText; // (l<=0.45f);
-    l = 0.2f + 0.6f*l;
-    
-    ColorHLSToRGBf(h, l, s, &r, &g, &b);
-    m_ColBg = Color32FromARGBf(a, r, g, b);
-    ColorHLSToRGBf(h, l-0.1f, s, &r, &g, &b);
-    m_ColBg1 = Color32FromARGBf(a, r, g, b);
-    ColorHLSToRGBf(h, l-0.2f, s, &r, &g, &b);
-    m_ColBg2 = Color32FromARGBf(a, r, g, b);
-
-    ColorHLSToRGBf(h, l+0.1f, s, &r, &g, &b);
-    m_ColHighBg = Color32FromARGBf(0.4f, r, g, b);
-    //m_ColHighBg = Color32FromARGBf(a, 0.95f, 0.95f, 0.2f);
-    
-    m_ColLabelText = lightText ? COLOR32_WHITE : COLOR32_BLACK;
-    m_ColStructText = lightText ? 0xffefef00 : 0xff505000;
-
-    m_ColValText = lightText ? 0xffb7b7ff : 0xff000080;
-    m_ColValTextRO = lightText ? 0xffb7b7b7 : 0xff505050;
-    m_ColValMin = lightText ? 0xff9797ff : 0xff0000f0;
-    m_ColValMax = m_ColValMin;
-    m_ColValTextNE = lightText ? 0xff97f797 : 0xff006000;
-
-    ColorHLSToRGBf(h, lightText ? (min(l+0.2f, 0.3f)) : (max(l-0.2f, 0.6f)), s, &r, &g, &b);
-    m_ColValBg = Color32FromARGBf(0.4f*a, 0, 0, 0);
-    m_ColStructBg = Color32FromARGBf(0.4f*a, 0, 0, 0);
-
-    ColorHLSToRGBf(h, 0.4f, s, &r, &g, &b);
-    m_ColTitleBg = Color32FromARGBf(a+0.4f, r, g, b);
-    m_ColTitleText = lightText ? COLOR32_WHITE : COLOR32_BLACK;
-    m_ColTitleShadow = lightText ? 0x80000000 : 0x80ffffff;
-    ColorHLSToRGBf(h, 0.3f, s, &r, &g, &b);
-    m_ColTitleHighBg = Color32FromARGBf(a+0.4f, r, g, b);
-    ColorHLSToRGBf(h, 0.4f, s, &r, &g, &b);
-    m_ColTitleUnactiveBg = Color32FromARGBf(a+0.2f, r, g, b);
-
-    ColorHLSToRGBf(h, 0.8f, s, &r, &g, &b);
-    m_ColLine = Color32FromARGBf(0.6f, r, g, b); // 0xfff0f0f0;
-    m_ColLineShadow = Color32FromARGBf(0.6f, 0, 0, 0); //COLOR32_BLACK;
-    m_ColUnderline = lightText ? 0xffd0d0d0 : 0xff202000;
-    ColorHLSToRGBf(h, 0.7f, s, &r, &g, &b);
-    m_ColBtn = Color32FromARGBf(0.6f, r, g, b);
-    ColorHLSToRGBf(h, 0.4f, s, &r, &g, &b);
-    m_ColHighBtn = Color32FromARGBf(0.6f, r, g, b);
-    ColorHLSToRGBf(h, 0.6f, s, &r, &g, &b);
-    m_ColFold = Color32FromARGBf(0.3f*a, r, g, b);
-    ColorHLSToRGBf(h, 0.4f, s, &r, &g, &b);
-    m_ColHighFold = Color32FromARGBf(0.3f, r, g, b);
-
-    ColorHLSToRGBf(h, lightText ? l+0.2f : l-0.2f, s, &r, &g, &b);
-    m_ColGrpBg = Color32FromARGBf(0.5f*a, r, g, b);
-    m_ColGrpText = lightText ? 0xffffff80 : 0xff404000;
-
-    ColorHLSToRGBf(h, 0.75f, s, &r, &g, &b);
-    m_ColHelpBg = Color32FromARGBf(a, r, g, b);
-    m_ColHelpText = Color32FromARGBf(1, 0, 0.4f, 0);
-
-    ColorHLSToRGBf(h, 0.45f, s, &r, &g, &b);
-    m_ColHierBg = Color32FromARGBf(0.75f*a, r, g, b);
-
-    m_ColShortcutText = lightText ? 0xffff8040 : 0xff802000;  //0xfff0f0f0;
-    m_ColShortcutBg = Color32FromARGBf(0.4f*a, 0.2f, 0.2f, 0.2f);
-    m_ColInfoText = Color32FromARGBf(1.0f, 0.7f, 0.7f, 0.7f);
-
-    m_ColRoto = Color32FromARGBf(1, 0.75f, 0.75f, 0.75f);
-    m_ColRotoVal = Color32FromARGBf(1, 1.0f, 0.2f, 0.2f);
-    m_ColRotoBound = Color32FromARGBf(1, 0.4f, 0.4f, 0.4f);
-
-    m_ColEditText = lightText ? COLOR32_WHITE : COLOR32_BLACK;
-    m_ColEditBg = lightText ? 0xb7575757 : 0xb7c7c7c7;
-    m_ColEditSelText = lightText ? COLOR32_BLACK : COLOR32_WHITE;
-    m_ColEditSelBg = lightText ? 0xffc7c7c7 : 0xff575757;
-
-    m_ColSeparator = m_ColValTextRO;
-    m_ColStaticText = m_ColHelpText;
-}
-*/
-
 //  ---------------------------------------------------------------------------
 
 void CTwVarGroup_Init(CTwVarGroup *_Grp)
@@ -4773,14 +4430,6 @@ void CTwBar_Update(CTwBar *_Bar)
 
         // Should draw [o] button?
         _Bar->m_DrawRotoBtn     = _Bar->m_DrawIncrDecrBtn;
-        /*
-        _Bar->m_DrawRotoBtn     = ( _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count
-                              && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var!=NULL 
-                              && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)
-                              && ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_Type!=TW_TYPE_BUTTON
-                              && !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly
-                              && !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider );
-        */
 
         // Build values (reuse Labels' storage - CSdsArray& Values = Labels;
         // was a C++ reference alias, dropped in favor of using Labels
@@ -4916,44 +4565,9 @@ void CTwBar_DrawHierHandle(CTwBar *_Bar)
                 Gr->DrawLine(Gr, dx+x0+2, y0+dh0+w/2, dx+x2-1, y0+dh0+w/2, _Bar->m_ColTitleText, _Bar->m_ColTitleText, false);
                 if( !Grp->m_Open )
                     Gr->DrawLine(Gr, dx+x1, y0+dh0+2, dx+x1, y0+dh1-1, _Bar->m_ColTitleText, _Bar->m_ColTitleText, false);
-
-                /*
-                if( _Bar->m_ColGrpBg!=0 && Grp->m_StructValuePtr==NULL )
-                {
-                    color32 cb = (Grp->m_StructType==TW_TYPE_HELP_STRUCT) ? _Bar->m_ColStructBg : _Bar->m_ColGrpBg;
-                    //int decal = _Bar->m_Font->m_CharHeight/2-2+2*_Bar->m_HierTags.items[h].m_Level;
-                    //if( decal>_Bar->m_Font->m_CharHeight-3 )
-                    //  decal = _Bar->m_Font->m_CharHeight-3;
-                    int margin = dx; //_Bar->m_Font->m_CharWidth[(int)' ']*_Bar->m_HierTags.items[h].m_Level;
-                    //Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0+margin, y0+decal, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1, cb, cb, cb, cb);
-                    Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0+margin-1, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight, cb, cb, cb, cb);// _Bar->m_ColHierBg);
-                    //Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0-4, y0+_Bar->m_Font->m_CharHeight/2-1, _Bar->m_PosX+_Bar->m_VarX0+margin-2, y0+_Bar->m_Font->m_CharHeight/2, _Bar->m_ColHierBg, _Bar->m_ColHierBg, _Bar->m_ColHierBg, _Bar->m_ColHierBg);
-                }
-                */
             }
             else if( ((CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_HELP_GRP && _Bar->m_ColHelpBg!=0 )
                 Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0+_Bar->m_HierTags.items[h].m_Var->m_LeftMargin, y0+_Bar->m_HierTags.items[h].m_Var->m_TopMargin, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg);
-            //else if( ((CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_HELP_HEADER && _Bar->m_ColHelpBg!=0 )
-            //  Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0+_Bar->m_HierTags.items[h].m_Var->m_LeftMargin, y0+_Bar->m_HierTags.items[h].m_Var->m_TopMargin, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg, _Bar->m_ColHelpBg);
-            /*
-            else if( ((CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_BUTTON && _Bar->m_ColBtn!=0 )
-            {
-                // draw button
-                int cbx0 = _Bar->m_PosX+_Bar->m_VarX2-2*bw+bw/2, cby0 = y0+2, cbx1 = _Bar->m_PosX+_Bar->m_VarX2-2-bw/2, cby1 = y0+_Bar->m_Font->m_CharHeight-4;
-                if( _Bar->m_HighlightClickBtn )
-                {
-                    Gr->DrawRect(Gr, cbx0+2, cby0+2, cbx1+2, cby1+2, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn);
-                    Gr->DrawLine(Gr, cbx0+3, cby1+3, cbx1+4, cby1+3, 0x7F000000, 0x7F000000, false);
-                    Gr->DrawLine(Gr, cbx1+3, cby0+3, cbx1+3, cby1+3, 0x7F000000, 0x7F000000, false);                       
-                }
-                else
-                {
-                    Gr->DrawRect(Gr, cbx0+3, cby1+1, cbx1+3, cby1+3, 0x7F000000, 0x7F000000, 0x7F000000, 0x7F000000);
-                    Gr->DrawRect(Gr, cbx1+1, cby0+3, cbx1+3, cby1, 0x7F000000, 0x7F000000, 0x7F000000, 0x7F000000);
-                    Gr->DrawRect(Gr, cbx0, cby0, cbx1, cby1, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn);
-                }
-            }
-            */
 
             y0 = y1+_Bar->m_LineSep;
         }
@@ -5872,28 +5486,6 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
         {
             if( _Bar->m_MouseDragVar && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
-                /*
-                CTwVarAtom *Var = ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var);
-                int Delta = _X-_Bar->m_MouseOriginX;
-                if( Delta!=0 )
-                {
-                    if( !Var->m_NoSlider && !Var->m_ReadOnly )
-                    {
-                        Var->Increment(Delta);
-                        CTwBar_NotUpToDate(_Bar);
-                    }
-                    _Bar->m_VarHasBeenIncr = true;
-                }
-                _Bar->m_MouseOriginX = _X;
-                _Bar->m_MouseOriginY = _Y;
-                if( !Var->m_NoSlider && !Var->m_ReadOnly )
-                    ANT_SET_CURSOR(Center);
-                    //ANT_SET_CURSOR(WE);
-                else
-                    ANT_SET_CURSOR(Arrow);
-                Handled = true;
-                */
-
                 // move rotoslider
                 if( !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider )
                     CTwBar_RotoOnMouseMove(_Bar, _X, _Y);
@@ -6658,28 +6250,12 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
         }
         else if( _Bar->m_IsHelpBar && _Pressed && !g_TwMgr->m_IsRepeatingMousePressed && _X>=_Bar->m_PosX+_Bar->m_VarX0 && _X<_Bar->m_PosX+_Bar->m_Width-_Bar->m_Font->m_CharHeight && _Y>_Bar->m_PosY+_Bar->m_Height-_Bar->m_Font->m_CharHeight && _Y<_Bar->m_PosY+_Bar->m_Height )
         {
-            /*
-            const char *WebPage = "http://";
-            #if defined ANT_WINDOWS
-                ShellExecute(NULL, "open", WebPage, NULL, NULL, SW_SHOWNORMAL);
-            #elif defined ANT_UNIX
-                // brute force: try all the possible browsers (I don't know how to find the default one; someone?)
-                char DefaultBrowsers[] = "firefox,chrome,opera,mozilla,konqueror,galeon,dillo,netscape";
-                char *browser = strtok(DefaultBrowsers, ",");
-                char cmd[256];
-                while(browser)
-                {
-                    snprintf(cmd, sizeof(cmd), "%s \"%s\" 1>& null &", browser, WebPage);
-                    if( system(cmd) ) {} // avoiding warn_unused_result
-                    browser = strtok(NULL, ","); // grab the next browser
-                }
-            #elif defined ANT_OSX
-                char cmd[256];
-                snprintf(cmd, sizeof(cmd), "open \"%s\" 1>& null &", WebPage);
-                if( system(cmd) ) {} // avoiding warn_unused_result
-            #endif
-            ANT_SET_CURSOR(Hand);
-            */
+            // Used to open the AntTweakBar web page in the system's default
+            // browser; removed as part of the C99 rewrite (no portable
+            // ShellExecute/system()-based browser launch was ported). Kept
+            // as a no-op branch (rather than falling through to the
+            // CustomArea handling below) to preserve this click region's
+            // existing behavior.
         }
         else
         {
@@ -6827,59 +6403,6 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
 
     if( _Key>0 && _Key<TW_KEY_LAST )
     {
-        /* cf TranslateKey in TwMgr.cpp
-        // CTRL special cases
-        if( (_Modifiers&TW_KMOD_CTRL) && !(_Modifiers&TW_KMOD_ALT || _Modifiers&TW_KMOD_META) && _Key>0 && _Key<32 )
-            _Key += 'a'-1;
-
-        // PAD translation (for SDL keysym)
-        if( _Key>=256 && _Key<=272 ) // 256=SDLK_KP0 ... 272=SDLK_KP_EQUALS
-        {
-            bool Num = ((_Modifiers&TW_KMOD_SHIFT) && !(_Modifiers&0x1000)) || (!(_Modifiers&TW_KMOD_SHIFT) && (_Modifiers&0x1000)); // 0x1000 is SDL's KMOD_NUM
-            _Modifiers &= ~TW_KMOD_SHIFT;   // remove shift modifier
-            if( _Key==266 )          // SDLK_KP_PERIOD
-                _Key = Num ? '.' : TW_KEY_DELETE;
-            else if( _Key==267 )     // SDLK_KP_DIVIDE
-                _Key = '/';
-            else if( _Key==268 )     // SDLK_KP_MULTIPLY
-                _Key = '*';
-            else if( _Key==269 )     // SDLK_KP_MINUS
-                _Key = '-';
-            else if( _Key==270 )     // SDLK_KP_PLUS
-                _Key = '+';
-            else if( _Key==271 )     // SDLK_KP_ENTER
-                _Key = TW_KEY_RETURN;
-            else if( _Key==272 )     // SDLK_KP_EQUALS
-                _Key = '=';
-            else if( Num )           // num SDLK_KP0..9
-                _Key += '0' - 256;
-            else if( _Key==256 )     // non-num SDLK_KP01
-                _Key = TW_KEY_INSERT;
-            else if( _Key==257 )     // non-num SDLK_KP1
-                _Key = TW_KEY_END;
-            else if( _Key==258 )     // non-num SDLK_KP2
-                _Key = TW_KEY_DOWN;
-            else if( _Key==259 )     // non-num SDLK_KP3
-                _Key = TW_KEY_PAGE_DOWN;
-            else if( _Key==260 )     // non-num SDLK_KP4
-                _Key = TW_KEY_LEFT;
-            else if( _Key==262 )     // non-num SDLK_KP6
-                _Key = TW_KEY_RIGHT;
-            else if( _Key==263 )     // non-num SDLK_KP7
-                _Key = TW_KEY_HOME;
-            else if( _Key==264 )     // non-num SDLK_KP8
-                _Key = TW_KEY_UP;
-            else if( _Key==265 )     // non-num SDLK_KP9
-                _Key = TW_KEY_PAGE_UP;
-        }
-        */
-
-        /*
-        string Str;
-        TwGetKeyString(&Str, _Key, _Modifiers);
-        printf("key: %d 0x%04xd %s\n", _Key, _Modifiers, Str.c_str());
-        */
-
         if( _Bar->m_EditInPlace.m_Active )
         {
             Handled = CTwBar_EditInPlaceKeyPressed(_Bar, _Key, _Modifiers);

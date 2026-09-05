@@ -936,10 +936,6 @@ void CQuaternionExt_ConvertToAxisAngle(CQuaternionExt *_Ext)
         _Ext->Angle = 2.0*a;
     }
 
-    //  if( _Ext->Angle>FLOAT_PI )
-    //      _Ext->Angle -= 2.0f*FLOAT_PI;
-    //  else if( _Ext->Angle<-FLOAT_PI )
-    //      _Ext->Angle += 2.0f*FLOAT_PI;
     _Ext->Angle = RadToDeg(_Ext->Angle);
 
     if( fabs(_Ext->Angle)<FLOAT_EPS && fabs(_Ext->Vx*_Ext->Vx+_Ext->Vy*_Ext->Vy+_Ext->Vz*_Ext->Vz)<FLOAT_EPS_SQ )
@@ -1496,14 +1492,6 @@ void CQuaternionExt_DrawCB(int w, int h, void *_ExtValue, void *_ClientData, TwB
     }
     else
     {
-        /*
-        int px0 = QuatPX(0, w, h)-1, py0 = QuatPY(0, w, h), r0 = (int)(0.5f*QuatD(w, h)-0.5f);
-        color32 col0 = 0x80000000;
-        DrawArc(px0-1, py0, r0, 0, 360, col0);
-        DrawArc(px0+1, py0, r0, 0, 360, col0);
-        DrawArc(px0, py0-1, r0, 0, 360, col0);
-        DrawArc(px0, py0+1, r0, 0, 360, col0);
-        */
         // draw arrows & sphere
         const float SPH_RADIUS = 0.75f;
         for(m=0; m<2; ++m)  // m=0: back, m=1: front
@@ -1781,45 +1769,6 @@ static inline int TwFreeAsyncDrawing(void)
 }
 
 //  ---------------------------------------------------------------------------
-
-/*
-static inline int TwFreeAsyncProcessing()
-{
-    if( g_TwMgr && g_TwMgr->IsProcessing() )
-    {
-        const double SLEEP_MAX = 0.25; // wait at most 1/4 second
-        PerfTimer timer;
-        while( g_TwMgr->IsProcessing() && timer.GetTime()<SLEEP_MAX )
-        {
-            #if defined(ANT_WINDOWS)
-                Sleep(1); // milliseconds
-            #elif defined(ANT_UNIX) 
-                usleep(1000); // microseconds
-            #endif
-        }
-        if( g_TwMgr->IsProcessing() )
-        {
-            CTwMgr_SetLastError(g_TwMgr, g_ErrIsProcessing);
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static inline int TwBeginProcessing()
-{
-    if( !TwFreeAsyncProcessing() )
-        return 0;
-    if( g_TwMgr )
-        g_TwMgr->SetProcessing(true);
-}
-
-static inline int TwEndProcessing()
-{
-    if( g_TwMgr )
-        g_TwMgr->SetProcessing(false);
-}
-*/
 
 //  ---------------------------------------------------------------------------
 
@@ -2769,18 +2718,6 @@ ERetType CTwMgr_GetAttrib(const CTwMgr *_Mgr, int _AttribID, CDoubleArray *outDo
     case MGR_CONTAINED:
         {
             bool contained = _Mgr->m_Contained;
-            /*
-            if( contained ) 
-            {
-                vector<TwBar*>::iterator barIt;
-                for( barIt=g_TwMgr->m_Bars.begin(); barIt!=g_TwMgr->m_Bars.end(); ++barIt )
-                    if( (*barIt)!=NULL && !(*barIt)->m_Contained )
-                    {
-                        contained = false;
-                        break;
-                    }
-            }
-            */
             tw_da_append(outDoubles, contained);
             return RET_DOUBLE;
         }
@@ -3402,31 +3339,6 @@ int ANT_CALL TwSetBarState(TwBar *_Bar, TwState _State)
 
 //  ---------------------------------------------------------------------------
 
-/*
-TwState ANT_CALL TwGetBarState(const TwBar *_Bar)
-{
-    if( g_TwMgr==NULL )
-    {
-        TwGlobalError(g_ErrNotInit);
-        return TW_STATE_ERROR;  // not initialized
-    }
-    if( _Bar==NULL )
-    {
-        CTwMgr_SetLastError(g_TwMgr, g_ErrBadParam);
-        return TW_STATE_ERROR;
-    }
-
-    if( !_Bar->m_Visible )
-        return TW_STATE_HIDDEN;
-    else if( CTwBar_IsMinimized(_Bar) )
-        return TW_STATE_ICONIFIED;
-    else
-        return TW_STATE_SHOWN;
-}
-*/
-
-//  ---------------------------------------------------------------------------
-
 const char * ANT_CALL TwGetBarName(const TwBar *_Bar)
 {
     if( g_TwMgr==NULL )
@@ -3788,19 +3700,6 @@ int ANT_CALL TwSetParam(TwBar *bar, const char *varName, const char *paramName, 
                     valuesStr = sdscatprintf(valuesStr, "%g%s", ((const double *)(inValues))[i], ((i<inValueCount-1) ? " " : ""));
                 break;
             case TW_PARAM_CSTRING:
-                /*
-                for( i=0; i<inValueCount; i++ )
-                {
-                    valuesStr << '`';
-                    const char *str = ((char * const *)(inValues))[i];
-                    for( const char *ch = str; *ch!=0; ch++ )
-                        if( *ch=='`' )
-                            valuesStr << "`'`'`";
-                        else
-                            valuesStr << *ch;
-                    valuesStr << "` ";
-                }
-                */
                 if( inValueCount!=1 )
                 {
                     CTwMgr_SetLastError(g_TwMgr, g_ErrCStrParam); // count for CString param must be 1
@@ -3857,17 +3756,9 @@ void CStructProxy_Init(CStructProxy *_Proxy)
 void CStructProxy_Free(CStructProxy *_Proxy)
 {
     if( _Proxy->m_StructData!=NULL && _Proxy->m_DeleteStructData )
-    {
-        //if( _Proxy->m_StructExtData==NULL && g_TwMgr!=NULL && _Proxy->m_Type>=TW_TYPE_STRUCT_BASE && _Proxy->m_Type<TW_TYPE_STRUCT_BASE+(int)g_TwMgr->m_Structs.size() )
-        //  g_TwMgr->UninitVarData(_Proxy->m_Type, _Proxy->m_StructData, g_TwMgr->m_Structs[_Proxy->m_Type-TW_TYPE_STRUCT_BASE].m_Size);
         free(_Proxy->m_StructData);
-    }
     if( _Proxy->m_StructExtData!=NULL )
-    {
-        //if( g_TwMgr!=NULL && _Proxy->m_Type>=TW_TYPE_STRUCT_BASE && _Proxy->m_Type<TW_TYPE_STRUCT_BASE+(int)g_TwMgr->m_Structs.size() )
-        //  g_TwMgr->UninitVarData(_Proxy->m_Type, _Proxy->m_StructExtData, g_TwMgr->m_Structs[_Proxy->m_Type-TW_TYPE_STRUCT_BASE].m_Size);
         free(_Proxy->m_StructExtData);
-    }
     memset(_Proxy, 0, sizeof(*_Proxy));
 }
 
@@ -4170,7 +4061,6 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
                 sProxy->m_CustomCaptureFocus = false;
                 sProxy->m_CustomIndexFirst = -1;
                 sProxy->m_CustomIndexLast = -1;
-                //g_TwMgr->InitVarData(sProxy->m_Type, sProxy->m_StructData, s->m_Size);
             }
         }
         else // s->m_IsExt
@@ -4192,7 +4082,6 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
             sProxy->m_CustomCaptureFocus = false;
             sProxy->m_CustomIndexFirst = -1;
             sProxy->m_CustomIndexLast = -1;
-            //g_TwMgr->InitVarData(sProxy->m_Type, sProxy->m_StructExtData, s->m_Size);
             if( _VarPtr!=NULL )
             {
                 sProxy->m_StructData = _VarPtr;
@@ -4203,7 +4092,6 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
                 sProxy->m_StructData = malloc(s->m_ClientStructSize);
                 memset(sProxy->m_StructData, 0, s->m_ClientStructSize);
                 sProxy->m_DeleteStructData = true;
-                //g_TwMgr->InitVarData(ClientStructType, sProxy->m_StructData, s->m_ClientStructSize); //ClientStructType is unknown
             }
             _VarPtr = NULL; // force use of TwAddVarCB for members
 

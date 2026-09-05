@@ -96,7 +96,6 @@ typedef enum ETwState
     TW_STATE_ERROR       = 0
 } TwState;
 /*ANT_TWEAK_BAR_API*/ int       ANT_CALL TwSetBarState(TwBar *bar, TwState state);
-/*ANT_TWEAK_BAR_API*/ //TwState ANT_CALL TwGetBarState(const TwBar *bar);
 // var states -> use TwDefine instead: visible/iconified implemented only as string commands
 //ANT_TWEAK_BAR_API int     ANT_CALL TwSetVarState(TwBar *bar, const char *name, TwState state);
 //ANT_TWEAK_BAR_API TwState ANT_CALL TwGetVarState(const TwBar *bar, const char *name);
