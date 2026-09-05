@@ -238,8 +238,8 @@ CTexFont *g_DefaultLargeFont = NULL;
 CTexFont *g_DefaultFixed1Font = NULL;
 
 // Small font
-const int FONT0_BM_W = 211;
-const int FONT0_BM_H = 84;
+static const int FONT0_BM_W = 211;
+static const int FONT0_BM_H = 84;
 static const unsigned char s_Font0[] = 
 {
     127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -845,8 +845,8 @@ static const unsigned char s_Font0[] =
 
 
 // Normal font
-const int FONT1_BM_W = 253;
-const int FONT1_BM_H = 106;
+static const int FONT1_BM_W = 253;
+static const int FONT1_BM_H = 106;
 static const unsigned char s_Font1[] = 
 {
     127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -1743,8 +1743,8 @@ static const unsigned char s_Font1[] =
 };
 
 // Normal font anti-aliased
-const int FONT1AA_BM_W = 264;
-const int FONT1AA_BM_H = 106;
+static const int FONT1AA_BM_W = 264;
+static const int FONT1AA_BM_H = 106;
 static const unsigned char s_Font1AA[] = 
 {
     127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -2759,8 +2759,8 @@ static const unsigned char s_Font1AA[] =
 
 
 // Large font anti-aliased
-const int FONT2AA_BM_W = 276;
-const int FONT2AA_BM_H = 120;
+static const int FONT2AA_BM_W = 276;
+static const int FONT2AA_BM_H = 120;
 static const unsigned char s_Font2AA[] = 
 {
     127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -3959,8 +3959,8 @@ static const unsigned char s_Font2AA[] =
 };
 
 
-const int FONTFIXED1_BM_W = 257;
-const int FONTFIXED1_BM_H = 112;
+static const int FONTFIXED1_BM_W = 257;
+static const int FONTFIXED1_BM_H = 112;
 
 static const unsigned char s_FontFixed1[] = {
     127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

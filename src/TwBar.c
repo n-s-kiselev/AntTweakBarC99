@@ -2380,7 +2380,7 @@ void CTwVarAtom_Increment(CTwVarAtom *_Atom, int _Step)
             }
         }
         else
-            fprintf(stderr, "CTwVarAtom::Increment : unknown or unimplemented type\n");
+            fprintf(stderr, "CTwVarAtom_Increment : unknown or unimplemented type\n");
     }
     #pragma GCC diagnostic pop
 }
@@ -6290,14 +6290,14 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
             {
                 CTwVarAtom_Increment((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var, 1);
                 if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                    return 1;
+                    return true;
                 CTwBar_NotUpToDate(_Bar);
             }
             else if( _Pressed && _Bar->m_HighlightDecrBtn )
             {
                 CTwVarAtom_Increment((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var, -1);
                 if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                    return 1;
+                    return true;
                 CTwBar_NotUpToDate(_Bar);
             }
             else if( _Pressed && !_Bar->m_MouseDrag )
@@ -6461,7 +6461,7 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     {
                         Var->m_Val.m_Button.m_Callback(Var->m_ClientData);
                         if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                            return 1;
+                            return true;
                     }
                 }
             }
@@ -6895,7 +6895,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                 {
                     CTwVarAtom_Increment(Atom, DoIncr ? +1 : -1 );
                     if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                        return 1;
+                        return true;
                     _Bar->m_HighlightClickBtnAuto = glfwGetTime();
                 }
                 CTwBar_NotUpToDate(_Bar);
@@ -6916,7 +6916,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                         {
                             CTwVarAtom_Increment(Atom, +1);
                             if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                                return 1;
+                                return true;
                             _Bar->m_HighlightClickBtnAuto = glfwGetTime();
                             CTwBar_NotUpToDate(_Bar);
                         }
@@ -6944,7 +6944,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                         {
                             CTwVarAtom_Increment(Atom, -1);
                             if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
-                                return 1;
+                                return true;
                             _Bar->m_HighlightClickBtnAuto = glfwGetTime();
                             CTwBar_NotUpToDate(_Bar);
                         }
@@ -6974,7 +6974,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                                 CTwVarAtom_Increment(Atom, +1);
                                 if( g_TwMgr==NULL // Mgr might have been destroyed by the client inside a callback call
                                     || isPopup )  // A popup destroys itself
-                                    return 1;
+                                    return true;
                                 _Bar->m_HighlightClickBtnAuto = glfwGetTime();
                                 CTwBar_NotUpToDate(_Bar);
                             } 

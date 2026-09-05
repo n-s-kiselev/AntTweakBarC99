@@ -5513,9 +5513,9 @@ bool TwGetKeyString(sds *_String, int _Code, int _Modif)
 //  ---------------------------------------------------------------------------
  
 static const int        TW_MOUSE_NOMOTION = -1;
-ETwMouseAction   TW_MOUSE_MOTION = (ETwMouseAction)(-2);
-ETwMouseAction   TW_MOUSE_WHEEL = (ETwMouseAction)(-3);
-ETwMouseButtonID TW_MOUSE_NA = (ETwMouseButtonID)(-1);
+static ETwMouseAction    TW_MOUSE_MOTION = (ETwMouseAction)(-2);
+static ETwMouseAction    TW_MOUSE_WHEEL = (ETwMouseAction)(-3);
+static ETwMouseButtonID  TW_MOUSE_NA = (ETwMouseButtonID)(-1);
 
 static int TwMouseEvent(ETwMouseAction _EventType, TwMouseButtonID _Button, int _MouseX, int _MouseY, int _WheelPos)
 {
@@ -5846,7 +5846,7 @@ static int KeyPressed(int _Key, int _Modifiers, bool _TestOnly)
             sds Str = sdsempty();
             TwGetKeyString(&Str, _Key, _Modifiers);
             char Msg[256];
-            sprintf(Msg, "Key pressed: %s", Str);
+            _snprintf(Msg, sizeof(Msg), "Key pressed: %s", Str);
             g_TwMgr->m_KeyPressedStr = sdscpy(g_TwMgr->m_KeyPressedStr, Msg);
             g_TwMgr->m_KeyPressedBuildText = true;
             // OutputDebugString(Msg);

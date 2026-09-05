@@ -1021,7 +1021,19 @@ static void TwGraphOpenGLCore_DrawText(ITwGraph *_This, void *_TextObj, int _X, 
 
 //  ---------------------------------------------------------------------------
 
-static void TwGraphOpenGLCore_SetScissor(ITwGraph *_This, int _X0, int _Y0, int _Width, int _Height);
+static void TwGraphOpenGLCore_SetScissor(ITwGraph *_This, int _X0, int _Y0, int _Width, int _Height)
+{
+    TwGraphOpenGLCore *self = (TwGraphOpenGLCore *)_This;
+    if( _Width>0 && _Height>0 )
+    {
+        glScissor(_X0-1, self->m_WndHeight-_Y0-_Height, _Width-1, _Height);
+        glEnable(GL_SCISSOR_TEST);
+    }
+    else
+        glDisable(GL_SCISSOR_TEST);
+}
+
+//  ---------------------------------------------------------------------------
 
 static void TwGraphOpenGLCore_ChangeViewport(ITwGraph *_This, int _X0, int _Y0, int _Width, int _Height, int _OffsetX, int _OffsetY)
 {
@@ -1039,20 +1051,6 @@ static void TwGraphOpenGLCore_RestoreViewport(ITwGraph *_This)
     TwGraphOpenGLCore *self = (TwGraphOpenGLCore *)_This;
     self->m_OffsetX = self->m_OffsetY = 0;
     TwGraphOpenGLCore_SetScissor(_This, 0, 0, 0, 0);
-}
-
-//  ---------------------------------------------------------------------------
-
-static void TwGraphOpenGLCore_SetScissor(ITwGraph *_This, int _X0, int _Y0, int _Width, int _Height)
-{
-    TwGraphOpenGLCore *self = (TwGraphOpenGLCore *)_This;
-    if( _Width>0 && _Height>0 )
-    {
-        glScissor(_X0-1, self->m_WndHeight-_Y0-_Height, _Width-1, _Height);
-        glEnable(GL_SCISSOR_TEST);
-    }
-    else
-        glDisable(GL_SCISSOR_TEST);
 }
 
 //  ---------------------------------------------------------------------------
