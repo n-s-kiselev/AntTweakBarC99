@@ -6223,6 +6223,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
     #endif // _DEBUG
 
     CTwVarGroup prevHierarchy;
+    CTwVarGroup_Init(&prevHierarchy);
     CopyHierarchy(&prevHierarchy, &_Mgr->m_HelpBar->m_VarRoot);
 
     TwRemoveAllVars(_Mgr->m_HelpBar);
@@ -6364,6 +6365,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
     AppendHelpString(RotoGrp, "Moving the mouse far form the circle allows precise increase or decrease, while moving near the circle allows fast increase or decrease.", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
 
     SynchroHierarchy(&_Mgr->m_HelpBar->m_VarRoot, &prevHierarchy);
+    CTwVarGroup_Free(&prevHierarchy);
 
     _Mgr->m_HelpBarNotUpToDate = false;
 }
