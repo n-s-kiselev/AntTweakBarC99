@@ -173,6 +173,7 @@ static const char *g_ErrOutOfRange = "Index out of range";
 static const char *g_ErrHasNoValue = "Has no value";
 static const char *g_ErrBadType    = "Incompatible type";
 static const char *g_ErrDelHelp    = "Cannot delete help bar";
+static const char *g_ErrOutOfMemory = "Out of memory";
 char g_ErrParse[512];
 
 void ANT_CALL TwGlobalError(const char *_ErrorMessage);
@@ -1886,6 +1887,11 @@ int ANT_CALL TwInit(ETwGraphAPI _GraphAPI, void *_Device)
     assert( g_Wnds.count==0 );
 
     g_TwMasterMgr = CTwMgr_Create(_GraphAPI, _Device, TW_MASTER_WINDOW_ID);
+    if( g_TwMasterMgr==NULL )
+    {
+        TwGlobalError(g_ErrOutOfMemory);
+        return 0;
+    }
     CTwWndArray_Set(TW_MASTER_WINDOW_ID, g_TwMasterMgr);
     g_TwMgr = g_TwMasterMgr;
 
@@ -2011,7 +2017,13 @@ int ANT_CALL TwSetCurrentWindow(int wndID)
         if (foundWnd == NULL)
         {
             // create a new CTwMgr
-            g_TwMgr = CTwMgr_Create(g_TwMasterMgr->m_GraphAPI, g_TwMasterMgr->m_Device, wndID);
+            CTwMgr *NewMgr = CTwMgr_Create(g_TwMasterMgr->m_GraphAPI, g_TwMasterMgr->m_Device, wndID);
+            if( NewMgr==NULL )
+            {
+                CTwMgr_SetLastError(g_TwMgr, g_ErrOutOfMemory);
+                return 0;
+            }
+            g_TwMgr = NewMgr;
             CTwWndArray_Set(wndID, g_TwMgr);
             return TwInitMgr();
         }
@@ -2213,6 +2225,8 @@ int ANT_CALL TwWindowSize(int _Width, int _Height)
 CTwMgr *CTwMgr_Create(ETwGraphAPI _GraphAPI, void *_Device, int _WndID)
 {
     CTwMgr *Mgr = (CTwMgr *)malloc(sizeof(CTwMgr));
+    if( Mgr==NULL )
+        return NULL;
 
     Mgr->m_GraphAPI = _GraphAPI;
     Mgr->m_Device = _Device;
