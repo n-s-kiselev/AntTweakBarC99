@@ -3971,6 +3971,42 @@ static int s_SeparatorTag = 0;
 
 //  ---------------------------------------------------------------------------
 
+// Undoes whatever AddVar's struct-member registration loop already did
+// before hitting a mid-loop failure: removes the member vars already added
+// (indices [0, _NbAddedMembers)), then unlinks and frees every
+// CStructProxy/CMemberProxy node created since _StructProxiesCheckpoint/
+// _MemberProxiesCheckpoint were captured. CStructProxy_New/CMemberProxy_New
+// always prepend, so everything created during this AddVar call is exactly
+// the run of nodes between the current list head and the checkpoint -
+// no need to identify individual nodes. Vars are removed before proxies are
+// freed since a surviving var's ClientData points at its CMemberProxy.
+static void RollbackStructVarMembers(TwBar *_Bar, const char *_Name, const CStruct *s, int _NbAddedMembers,
+                                      CStructProxyNode *_StructProxiesCheckpoint, CMemberProxyNode *_MemberProxiesCheckpoint)
+{
+    for( int j=0; j<_NbAddedMembers; ++j )
+    {
+        sds prevName = sdscatprintf(sdsempty(), "%s.%s", _Name, s->m_Members.items[j].m_Name);
+        TwRemoveVar(_Bar, prevName);
+        sdsfree(prevName);
+    }
+    while( g_TwMgr->m_MemberProxies!=_MemberProxiesCheckpoint )
+    {
+        CMemberProxyNode *node = g_TwMgr->m_MemberProxies;
+        g_TwMgr->m_MemberProxies = node->Next;
+        CMemberProxy_Free(&node->Proxy);
+        free(node);
+    }
+    while( g_TwMgr->m_StructProxies!=_StructProxiesCheckpoint )
+    {
+        CStructProxyNode *node = g_TwMgr->m_StructProxies;
+        g_TwMgr->m_StructProxies = node->Next;
+        CStructProxy_Free(&node->Proxy); // also frees m_StructData/m_StructExtData if owned
+        free(node);
+    }
+}
+
+//  ---------------------------------------------------------------------------
+
 static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, bool _ReadOnly, TwSetVarCallback _SetCallback, TwGetVarCallback _GetCallback, TwButtonCallback _ButtonCallback, void *_ClientData, const char *_Def)
 {
     unsigned int fpuState = TwFPU_Save(); // force fpu precision
@@ -4107,6 +4143,8 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
         CStruct *s = &g_TwMgr->m_Structs.items[_Type-TW_TYPE_STRUCT_BASE];
         CStructProxy *sProxy = NULL;
         void *vPtr;
+        CStructProxyNode *structProxiesCheckpoint = g_TwMgr->m_StructProxies;
+        CMemberProxyNode *memberProxiesCheckpoint = g_TwMgr->m_MemberProxies;
         if( !s->m_IsExt )
         {
             if( _VarPtr!=NULL )
@@ -4190,6 +4228,7 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
                 {
                     sdsfree(name);
                     sdsfree(def);
+                    RollbackStructVarMembers(_Bar, _Name, s, i, structProxiesCheckpoint, memberProxiesCheckpoint);
                     TwFPU_Restore(fpuState);
                     return 0;
                 }
@@ -4205,6 +4244,7 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
                 {
                     sdsfree(name);
                     sdsfree(def);
+                    RollbackStructVarMembers(_Bar, _Name, s, i, structProxiesCheckpoint, memberProxiesCheckpoint);
                     TwFPU_Restore(fpuState);
                     return 0;
                 }
