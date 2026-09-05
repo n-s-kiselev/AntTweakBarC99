@@ -196,20 +196,6 @@ static inline double DegToRad(double degree) { return degree * (DOUBLE_PI/180.0)
 static inline double RadToDeg(double radian) { return radian * (180.0/DOUBLE_PI); }
 
 //  ---------------------------------------------------------------------------
-
-//  a static global object to verify that Tweakbar module has been properly terminated (in debug mode only)
-#ifdef _DEBUG
-static struct CTwVerif
-{
-    ~CTwVerif() 
-    { 
-        if( g_TwMgr!=NULL )
-            CTwMgr_SetLastError(g_TwMgr, "Tweak bar module has not been terminated properly: call TwTerminate()\n");
-    }
-} s_Verif;
-#endif // _DEBUG
-
-//  ---------------------------------------------------------------------------
 //  Color ext type
 //  ---------------------------------------------------------------------------
 
