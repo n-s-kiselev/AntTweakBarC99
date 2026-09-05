@@ -342,10 +342,16 @@ static void TwGraphOpenGL_BeginDraw(ITwGraph *_This, int _WndWidth, int _WndHeig
     }
 
     self->m_PrevArrayBuffer = self->m_PrevElementArrayBuffer = 0;
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &self->m_PrevArrayBuffer);
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &self->m_PrevElementArrayBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // glBindBuffer (core since GL 1.5) is not guaranteed present on a very
+    // old/software legacy context - matches the original C++ file's own
+    // if(_glBindBufferARB!=NULL) guard around this exact call.
+    if( glBindBuffer )
+    {
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &self->m_PrevArrayBuffer);
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &self->m_PrevElementArrayBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
 
     // GL_VERTEX_PROGRAM_ARB/GL_FRAGMENT_PROGRAM_ARB (the old assembly-shader
     // extension, long superseded by core GLSL) are plain enum tokens -
@@ -359,13 +365,28 @@ static void TwGraphOpenGL_BeginDraw(ITwGraph *_This, int _WndWidth, int _WndHeig
     glDisable(GL_VERTEX_PROGRAM_ARB);
     glDisable(GL_FRAGMENT_PROGRAM_ARB);
 
-    glGetIntegerv(GL_CURRENT_PROGRAM, &self->m_PrevProgramObject);
-    glUseProgram(0);
+    self->m_PrevProgramObject = 0;
+    // glUseProgram (core since GL 2.0) is not guaranteed present on a
+    // pre-GLSL legacy context - matches the original C++ file's own
+    // if(_glGetHandleARB!=NULL && _glUseProgramObjectARB!=NULL) guard
+    // around its ARB-extension precursor.
+    if( glUseProgram )
+    {
+        glGetIntegerv(GL_CURRENT_PROGRAM, &self->m_PrevProgramObject);
+        glUseProgram(0);
+    }
 
     glDisable(GL_TEXTURE_1D);
     glDisable(GL_TEXTURE_2D);
-    self->m_PrevTexture3D = glIsEnabled(GL_TEXTURE_3D);
-    glDisable(GL_TEXTURE_3D);
+    self->m_PrevTexture3D = 0;
+    // glTexImage3D (core since GL 1.2) is not guaranteed present on a very
+    // old/software legacy context - matches the original C++ file's own
+    // if(_glTexImage3D!=NULL) guard around this exact block.
+    if( glTexImage3D )
+    {
+        self->m_PrevTexture3D = glIsEnabled(GL_TEXTURE_3D);
+        glDisable(GL_TEXTURE_3D);
+    }
 
     if( self->m_SupportTexRect )
     {
@@ -373,19 +394,34 @@ static void TwGraphOpenGL_BeginDraw(ITwGraph *_This, int _WndWidth, int _WndHeig
         glDisable(GL_TEXTURE_RECTANGLE_ARB);
     }
 
-    glGetIntegerv(GL_BLEND_EQUATION_RGB, &self->m_PrevBlendEquationRGB);
-    glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &self->m_PrevBlendEquationAlpha);
-    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    // glBlendEquationSeparate/glBlendFuncSeparate/glBlendEquation (core
+    // since GL 2.0/1.4/1.4 respectively) and glDisableVertexAttribArray
+    // (core since GL 2.0) are not guaranteed present on a very old/software
+    // legacy context - each guard below matches the original C++ file's
+    // own if(_glXxx!=NULL) guard around that exact call.
+    if( glBlendEquationSeparate )
+    {
+        glGetIntegerv(GL_BLEND_EQUATION_RGB, &self->m_PrevBlendEquationRGB);
+        glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &self->m_PrevBlendEquationAlpha);
+        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    }
 
-    glGetIntegerv(GL_BLEND_SRC_RGB, &self->m_PrevBlendSrcRGB);
-    glGetIntegerv(GL_BLEND_DST_RGB, &self->m_PrevBlendDstRGB);
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &self->m_PrevBlendSrcAlpha);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &self->m_PrevBlendDstAlpha);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if( glBlendFuncSeparate )
+    {
+        glGetIntegerv(GL_BLEND_SRC_RGB, &self->m_PrevBlendSrcRGB);
+        glGetIntegerv(GL_BLEND_DST_RGB, &self->m_PrevBlendDstRGB);
+        glGetIntegerv(GL_BLEND_SRC_ALPHA, &self->m_PrevBlendSrcAlpha);
+        glGetIntegerv(GL_BLEND_DST_ALPHA, &self->m_PrevBlendDstAlpha);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
-    glGetIntegerv(GL_BLEND_EQUATION, &self->m_PrevBlendEquation);
-    glBlendEquation(GL_FUNC_ADD);
+    if( glBlendEquation )
+    {
+        glGetIntegerv(GL_BLEND_EQUATION, &self->m_PrevBlendEquation);
+        glBlendEquation(GL_FUNC_ADD);
+    }
 
+    if( glDisableVertexAttribArray )
     {
         GLint maxVertexAttribs;
         int i;
@@ -414,20 +450,27 @@ static void TwGraphOpenGL_EndDraw(ITwGraph *_This)
     glBindTexture(GL_TEXTURE_2D, self->m_PrevTexture);
     if( glBindVertexArray )
         glBindVertexArray(self->m_PrevVertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, self->m_PrevArrayBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->m_PrevElementArrayBuffer);
+    if( glBindBuffer )
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, self->m_PrevArrayBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self->m_PrevElementArrayBuffer);
+    }
     if( self->m_PrevVertexProgramARB )
         glEnable(GL_VERTEX_PROGRAM_ARB);
     if( self->m_PrevFragmentProgramARB )
         glEnable(GL_FRAGMENT_PROGRAM_ARB);
-    glUseProgram((GLuint)self->m_PrevProgramObject);
-    if( self->m_PrevTexture3D )
+    if( glUseProgram )
+        glUseProgram((GLuint)self->m_PrevProgramObject);
+    if( glTexImage3D && self->m_PrevTexture3D )
         glEnable(GL_TEXTURE_3D);
     if( self->m_SupportTexRect && self->m_PrevTexRectARB )
         glEnable(GL_TEXTURE_RECTANGLE_ARB);
-    glBlendEquation(self->m_PrevBlendEquation);
-    glBlendEquationSeparate(self->m_PrevBlendEquationRGB, self->m_PrevBlendEquationAlpha);
-    glBlendFuncSeparate(self->m_PrevBlendSrcRGB, self->m_PrevBlendDstRGB, self->m_PrevBlendSrcAlpha, self->m_PrevBlendDstAlpha);
+    if( glBlendEquation )
+        glBlendEquation(self->m_PrevBlendEquation);
+    if( glBlendEquationSeparate )
+        glBlendEquationSeparate(self->m_PrevBlendEquationRGB, self->m_PrevBlendEquationAlpha);
+    if( glBlendFuncSeparate )
+        glBlendFuncSeparate(self->m_PrevBlendSrcRGB, self->m_PrevBlendDstRGB, self->m_PrevBlendSrcAlpha, self->m_PrevBlendDstAlpha);
 
     glPolygonMode(GL_FRONT, (GLenum)self->m_PrevPolygonMode[0]);
     glPolygonMode(GL_BACK, (GLenum)self->m_PrevPolygonMode[1]);
@@ -470,6 +513,7 @@ static void TwGraphOpenGL_EndDraw(ITwGraph *_This)
         }
         glClientActiveTexture((GLenum)self->m_PrevClientActiveTexture);
     }
+    if( glEnableVertexAttribArray )
     {
         GLint maxVertexAttribs;
         int i;
