@@ -306,19 +306,8 @@ TW_API void     TW_CALL TwHandleErrors(TwErrorHandler errorHandler);
 //  Helper functions to translate events from some common window management
 //  frameworks to AntTweakBar.
 //  They call TwKeyPressed, TwMouse* and TwWindowSize for you (implemented in
-//  files TwEventWin.c TwEventGLFW.c)
+//  file TwEventGLFW.c)
 // ----------------------------------------------------------------------------
-
-// For Windows message proc
-#ifndef _W64    // Microsoft specific (detection of 64 bits portability issues)
-#   define _W64
-#endif  // _W64
-#ifdef _WIN64
-    TW_API int  TW_CALL TwEventWin(void *wnd, unsigned int msg, unsigned __int64 _W64 wParam, __int64 _W64 lParam);
-#else
-    TW_API int  TW_CALL TwEventWin(void *wnd, unsigned int msg, unsigned int _W64 wParam, int _W64 lParam);
-#endif
-#define TwEventWin32    TwEventWin // For compatibility with AntTweakBar versions prior to 1.11
 
 // For GLFW event callbacks
 // You should define GLFW_CDECL before including AntTweakBar.h if your version of GLFW uses cdecl calling convensions
