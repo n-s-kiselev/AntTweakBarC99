@@ -336,7 +336,12 @@ static void append_shared_link_libs(Nob_Cmd *cmd)
 #elif defined(__APPLE__)
     nob_cmd_append(cmd, "-framework", "OpenGL", "-framework", "AppKit");
 #else
-    nob_cmd_append(cmd, "-lGL", "-lX11", "-lXxf86vm", "-lXext", "-lpthread", "-lm");
+    // No -lX11/-lXext/-lXxf86vm: the library's own code never calls X11
+    // directly (it does not link GLFW at all - see GLFW_OBJ's comment
+    // above), and GLFW's X11 extension libraries (Xxf86vm included) are
+    // dlopen'd by GLFW itself at runtime, not hard link-time dependencies
+    // - see append_glfw_libs() below.
+    nob_cmd_append(cmd, "-lGL", "-lpthread", "-lm");
 #endif
 }
 
@@ -474,7 +479,16 @@ static void append_glfw_libs(Nob_Cmd *cmd)
     nob_cmd_append(cmd, "-framework", "Cocoa", "-framework", "IOKit", "-framework", "CoreVideo",
                         "-framework", "OpenGL");
 #else
-    nob_cmd_append(cmd, "-lGL", "-lX11", "-lXrandr", "-lXi", "-lXxf86vm", "-ldl", "-lpthread");
+    // -lX11 is a genuine hard dependency (GLFW's X11 backend calls core
+    // Xlib functions like XOpenDisplay directly) and -ldl is needed for
+    // GLFW's own dlopen/dlsym calls (posix_module.c). -lXrandr/-lXi/
+    // -lXxf86vm are NOT needed here: GLFW dlopen's each of those X11
+    // extension libraries itself at runtime (see x11_init.c) and degrades
+    // gracefully if one is missing, so hard-linking them only breaks the
+    // build on systems that lack one (e.g. the legacy Xxf86vm extension,
+    // often not packaged on modern distros) without GLFW ever needing it
+    // at link time.
+    nob_cmd_append(cmd, "-lGL", "-lX11", "-ldl", "-lpthread");
 #endif
 }
 
