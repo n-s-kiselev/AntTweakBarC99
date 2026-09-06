@@ -32,6 +32,13 @@ static Point g_Positions[NB_VERTS] = { {0.0f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5
 static float g_Colors[NB_VERTS][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1} };
 static int g_Width = 640, g_Height = 480;
 
+// GLFW always reports cursor position in window points, but TwWindowSize()
+// is now fed framebuffer pixels (see windowSizeCallback), so mouse events
+// must be scaled by this window/framebuffer ratio before reaching
+// AntTweakBar, or its hit-testing/drawing (now in pixel space) would
+// misread a point-space cursor position - see docs/plans/examples-hidpi-scaling.md.
+static double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
+
 // GLFW3 cursor binding (see docs/glfw3-cursor-integration.md): AntTweakBar
 // predates cursor-ownership models like GLFW3's and sets the system cursor
 // directly, which GLFW3 toolkits that reassert their own cursor on every
@@ -183,7 +190,7 @@ static void mousebuttonCallback(GLFWwindow* _window, int _button, int _action, i
 
 static void mousePosCallback(GLFWwindow* _window, double _xpos, double _ypos)
 {
-    if (TwEventMousePosGLFW((int)_xpos, (int)_ypos)) return;
+    if (TwEventMousePosGLFW((int)(_xpos * g_MouseScaleX), (int)(_ypos * g_MouseScaleY))) return;
 }
 
 static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yoffset)
@@ -193,6 +200,9 @@ static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yo
     if (TwEventMouseWheelGLFW((int)pos)) return;
 }
 
+// Registered as the FRAMEBUFFER size callback (not the window size
+// callback): GLFW reports this in actual pixels, matching
+// glViewport/TwWindowSize.
 static void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
     if (height == 0) height = 1;
@@ -210,6 +220,11 @@ static void windowSizeCallback(GLFWwindow* window, int width, int height)
     }
     glMatrixMode(GL_MODELVIEW);
     TwWindowSize(width, height);
+
+    int winWidth = width, winHeight = height;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    g_MouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
+    g_MouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 void error_callback(int error, const char* description)
@@ -229,8 +244,6 @@ int main(void)
         return 1;
     }
 
-    // Disable Retina scaling for now
-    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     window = glfwCreateWindow(g_Width, g_Height, "AntTweakBar + GLFW3 (Triangle)", NULL, NULL);
     if (!window) {
         fprintf(stderr, "Cannot open GLFW window\n");
@@ -244,6 +257,20 @@ int main(void)
         return 1;
     }
 
+    // AntTweakBar draws every widget at a fixed pixel size with no DPI
+    // awareness, so on a HiDPI/Retina display it looks too large/blurry
+    // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
+    // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
+    // window's content scale keeps it a comparable physical size; on a
+    // standard display the content scale is 1.0, so this is a no-op there.
+    float contentScaleX = 1.0f, contentScaleY = 1.0f;
+    glfwGetWindowContentScale(window, &contentScaleX, &contentScaleY);
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScaleX);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
         return 1;
@@ -253,15 +280,16 @@ int main(void)
 
     {
         int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        glfwGetFramebufferSize(window, &width, &height);
         windowSizeCallback(window, width, height);
     }
 
     TwBar *bar = TwNewBar("TweakBar");
     {
         // Demonstrates TwSetParam() as an alternative to TwDefine() for
-        // setting a single bar attribute (here, "size").
-        int barSize[2] = { 200, 320 };
+        // setting a single bar attribute (here, "size"). Scaled by content
+        // scale so the panel keeps up with the now-larger scaled contents.
+        int barSize[2] = { (int)(200 * contentScaleX + 0.5f), (int)(320 * contentScaleY + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL.' ");
@@ -289,7 +317,7 @@ int main(void)
     glfwSetMouseButtonCallback(window, mousebuttonCallback);
     glfwSetCursorPosCallback(window, mousePosCallback);
     glfwSetScrollCallback(window, mouseScrollCallback);
-    glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.125f, 0.125f, 0.3f, 1.0f);

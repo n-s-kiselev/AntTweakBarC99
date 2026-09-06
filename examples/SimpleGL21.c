@@ -123,6 +123,18 @@ char *g_userText = NULL; // Will be malloc'ed on first use
 // Quit-confirmation dialog state (see ShowConfirmQuitBar() below).
 static TwBar *g_ConfirmBar = NULL; // the "ConfirmQuit" bar, or NULL when not shown
 
+// Window content scale (see fontscaling comment near TwInit() in main()),
+// stashed here so ShowConfirmQuitBar() - which runs later, with no access
+// to main()'s locals - can scale its own bar's size the same way.
+float g_ContentScaleX = 1.0f, g_ContentScaleY = 1.0f;
+
+// GLFW always reports cursor position in window points, but TwWindowSize()
+// is now fed framebuffer pixels (see windowSizeCallback), so mouse events
+// must be scaled by this window/framebuffer ratio before reaching
+// AntTweakBar, or its hit-testing/drawing (now in pixel space) would
+// misread a point-space cursor position - see docs/plans/examples-hidpi-scaling.md.
+static double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
+
 static void CloseConfirmQuitBar(void);
 
 void TW_CALL ConfirmQuitYesCB(void *clientData)
@@ -168,9 +180,9 @@ static void ShowConfirmQuitBar(GLFWwindow *window)
 
     SetAllBarsVisible(0);
 
-    glfwGetWindowSize(window, &winWidth, &winHeight);
-    barWidth  = 220;
-    barHeight = 80;
+    glfwGetFramebufferSize(window, &winWidth, &winHeight);
+    barWidth  = (int)(220 * g_ContentScaleX + 0.5f);
+    barHeight = (int)(80 * g_ContentScaleY + 0.5f);
     posX = (winWidth  - barWidth)  / 2; if( posX < 0 ) posX = 0;
     posY = (winHeight - barHeight) / 2; if( posY < 0 ) posY = 0;
 
@@ -288,7 +300,7 @@ static void mousebuttonCallback(GLFWwindow* _window, int _button, int _action, i
 
 static void mousePosCallback(GLFWwindow* _window, double _xpos, double _ypos)
 {
-  if (TwEventMousePosGLFW((int)_xpos, (int)_ypos)) return;
+  if (TwEventMousePosGLFW((int)(_xpos * g_MouseScaleX), (int)(_ypos * g_MouseScaleY))) return;
 
   if (g_cameraDragging) {
       double dx = _xpos - g_lastMouseX;
@@ -315,6 +327,9 @@ static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yo
   if (TwEventMouseWheelGLFW((int)pos)) return;
 }
 
+// Registered as the FRAMEBUFFER size callback (not the window size
+// callback): GLFW reports this in actual pixels, matching
+// glViewport/TwWindowSize.
 static void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
   if (height == 0) height = 1;
@@ -332,6 +347,11 @@ static void windowSizeCallback(GLFWwindow* window, int width, int height)
     glFrustum(left, right, bottom, top, near, far);
 
     TwWindowSize(width, height);
+
+    int winWidth = width, winHeight = height;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    g_MouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
+    g_MouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 void TW_CALL ResetCubePosition(void *clientData)
@@ -471,8 +491,6 @@ int main(void)
       return 1;
   }
 
-  // Disable Retina scaling for now
-  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
   window = glfwCreateWindow(800, 600, "AntTweakBar + GLFW3 (OpenGL 2.1)", NULL, NULL);
   if(!window)
   {
@@ -488,6 +506,19 @@ int main(void)
       return -2;
   }
 
+  // AntTweakBar draws every widget at a fixed pixel size with no DPI
+  // awareness, so on a HiDPI/Retina display it looks too large/blurry
+  // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
+  // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
+  // window's content scale keeps it a comparable physical size; on a
+  // standard display the content scale is 1.0, so this is a no-op there.
+  glfwGetWindowContentScale(window, &g_ContentScaleX, &g_ContentScaleY);
+  {
+      char fontScalingDef[64];
+      snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)g_ContentScaleX);
+      TwDefine(fontScalingDef);
+  }
+
   // Initialize AntTweakBar
   if (!TwInit(TW_OPENGL, NULL)) {
       const char* err = TwGetLastError();
@@ -499,7 +530,7 @@ int main(void)
   TwSetCursorCallback(GLFWCursorCB, window);
   {
     int width, hight;
-    glfwGetWindowSize(window, &width, &hight);
+    glfwGetFramebufferSize(window, &width, &hight);
     windowSizeCallback(window, width, hight);
   }
   TwCopyCDStringToClientFunc(CopyCDStringToClient);
@@ -507,7 +538,13 @@ int main(void)
   // Create a tweak bar
   bar = TwNewBar("TweakBar");
   TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL 2.1. Press [Esc] to quit (with a confirmation dialog).' "); // Message added to the help bar.
-  TwDefine(" TweakBar size='220 530' color='100 100 50' alpha=200 ");
+  TwDefine(" TweakBar color='100 100 50' alpha=200 ");
+  {
+      // Scaled by content scale so the panel keeps up with the
+      // now-larger scaled contents.
+      int barSize[2] = { (int)(220 * g_ContentScaleX + 0.5f), (int)(530 * g_ContentScaleY + 0.5f) };
+      TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+  }
   // Add 'speed' to 'bar': it is a modifable (RW) variable of type TW_TYPE_DOUBLE. Its key shortcuts are [s] and [S].
   TwAddVarRW(bar, "speed", TW_TYPE_DOUBLE, &speed,
               " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ");
@@ -542,7 +579,7 @@ int main(void)
   glfwSetMouseButtonCallback(window, mousebuttonCallback);
   glfwSetCursorPosCallback(window, mousePosCallback);
   glfwSetScrollCallback(window, mouseScrollCallback);
-  glfwSetWindowSizeCallback(window, windowSizeCallback);
+  glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
   // Initialize time
   time = glfwGetTime();

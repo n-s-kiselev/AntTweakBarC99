@@ -51,9 +51,22 @@ typedef struct
     double      turn;         // current rotation, in turns
     int         wire;         // wireframe toggle
     float       bgColor[3];
+    // GLFW always reports cursor position in window points, but
+    // TwWindowSize() is now fed framebuffer pixels (see windowSizeCallback
+    // below), so mouse events must be scaled by this window/framebuffer
+    // ratio before reaching AntTweakBar - per-window, unlike fontscaling,
+    // since each window has its own point/pixel dimensions.
+    double      mouseScaleX, mouseScaleY;
 } DemoWindow;
 
 static DemoWindow g_Windows[NUM_WINDOWS];
+
+// Window content scale (see fontscaling comment in SetupWindow() below),
+// queried once for window 0 and reused for window 1's bar size too: fonts
+// are a process-wide resource (one shared g_FontScaling/set of default
+// fonts for every CTwMgr), so there is only ever one fontscaling value to
+// match, regardless of how many windows/managers exist.
+static float g_ContentScaleX = 1.0f, g_ContentScaleY = 1.0f;
 
 // AntTweakBar's cursor callback (TwSetCursorCallback, installed once below)
 // is a single, process-wide hook - it is not aware of which of our two
@@ -195,6 +208,9 @@ static void DrawCube(int wireframe)
     }
 }
 
+// Registered as the FRAMEBUFFER size callback (not the window size
+// callback): GLFW reports this in actual pixels, matching
+// glViewport/TwWindowSize.
 static void windowSizeCallback(GLFWwindow *window, int width, int height)
 {
     DemoWindow *dw = DemoWindowFor(window);
@@ -214,6 +230,11 @@ static void windowSizeCallback(GLFWwindow *window, int width, int height)
 
     TwSetCurrentWindow(dw->twWindowID);
     TwWindowSize(width, height);
+
+    int winWidth = width, winHeight = height;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    dw->mouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
+    dw->mouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 // Shared key/mouse callback bodies: each just resolves which DemoWindow the
@@ -283,7 +304,7 @@ static void mousePosCallback(GLFWwindow *window, double xpos, double ypos)
     if (dw == NULL) return;
     g_ActiveWindow = window;
     TwSetCurrentWindow(dw->twWindowID);
-    TwEventMousePosGLFW((int)xpos, (int)ypos);
+    TwEventMousePosGLFW((int)(xpos * dw->mouseScaleX), (int)(ypos * dw->mouseScaleY));
 }
 
 static void mouseScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
@@ -314,7 +335,6 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
 {
     DemoWindow *dw = &g_Windows[windowIndex];
 
-    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     dw->window = glfwCreateWindow(500, 500, title, NULL, shareWith);
     if (dw->window == NULL) {
         fprintf(stderr, "Cannot open GLFW window '%s'\n", title);
@@ -337,6 +357,20 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
             fprintf(stderr, "Failed to initialize GLAD\n");
             return false;
         }
+        // AntTweakBar draws every widget at a fixed pixel size with no DPI
+        // awareness, so on a HiDPI/Retina display it looks too large/blurry
+        // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
+        // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
+        // window's content scale keeps it a comparable physical size; on a
+        // standard display the content scale is 1.0, so this is a no-op
+        // there. Done once here (not per window): fonts are a process-wide
+        // resource shared by every window's manager.
+        glfwGetWindowContentScale(dw->window, &g_ContentScaleX, &g_ContentScaleY);
+        {
+            char fontScalingDef[64];
+            snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)g_ContentScaleX);
+            TwDefine(fontScalingDef);
+        }
         if (!TwInit(TW_OPENGL, NULL)) {
             fprintf(stderr, "TwInit failed: %s\n", TwGetLastError());
             return false;
@@ -357,13 +391,18 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
 
     {
         int width, height;
-        glfwGetWindowSize(dw->window, &width, &height);
+        glfwGetFramebufferSize(dw->window, &width, &height);
         windowSizeCallback(dw->window, width, height);
     }
 
     dw->bar = TwNewBar("TweakBar");
     TwDefine(" GLOBAL help='Two independent AntTweakBar-managed GLFW3 windows in one process.' ");
-    TwDefine(" TweakBar size='200 150' ");
+    {
+        // Scaled by content scale so the panel keeps up with the
+        // now-larger scaled contents.
+        int barSize[2] = { (int)(200 * g_ContentScaleX + 0.5f), (int)(150 * g_ContentScaleY + 0.5f) };
+        TwSetParam(dw->bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+    }
     TwAddVarRW(dw->bar, "speed", TW_TYPE_DOUBLE, &dw->speed,
                " label='Rot speed' min=0 max=2 step=0.01 help='Rotation speed (turns/second)' ");
     TwAddVarRW(dw->bar, "wire", TW_TYPE_BOOL32, &dw->wire,
@@ -376,7 +415,7 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
     glfwSetMouseButtonCallback(dw->window, mousebuttonCallback);
     glfwSetCursorPosCallback(dw->window, mousePosCallback);
     glfwSetScrollCallback(dw->window, mouseScrollCallback);
-    glfwSetWindowSizeCallback(dw->window, windowSizeCallback);
+    glfwSetFramebufferSizeCallback(dw->window, windowSizeCallback);
 
     return true;
 }

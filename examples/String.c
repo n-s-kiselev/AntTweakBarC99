@@ -180,10 +180,17 @@ static void mousebuttonCallback(GLFWwindow* _window, int _button, int _action, i
     TwEventMouseButtonGLFW(_button, _action);
 }
 
+// GLFW always reports cursor position in window points, but TwWindowSize()
+// is now fed framebuffer pixels (see windowSizeCallback below), so mouse
+// events must be scaled by this window/framebuffer ratio before reaching
+// AntTweakBar, or its hit-testing/drawing (now in pixel space) would
+// misread a point-space cursor position - see docs/plans/examples-hidpi-scaling.md.
+static double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
+
 static void mousePosCallback(GLFWwindow* _window, double _xpos, double _ypos)
 {
     (void)_window;
-    TwEventMousePosGLFW((int)_xpos, (int)_ypos);
+    TwEventMousePosGLFW((int)(_xpos * g_MouseScaleX), (int)(_ypos * g_MouseScaleY));
 }
 
 static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yoffset)
@@ -194,11 +201,18 @@ static void mouseScrollCallback(GLFWwindow* _window, double _xoffset, double _yo
     TwEventMouseWheelGLFW((int)pos);
 }
 
+// Registered as the FRAMEBUFFER size callback (not the window size
+// callback): GLFW reports this in actual pixels, matching
+// glViewport/TwWindowSize.
 static void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-    (void)window;
     glViewport(0, 0, width, height);
     TwWindowSize(width, height);
+
+    int winWidth = width, winHeight = height;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    g_MouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
+    g_MouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 static void error_callback(int error, const char* description)
@@ -318,7 +332,6 @@ int main(void)
         return 1;
     }
 
-    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     window = glfwCreateWindow(640, 480, "AntTweakBar + GLFW3 (String Types)", NULL, NULL);
     if (!window)
     {
@@ -334,6 +347,20 @@ int main(void)
         return -2;
     }
 
+    // AntTweakBar draws every widget at a fixed pixel size with no DPI
+    // awareness, so on a HiDPI/Retina display it looks too large/blurry
+    // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
+    // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
+    // window's content scale keeps it a comparable physical size; on a
+    // standard display the content scale is 1.0, so this is a no-op there.
+    float contentScaleX = 1.0f, contentScaleY = 1.0f;
+    glfwGetWindowContentScale(window, &contentScaleX, &contentScaleY);
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScaleX);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         const char* err = TwGetLastError();
         fprintf(stderr, "TwInit failed: %s\n", err ? err : "Unknown error");
@@ -344,13 +371,19 @@ int main(void)
     TwSetCursorCallback(GLFWCursorCB, window);
     {
         int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        glfwGetFramebufferSize(window, &width, &height);
         windowSizeCallback(window, width, height);
     }
 
     // Create a tweak bar
     TwBar *bar = TwNewBar("Main");
-    TwDefine(" Main label='~ String variable examples ~' fontSize=3 position='180 16' size='270 320' valuesWidth=100 ");
+    TwDefine(" Main label='~ String variable examples ~' fontSize=3 position='180 16' valuesWidth=100 ");
+    {
+        // Scaled by content scale so the panel keeps up with the
+        // now-larger scaled contents.
+        int barSize[2] = { (int)(270 * contentScaleX + 0.5f), (int)(320 * contentScaleY + 0.5f) };
+        TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+    }
 
 
     //
@@ -417,7 +450,7 @@ int main(void)
     glfwSetMouseButtonCallback(window, mousebuttonCallback);
     glfwSetCursorPosCallback(window, mousePosCallback);
     glfwSetScrollCallback(window, mouseScrollCallback);
-    glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
     while (!glfwWindowShouldClose(window))
     {

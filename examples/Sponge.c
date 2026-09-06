@@ -415,6 +415,13 @@ static void FillSpongeBuffers(int level, int levelMax, VertexArray *vertices, In
 // ----------------------------------------------------------------------
 
 static int g_Width = 640, g_Height = 480;
+
+// GLFW always reports cursor position in window points, but TwWindowSize()
+// is now fed framebuffer pixels (see windowSizeCallback), so mouse events
+// must be scaled by this window/framebuffer ratio before reaching
+// AntTweakBar, or its hit-testing/drawing (now in pixel space) would
+// misread a point-space cursor position - see docs/plans/examples-hidpi-scaling.md.
+static double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
 static VertexArray g_Vertices = {0};
 static IndexArray g_Indices = {0};
 
@@ -635,17 +642,24 @@ static void mousebuttonCallback(GLFWwindow* window, int button, int action, int 
 static void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
 {
   (void)window;
-  TwEventMousePosGLFW((int)xpos, (int)ypos);
+  TwEventMousePosGLFW((int)(xpos * g_MouseScaleX), (int)(ypos * g_MouseScaleY));
 }
 
+// Registered as the FRAMEBUFFER size callback (not the window size
+// callback): GLFW reports this in actual pixels, matching
+// glViewport/TwWindowSize.
 static void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-  (void)window;
   if (height == 0) height = 1;
   g_Width = width;
   g_Height = height;
   glViewport(0, 0, width, height);
   TwWindowSize(width, height);
+
+  int winWidth = width, winHeight = height;
+  glfwGetWindowSize(window, &winWidth, &winHeight);
+  g_MouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
+  g_MouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 static void error_callback(int error, const char* description)
@@ -664,10 +678,6 @@ int main(void)
         fprintf(stderr, "GLFW initialization failed\n");
         return 1;
     }
-
-    // Disable Retina scaling for now (matches every other example in this
-    // fork - see SimpleGL21.c).
-    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 
     // No version/profile hints: this AntTweakBar build only supports the
     // OpenGL compatibility profile for the fixed-function renderer used
@@ -698,6 +708,20 @@ int main(void)
     g_SpongeRotation = RotationFromAxisAngle(axis, FLOAT_PI/4);
     BuildSponge(g_SpongeLevel, g_SpongeAO);
 
+    // AntTweakBar draws every widget at a fixed pixel size with no DPI
+    // awareness, so on a HiDPI/Retina display it looks too large/blurry
+    // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
+    // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
+    // window's content scale keeps it a comparable physical size; on a
+    // standard display the content scale is 1.0, so this is a no-op there.
+    float contentScaleX = 1.0f, contentScaleY = 1.0f;
+    glfwGetWindowContentScale(window, &contentScaleX, &contentScaleY);
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScaleX);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
         return 1;
@@ -707,12 +731,17 @@ int main(void)
 
     {
         int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        glfwGetFramebufferSize(window, &width, &height);
         windowSizeCallback(window, width, height);
     }
 
     TwBar *bar = TwNewBar("TweakBar");
-    TwDefine(" TweakBar size='224 320' ");
+    {
+        // Scaled by content scale so the panel keeps up with the
+        // now-larger scaled contents.
+        int barSize[2] = { (int)(224 * contentScaleX + 0.5f), (int)(320 * contentScaleY + 0.5f) };
+        TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
+    }
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL, drawing a recursively-generated Menger sponge.' ");
 
     TwAddVarCB(bar, "Level", TW_TYPE_INT32, SetSpongeLevelCB, GetSpongeLevelCB, NULL, "min=0 max=3 group=Sponge keyincr=l keydecr=L");
@@ -732,7 +761,7 @@ int main(void)
     glfwSetCharCallback(window, charCallback);
     glfwSetMouseButtonCallback(window, mousebuttonCallback);
     glfwSetCursorPosCallback(window, mousePosCallback);
-    glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
     while (!glfwWindowShouldClose(window)) {
         Anim();
