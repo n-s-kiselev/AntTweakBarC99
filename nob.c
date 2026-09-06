@@ -179,19 +179,6 @@ static void add_common_build_deps(Nob_File_Paths *paths, const char *nob_exe)
     nob_da_append(paths, NOB_HEADER);
 }
 
-static bool check_linux_desktop_deps(void)
-{
-#if !defined(_WIN32) && !defined(__APPLE__)
-    if (!nob_file_exists("/usr/include/X11/Xlib.h")) {
-        nob_log(NOB_ERROR, "Missing X11 development headers: X11/Xlib.h");
-        nob_log(NOB_ERROR, "On Ubuntu/Debian install them with:");
-        nob_log(NOB_ERROR, "    sudo apt update && sudo apt install libx11-dev libxxf86vm-dev libxext-dev");
-        return false;
-    }
-#endif
-    return true;
-}
-
 static bool make_dirs(void)
 {
     return nob_mkdir_if_not_exists(BUILD_FOLDER)
@@ -375,7 +362,6 @@ static bool link_shared_library(Nob_File_Paths *objects, const char *nob_exe)
 
 static bool build_all(const char *nob_exe)
 {
-    if (!check_linux_desktop_deps()) return false;
     if (!make_dirs()) return false;
 
     Nob_File_Paths sources = {0};
@@ -414,6 +400,39 @@ static const char *example_executable_path(const char *source)
     return nob_temp_sprintf("%s%s" EXE_EXT, EXAMPLES_BUILD_FOLDER, base);
 }
 
+// Only the examples build compiles GLFW's X11 backend (vendor/glfw/
+// glfw_unity.c under build_glfw() below) - the library itself links no
+// X11 headers or libraries at all (see append_shared_link_libs()) - so
+// these dev headers are checked here, not for the library build.
+static bool check_linux_x11_deps(void)
+{
+#if !defined(_WIN32) && !defined(__APPLE__)
+    static const struct { const char *header; const char *pkg; } required[] = {
+        { "/usr/include/X11/Xlib.h",                "libx11-dev" },
+        { "/usr/include/X11/Xcursor/Xcursor.h",     "libxcursor-dev" },
+        { "/usr/include/X11/extensions/Xrandr.h",   "libxrandr-dev" },
+        { "/usr/include/X11/extensions/Xinerama.h", "libxinerama-dev" },
+        { "/usr/include/X11/extensions/XInput2.h",  "libxi-dev" },
+        { "/usr/include/X11/extensions/shape.h",    "libxext-dev" },
+    };
+    bool ok = true;
+    for (size_t i = 0; i < NOB_ARRAY_LEN(required); ++i) {
+        if (!nob_file_exists(required[i].header)) {
+            nob_log(NOB_ERROR, "Missing X11 development header: %s (package: %s)",
+                     required[i].header, required[i].pkg);
+            ok = false;
+        }
+    }
+    if (!ok) {
+        nob_log(NOB_ERROR, "On Ubuntu/Debian install all of them with:");
+        nob_log(NOB_ERROR, "    sudo apt update && sudo apt install libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libxext-dev");
+    }
+    return ok;
+#else
+    return true;
+#endif
+}
+
 static bool check_examples_deps(void)
 {
     if (!nob_file_exists(LIB_STATIC)) {
@@ -421,7 +440,7 @@ static bool check_examples_deps(void)
         nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples`.");
         return false;
     }
-    return true;
+    return check_linux_x11_deps();
 }
 
 // Compiles GLAD once for the examples (separate from the copy baked into
