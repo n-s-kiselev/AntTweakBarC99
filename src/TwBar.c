@@ -6832,6 +6832,8 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
                     Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
                     Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
                     DrawFilledCircle(x1, y1, 7, _Bar->m_ColRotoMax, false);
+                    // Thin white contrast ring, echoing GLFW3's own high-contrast cursor style.
+                    DrawArc(x1, y1, 7, 0, 360, COLOR32_WHITE);
 
                     x1 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da));
                     y1 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da)+0.5);
@@ -6839,6 +6841,7 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
                     Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
                     Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
                     DrawFilledCircle(x1, y1, 4, _Bar->m_ColRotoMin, true);
+                    DrawArc(x1, y1, 4, 0, 360, COLOR32_WHITE);
                 }
             }
         }
@@ -6848,9 +6851,10 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
         {
             // Tail of shrinking dots trailing the mouse cursor along the roto
             // circle. Offsets are in pixels of arc, so the tail keeps its
-            // apparent length at any radius.
+            // apparent length at any radius. Radii scaled down by 7/8 so the
+            // largest dot matches the red max-bound marker's radius (7).
             static const struct { float ArcOffset; int Radius; } tailDots[] = {
-                { 0.0f, 8 }, { -17.0f, 6 }, { ROTO_KNOB_ARC, 5 }, { -43.0f, 4 }, { -53.0f, 3 }
+                { 0.0f, 7 }, { -17.0f, 5 }, { ROTO_KNOB_ARC, 4 }, { -43.0f, 4 }, { -53.0f, 3 }
             };
             const CPoint origin = _Bar->m_Roto.m_Origin;
             const CPoint knob = RotoKnobPosition(&_Bar->m_Roto);
@@ -6862,13 +6866,22 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
             {
                 CPoint dot = RotoPointOnCircle(origin, radius, cursorAngle, tailDots[i].ArcOffset);
                 DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius, _Bar->m_ColRotoVal, true);
+                DrawArc(dot.x, dot.y, tailDots[i].Radius, 0, 360, COLOR32_WHITE);
             }
 
             // Short arc tick further behind the tail. DrawArc takes degrees.
             const float radToDeg = 180.0f/(float)M_PI;
-            DrawArc(origin.x, origin.y, (int)(radius+0.5f),
-                    (cursorAngle-62.0f/radius)*radToDeg, (cursorAngle-72.0f/radius)*radToDeg,
-                    _Bar->m_ColRotoVal);
+            const int   tickR     = (int)(radius+0.5f);
+            const float tickStart = (cursorAngle-62.0f/radius)*radToDeg;
+            const float tickEnd   = (cursorAngle-72.0f/radius)*radToDeg;
+            // Thicker white contour behind it: the same arc offset by a pixel
+            // in each direction, drawn first so the thin colored arc on top
+            // reads with a white outline around it.
+            DrawArc(origin.x-1, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x+1, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x,   origin.y-1, tickR, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x,   origin.y+1, tickR, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x,   origin.y,   tickR, tickStart, tickEnd, _Bar->m_ColRotoVal);
         }
     }
 }
