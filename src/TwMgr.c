@@ -30,11 +30,6 @@
 #   define _snprintf snprintf
 #endif  // defined(ANT_WINDOWS)
 
-// g_CurPict/g_CurMask/g_CurHot (cursor pixmap data): needed to build the
-// RGBA bitmaps passed to an installed TwCursorCB for TW_CURSOR_CUSTOM - see
-// BuildCustomCursorRGBA() near CTwMgr_SetCursor().
-#include "res/TwXCursors.h"
-
 CTwMgr *g_TwMgr = NULL; // current TwMgr
 bool g_BreakOnError = false;
 TwErrorHandler g_ErrorHandler = NULL;
@@ -6269,53 +6264,26 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
 
 //  ---------------------------------------------------------------------------
 
-// Builds a 32x32, 8-bit-per-channel RGBA (non-premultiplied alpha) bitmap
-// from g_CurPict/g_CurMask/g_CurHot (res/TwXCursors.h) for cursor _CurIdx,
-// for TwCursorCB's TW_CURSOR_CUSTOM case - the same source data
-// PixmapCursor() converts to each platform's own native cursor format.
-static void BuildCustomCursorRGBA(int _CurIdx, unsigned char *_OutRGBA32x32, int *_OutHotX, int *_OutHotY)
-{
-    for( int y=0; y<32; ++y )
-    {
-        for( int x=0; x<32; ++x )
-        {
-            const int src = x + y*32;
-            const int dst = 4*src;
-            const unsigned char shade = g_CurPict[_CurIdx][src] ? 255 : 0;
-            _OutRGBA32x32[dst+0] = shade;
-            _OutRGBA32x32[dst+1] = shade;
-            _OutRGBA32x32[dst+2] = shade;
-            _OutRGBA32x32[dst+3] = g_CurMask[_CurIdx][src] ? 255 : 0;
-        }
-    }
-    *_OutHotX = g_CurHot[_CurIdx][0];
-    *_OutHotY = g_CurHot[_CurIdx][1];
-}
-
 // Entry point used by CTwMgr_SetCursor(): dispatches to the callback
 // installed via TwSetCursorCallback (see AntTweakBar.h) and reports whether
 // it handled the request. TwSetCursorCallback() is the only cursor-shape
 // mechanism now - the native per-platform fallback this used to gate has
-// been deleted entirely (every platform), not ported.
-static bool DispatchCursorCallback(ETwCursor _Semantic, int _BitmapIdx)
+// been deleted entirely (every platform), not ported. The library itself
+// never requests TW_CURSOR_CUSTOM (see ANT_SET_CURSOR in TwBar.c), so
+// _RGBA32x32/_HotX/_HotY are always reported as unused (NULL/0/0); an
+// embedder's callback can still act on TW_CURSOR_CUSTOM if it wants to
+// build its own bitmap cursor for some other reason.
+static bool DispatchCursorCallback(ETwCursor _Semantic)
 {
     if( g_CursorCallback==NULL )
         return false;
-    if( _Semantic==TW_CURSOR_CUSTOM && _BitmapIdx>=0 )
-    {
-        unsigned char rgba[32*32*4];
-        int hotX, hotY;
-        BuildCustomCursorRGBA(_BitmapIdx, rgba, &hotX, &hotY);
-        g_CursorCallback(_Semantic, rgba, hotX, hotY, g_CursorCallbackClientData);
-    }
-    else
-        g_CursorCallback(_Semantic, NULL, 0, 0, g_CursorCallbackClientData);
+    g_CursorCallback(_Semantic, NULL, 0, 0, g_CursorCallbackClientData);
     return true;
 }
 
-void CTwMgr_SetCursor(ETwCursor _Semantic, int _BitmapIdx)
+void CTwMgr_SetCursor(ETwCursor _Semantic)
 {
-    DispatchCursorCallback(_Semantic, _BitmapIdx);
+    DispatchCursorCallback(_Semantic);
 }
 
 //  ---------------------------------------------------------------------------

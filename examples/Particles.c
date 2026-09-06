@@ -33,6 +33,7 @@
 // every cursor change through glfwSetCursor() instead, so GLFW3 owns it.
 static GLFWcursor* g_StandardCursors[TW_CURSOR_CUSTOM] = { NULL };
 static GLFWcursor* g_LastCustomCursor = NULL;
+static int g_CursorHidden = 0;
 
 static int GLFWStandardCursorShape(ETwCursor _Cursor)
 {
@@ -54,6 +55,18 @@ static int GLFWStandardCursorShape(ETwCursor _Cursor)
 static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
 {
     GLFWwindow *window = (GLFWwindow *)_ClientData;
+    // TW_CURSOR_HIDDEN is an input mode, not a cursor shape: the roto slider
+    // hides the pointer while it is dragged. g_CursorHidden remembers that so
+    // the mode is restored once, on the next request for a visible cursor.
+    if (_Cursor == TW_CURSOR_HIDDEN) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        g_CursorHidden = 1;
+        return;
+    }
+    if (g_CursorHidden) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        g_CursorHidden = 0;
+    }
     if (_Cursor == TW_CURSOR_CUSTOM && _RGBA32x32 != NULL) {
         GLFWimage img;
         img.width = 32; img.height = 32;

@@ -32,13 +32,9 @@ static const char *g_ErrNotEnum        = "Must be of type Enum";
 // since program start," identical to what glfwGetTime() already provides.
 // All 4 call sites now call glfwGetTime() directly.
 
-// Maps each named native cursor to the toolkit-agnostic ETwCursor value (and,
-// for the custom ones, the res/TwXCursors.h bitmap index) reported to a
-// callback installed via TwSetCursorCallback (see AntTweakBar.h and
-// CTwMgr_SetCursor). Center/Point/the 12 roto cursors have no
-// standard-shape equivalent across platforms/toolkits, so they all collapse
-// to TW_CURSOR_CUSTOM plus a bitmap index CTwMgr_SetCursor converts to an
-// RGBA bitmap on demand.
+// Maps each named native cursor to the toolkit-agnostic ETwCursor value
+// reported to a callback installed via TwSetCursorCallback (see
+// AntTweakBar.h and CTwMgr_SetCursor).
 #define ANT_CURSOR_SEMANTIC_Arrow           TW_CURSOR_ARROW
 #define ANT_CURSOR_SEMANTIC_Move            TW_CURSOR_MOVE
 #define ANT_CURSOR_SEMANTIC_WE              TW_CURSOR_RESIZE_WE
@@ -53,28 +49,9 @@ static const char *g_ErrNotEnum        = "Must be of type Enum";
 #define ANT_CURSOR_SEMANTIC_UpArrow         TW_CURSOR_UPARROW
 #define ANT_CURSOR_SEMANTIC_No              TW_CURSOR_NO
 #define ANT_CURSOR_SEMANTIC_IBeam           TW_CURSOR_IBEAM
-#define ANT_CURSOR_SEMANTIC_Center          TW_CURSOR_CUSTOM
-#define ANT_CURSOR_SEMANTIC_Point           TW_CURSOR_CUSTOM
+#define ANT_CURSOR_SEMANTIC_Hidden          TW_CURSOR_HIDDEN
 
-#define ANT_CURSOR_BITMAP_Arrow             -1
-#define ANT_CURSOR_BITMAP_Move              -1
-#define ANT_CURSOR_BITMAP_WE                -1
-#define ANT_CURSOR_BITMAP_NS                -1
-#define ANT_CURSOR_BITMAP_TopRight          -1
-#define ANT_CURSOR_BITMAP_BottomLeft        -1
-#define ANT_CURSOR_BITMAP_TopLeft           -1
-#define ANT_CURSOR_BITMAP_BottomRight       -1
-#define ANT_CURSOR_BITMAP_Help              -1
-#define ANT_CURSOR_BITMAP_Hand              -1
-#define ANT_CURSOR_BITMAP_Cross             -1
-#define ANT_CURSOR_BITMAP_UpArrow           -1
-#define ANT_CURSOR_BITMAP_No                -1
-#define ANT_CURSOR_BITMAP_IBeam             -1
-#define ANT_CURSOR_BITMAP_Center            0
-#define ANT_CURSOR_BITMAP_Point             1
-
-#define ANT_SET_CURSOR(_Name)       CTwMgr_SetCursor(ANT_CURSOR_SEMANTIC_##_Name, ANT_CURSOR_BITMAP_##_Name)
-#define ANT_SET_ROTO_CURSOR(_Num)   CTwMgr_SetCursor(TW_CURSOR_CUSTOM, 2+(_Num))
+#define ANT_SET_CURSOR(_Name)       CTwMgr_SetCursor(ANT_CURSOR_SEMANTIC_##_Name)
 
 #if !defined(ANT_WINDOWS)
 #   define _stricmp strcasecmp
@@ -3719,8 +3696,9 @@ void CTwBar_UpdateColors(CTwBar *_Bar)
     _Bar->m_ColInfoText = Color32FromARGBf(1.0f, 0.5f, 0.5f, 0.5f);
 
     _Bar->m_ColRoto = lightText ? Color32FromARGBf(0.8f, 0.85f, 0.85f, 0.85f) : Color32FromARGBf(0.8f, 0.1f, 0.1f, 0.1f);
-    _Bar->m_ColRotoVal = Color32FromARGBf(1, 1.0f, 0.2f, 0.2f);
-    _Bar->m_ColRotoBound = lightText ? Color32FromARGBf(0.8f, 0.6f, 0.6f, 0.6f) : Color32FromARGBf(0.8f, 0.3f, 0.3f, 0.3f);
+    _Bar->m_ColRotoVal = Color32FromARGBf(1, 0.88f, 0.20f, 0.66f);
+    _Bar->m_ColRotoMin = Color32FromARGBf(1, 0.30f, 0.38f, 0.82f);
+    _Bar->m_ColRotoMax = Color32FromARGBf(1, 0.96f, 0.34f, 0.34f);
 
     _Bar->m_ColEditText = lightText ? COLOR32_WHITE : COLOR32_BLACK;
     _Bar->m_ColEditBg = lightText ? 0xff575757 : 0xffc7c7c7; // must be opaque
@@ -5395,7 +5373,7 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
                     //else if( _Bar->m_DrawRotoBtn && _X<_Bar->m_PosX+_Bar->m_VarX1 ) // [o] button
                     {
                         _Bar->m_HighlightRotoBtn = true;
-                        ANT_SET_CURSOR(Point);
+                        ANT_SET_CURSOR(Cross);
                     }
                     else if( _Bar->m_DrawIncrDecrBtn && _X>=_Bar->m_PosX+_Bar->m_VarX2-2*IncrBtnWidth(_Bar->m_Font->m_CharHeight) ) // [+] button
                     {
@@ -5415,7 +5393,7 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
                             ANT_SET_CURSOR(Arrow);
                     }
                     else
-                        //ANT_SET_CURSOR(Point);
+                        //ANT_SET_CURSOR(Cross);
                         ANT_SET_CURSOR(IBeam);
                 }
             }
@@ -6761,6 +6739,56 @@ void DrawArc(int _X, int _Y, int _Radius, float _StartAngleDeg, float _EndAngleD
     Gr->DrawLine(Gr, x0, y0, x1, y1, _Color, _Color, true);
 }
 
+// Filled disc, drawn as horizontal scanlines (DrawArc only strokes an outline).
+static void DrawFilledCircle(int _X, int _Y, int _Radius, color32 _Color, bool _AntiAliased)
+{
+    ITwGraph *Gr = g_TwMgr->m_Graph;
+    for( int y=-_Radius; y<=_Radius; ++y )
+    {
+        int x = (int)sqrtf((float)(_Radius*_Radius-y*y));
+        Gr->DrawLine(Gr, _X-x, _Y+y, _X+x, _Y+y, _Color, _Color, _AntiAliased);
+    }
+}
+
+// Point on the circle of radius _Radius around _Origin, _ArcOffset pixels of
+// arc away from _Angle. Angles are in radians, counter-clockwise, so y is
+// subtracted (screen y points down).
+static CPoint RotoPointOnCircle(CPoint _Origin, float _Radius, float _Angle, float _ArcOffset)
+{
+    float angle = _Angle + _ArcOffset/_Radius;
+    return CPoint_Make(_Origin.x + (int)(_Radius*cosf(angle)+0.5f),
+                       _Origin.y - (int)(_Radius*sinf(angle)+0.5f));
+}
+
+// Where the knob sits relative to the mouse cursor, in pixels of arc: the
+// knob trails the cursor so the pointer never covers it.
+#define ROTO_KNOB_ARC   (-31.0f)
+
+// Angle of the mouse cursor on the roto circle, and the radius it is at.
+// Returns false when the cursor is exactly on the origin, where no angle is
+// defined.
+static bool RotoCursorPolar(const CRotoSlider *_Roto, float *_OutRadius, float *_OutAngle)
+{
+    CPoint d = CPoint_Sub(_Roto->m_Current, _Roto->m_Origin);
+    float radius = sqrtf((float)(d.x*d.x+d.y*d.y));
+    if( radius<=0 )
+        return false;
+    *_OutRadius = radius;
+    *_OutAngle = -atan2f((float)d.y, (float)d.x);
+    return true;
+}
+
+// Screen position of the knob the roto slider actually tracks. Both drawing
+// and input use this rather than the raw cursor position, so the value
+// follows the knob the user is looking at.
+static CPoint RotoKnobPosition(const CRotoSlider *_Roto)
+{
+    float radius, angle;
+    if( !RotoCursorPolar(_Roto, &radius, &angle) )
+        return _Roto->m_Current;
+    return RotoPointOnCircle(_Roto->m_Origin, radius, angle, ROTO_KNOB_ARC);
+}
+
 //  ---------------------------------------------------------------------------
 
 void CRotoSlider_Init(CRotoSlider *_Roto)
@@ -6795,43 +6823,52 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
 
                 if( dtMax>=0 && dtMax<360 && dtMin<=0 && dtMin>-360 && fabs(dtMax-dtMin)<=360 )
                 {
-                    int x1, y1, x2, y2;
+                    int x1, y1;
                     double da = 2.0*M_PI/_Bar->m_Roto.m_Subdiv;
 
                     x1 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da));
                     y1 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da)+0.5);
-                    x2 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax-10)/180-da));
-                    y2 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax-10)/180-da)+0.5);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1, y1, x2, y2, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1+1, y1, x2+1, y2, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1, y1+1, x2, y2+1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
+                    DrawFilledCircle(x1, y1, 7, _Bar->m_ColRotoMax, false);
 
                     x1 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da));
                     y1 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da)+0.5);
-                    x2 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin+10)/180+da));
-                    y2 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin+10)/180+da)+0.5);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1, y1, x2, y2, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1+1, y1, x2+1, y2, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
-                    Gr->DrawLine(Gr, x1, y1+1, x2, y2+1, _Bar->m_ColRotoBound, _Bar->m_ColRotoBound, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
+                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
+                    DrawFilledCircle(x1, y1, 4, _Bar->m_ColRotoMin, true);
                 }
             }
         }
 
-        Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, _Bar->m_Roto.m_Current.x+1, _Bar->m_Roto.m_Current.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
-        Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, _Bar->m_Roto.m_Current.x, _Bar->m_Roto.m_Current.y+1, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
-        Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, _Bar->m_Roto.m_Current.x, _Bar->m_Roto.m_Current.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
-
-        if( fabs(_Bar->m_Roto.m_AngleDT)>=1 )
+        float radius, cursorAngle;
+        if( RotoCursorPolar(&_Bar->m_Roto, &radius, &cursorAngle) )
         {
-            DrawArc(_Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, 32, (float)(_Bar->m_Roto.m_Angle0), (float)(_Bar->m_Roto.m_Angle0+_Bar->m_Roto.m_AngleDT-1), _Bar->m_ColRotoVal);
-            DrawArc(_Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, 32, (float)(_Bar->m_Roto.m_Angle0), (float)(_Bar->m_Roto.m_Angle0+_Bar->m_Roto.m_AngleDT-1), _Bar->m_ColRotoVal);
-            DrawArc(_Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, 32, (float)(_Bar->m_Roto.m_Angle0), (float)(_Bar->m_Roto.m_Angle0+_Bar->m_Roto.m_AngleDT-1), _Bar->m_ColRotoVal);
+            // Tail of shrinking dots trailing the mouse cursor along the roto
+            // circle. Offsets are in pixels of arc, so the tail keeps its
+            // apparent length at any radius.
+            static const struct { float ArcOffset; int Radius; } tailDots[] = {
+                { 0.0f, 8 }, { -17.0f, 6 }, { ROTO_KNOB_ARC, 5 }, { -43.0f, 4 }, { -53.0f, 3 }
+            };
+            const CPoint origin = _Bar->m_Roto.m_Origin;
+            const CPoint knob = RotoKnobPosition(&_Bar->m_Roto);
+            Gr->DrawLine(Gr, origin.x+1, origin.y, knob.x+1, knob.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
+            Gr->DrawLine(Gr, origin.x, origin.y+1, knob.x, knob.y+1, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
+            Gr->DrawLine(Gr, origin.x, origin.y, knob.x, knob.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
+
+            for( size_t i=0; i<sizeof(tailDots)/sizeof(tailDots[0]); ++i )
+            {
+                CPoint dot = RotoPointOnCircle(origin, radius, cursorAngle, tailDots[i].ArcOffset);
+                DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius, _Bar->m_ColRotoVal, true);
+            }
+
+            // Short arc tick further behind the tail. DrawArc takes degrees.
+            const float radToDeg = 180.0f/(float)M_PI;
+            DrawArc(origin.x, origin.y, (int)(radius+0.5f),
+                    (cursorAngle-62.0f/radius)*radToDeg, (cursorAngle-72.0f/radius)*radToDeg,
+                    _Bar->m_ColRotoVal);
         }
     }
 }
@@ -6893,18 +6930,17 @@ void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
         CTwBar_RotoSetValue(_Bar, CTwBar_RotoGetSteppedValue(_Bar));
         //DrawManip();
 
-        int ti = -1;
         double t = 0;
         float r = sqrtf((float)(  (_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x)*(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x) 
                               + (_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)*(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)));
         if( r>_Bar->m_RotoMinRadius )
         {
-            t = - atan2((double)(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y), (double)(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x));
-            ti = ((int)((t/(2.0*M_PI)+1.0)*NB_ROTO_CURSORS+0.5)) % NB_ROTO_CURSORS;
+            CPoint knob = RotoKnobPosition(&_Bar->m_Roto);
+            t = - atan2((double)(knob.y-_Bar->m_Roto.m_Origin.y), (double)(knob.x-_Bar->m_Roto.m_Origin.x));
             if( _Bar->m_Roto.m_HasPrevious )
             {
                 CPoint v0 = CPoint_Sub(_Bar->m_Roto.m_Previous, _Bar->m_Roto.m_Origin);
-                CPoint v1 = CPoint_Sub(_Bar->m_Roto.m_Current, _Bar->m_Roto.m_Origin);
+                CPoint v1 = CPoint_Sub(knob, _Bar->m_Roto.m_Origin);
                 double l0 = sqrt((double)(v0.x*v0.x+v0.y*v0.y));
                 double l1 = sqrt((double)(v1.x*v1.x+v1.y*v1.y));
                 double dt = acos(max(-1+1.0e-30,min(1-1.0e-30,(double)(v0.x*v1.x+v0.y*v1.y)/(l0*l1))));
@@ -6932,13 +6968,13 @@ void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
                         _Bar->m_Roto.m_Angle0 = (((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360) - da;
                         _Bar->m_Roto.m_AngleDT = da;
                     }
-                    _Bar->m_Roto.m_Previous = _Bar->m_Roto.m_Current;
+                    _Bar->m_Roto.m_Previous = knob;
                     _Bar->m_Roto.m_AngleDT += 180.0*dt/M_PI;
                 }
             }
             else
             {
-                _Bar->m_Roto.m_Previous = _Bar->m_Roto.m_Current;
+                _Bar->m_Roto.m_Previous = knob;
                 _Bar->m_Roto.m_Value0 = CTwBar_RotoGetValue(_Bar);
                 _Bar->m_Roto.m_PreciseValue = _Bar->m_Roto.m_Value0;
                 _Bar->m_Roto.m_HasPrevious = true;
@@ -6960,15 +6996,12 @@ void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
             _Bar->m_Roto.m_HasPrevious = false;
             _Bar->m_Roto.m_AngleDT = 0;
         }
-        if( ti>=0 && ti<NB_ROTO_CURSORS )
-            ANT_SET_ROTO_CURSOR(ti);
-        else
-            ANT_SET_CURSOR(Center);
+        ANT_SET_CURSOR(Hidden);
     }
     else
     {
         if( _Bar->m_HighlightRotoBtn )
-            ANT_SET_CURSOR(Point);
+            ANT_SET_CURSOR(Cross);
         else
             ANT_SET_CURSOR(Arrow);
     }
@@ -7007,7 +7040,7 @@ void CTwBar_RotoOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
                 _Bar->m_Roto.m_Subdiv = 3*(int)dsubdiv;
         }
 
-        ANT_SET_CURSOR(Center);
+        ANT_SET_CURSOR(Hidden);
     }
 }
 
@@ -7021,6 +7054,7 @@ void CTwBar_RotoOnLButtonUp(CTwBar *_Bar, int _X, int _Y)
 
         _Bar->m_Roto.m_Var = NULL;
         _Bar->m_Roto.m_Active = false;
+        ANT_SET_CURSOR(Arrow);
     }
 }
 
@@ -7508,5 +7542,3 @@ int TW_CALL TwHandleX11SelectionRequest(void *_XEvent)
 
 
 //  ---------------------------------------------------------------------------
-
-

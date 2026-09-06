@@ -43,9 +43,14 @@ Then:
 
 ```sh
 ./nob            # build the library (lib/libAntTweakBarC99.{a,so/dylib/dll})
-./nob -clean     # remove all generated build output
 ./nob -examples  # build the example programs (requires ./nob to have run first)
 ./nob -help      # list all flags
+```
+
+To rebuild from scratch you have to clean the folder from artifacts:
+
+```
+./nob -clean     # remove all generated build output
 ```
 
 `./nob` produces:
@@ -55,14 +60,13 @@ Then:
   (macOS) / `lib/libAntTweakBarC99.dll` + `.dll.a` (Windows/MinGW) —
   dynamic library
 
-`./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. All examples compile statically against `lib/libAntTweakBarC99.a` into
+`./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. All examples compile statically against `lib/libAntTweakBarC99.a` and place executbles in
 `build/examples/`.
 
-Note, no system GLFW3 install is needed. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source.
-GLFW3 is this library's only supported event backend — the original
-GLUT/SDL/SFML/X11 event-translation sources have been removed outright
-(not ported), since nothing else in this fork ever used them. DirectX9/10/11
-remain out of scope for this fork.
+You do not need to install GLFW3 in your system. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source automatically.
+
+At the moment this library suports only GLFW3 event backend — the original
+GLUT/SDL/SFML/X11 event-translation sources have been removed for simplicity of C++ to C99 migration. DirectX9/10/11 remain out of scope for this fork.
 
 **Supported platforms:** Linux, macOS, and Windows (MinGW).
 

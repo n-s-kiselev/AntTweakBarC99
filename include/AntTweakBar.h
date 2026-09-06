@@ -222,14 +222,17 @@ typedef enum ETwCursor
     TW_CURSOR_UPARROW       = 9,
     TW_CURSOR_NO            = 10,
     TW_CURSOR_IBEAM         = 11,
-    TW_CURSOR_CUSTOM        = 12   // see _RGBA32x32/_HotX/_HotY below
+    TW_CURSOR_CUSTOM        = 12,  // see _RGBA32x32/_HotX/_HotY below
+    TW_CURSOR_HIDDEN        = 13   // hide the pointer entirely (roto slider
+                                   // drag); the next non-hidden cursor
+                                   // request means "show it again"
 } ETwCursor;
 
 // _RGBA32x32 is a ready 32x32, 8-bit-per-channel RGBA bitmap (non-premultiplied
 // alpha) and (_HotX,_HotY) its hotspot, valid only for the duration of the
-// call; only meaningful (non-NULL) when _Cursor==TW_CURSOR_CUSTOM, which
-// AntTweakBar uses for its center/point/rotate cursors (no standard-shape
-// equivalent exists across platforms/toolkits).
+// call; only meaningful (non-NULL) when _Cursor==TW_CURSOR_CUSTOM. AntTweakBar
+// itself never requests TW_CURSOR_CUSTOM - every cursor it needs has a
+// standard-shape equivalent - so a callback currently never receives it.
 typedef void (TW_CALL * TwCursorCB)(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData);
 TW_API void     TW_CALL TwSetCursorCallback(TwCursorCB _Callback, void *_ClientData);
 

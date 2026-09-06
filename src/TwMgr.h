@@ -79,9 +79,6 @@ typedef struct { char   *items; size_t count; size_t capacity; } CByteArray;
 #   define PERF(cmd)
 #endif  // BENCH
 
-static const int NB_ROTO_CURSORS = 12;
-
-
 //  ---------------------------------------------------------------------------
 //  API unexposed by AntTweakBar.h
 //  ---------------------------------------------------------------------------
@@ -359,9 +356,8 @@ void        CTwMgr_SetCurrentDbgParams(CTwMgr *_Mgr, const char *file, int line)
 // Was CTwMgr::CreateCursors/PixmapCursor/FreeCursors/SetCursor (3 native,
 // per-platform implementations each) - deleted entirely, on every platform,
 // not ported: TwSetCursorCallback() (see AntTweakBar.h) is now the only
-// cursor-shape mechanism. _BitmapIdx (into g_CurPict/g_CurMask, see
-// res/TwXCursors.h) is only used when _Semantic==TW_CURSOR_CUSTOM.
-void        CTwMgr_SetCursor(ETwCursor _Semantic, int _BitmapIdx);
+// cursor-shape mechanism.
+void        CTwMgr_SetCursor(ETwCursor _Semantic);
 
 // CEnum helpers: keep m_Entries sorted ascending by Value (see the
 // comment above CEnum) - use these instead of touching .items

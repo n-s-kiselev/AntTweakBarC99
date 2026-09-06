@@ -409,7 +409,8 @@ struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a point
     color32                 m_ColHelpText;
     color32                 m_ColRoto;
     color32                 m_ColRotoVal;
-    color32                 m_ColRotoBound;
+    color32                 m_ColRotoMin;
+    color32                 m_ColRotoMax;
     color32                 m_ColEditBg;
     color32                 m_ColEditText;
     color32                 m_ColEditSelBg;
