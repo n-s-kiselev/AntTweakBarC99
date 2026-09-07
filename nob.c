@@ -220,6 +220,21 @@ static bool is_sds_source(const char *source)
     return strcmp(source, SDS_SRC) == 0;
 }
 
+// glad.c (vendor/glad/, generated code) casts the void* dlsym()/
+// GetProcAddress() returns to each GL function's pointer-to-function type -
+// the standard, portable way to load GL entry points, but strict ISO C
+// forbids object-pointer-to-function-pointer conversions, so -pedantic
+// flags every single one of them (-Wpedantic). Harmless (every compiler/OS
+// this project targets treats the two pointer kinds identically) and not
+// something to fix by patching vendored, unmodified upstream code (AGENTS.md
+// SS4) - -pedantic is simply the wrong tool for generated loader code like
+// this. -Wall/-Wextra still apply, so a genuine bug in this file would
+// still be caught.
+static bool is_glad_source(const char *source)
+{
+    return strcmp(source, GLAD_SRC) == 0;
+}
+
 static const char *compiler_for_source(const char *source)
 {
     if (is_sds_source(source)) return "cc";
@@ -286,7 +301,8 @@ static bool build_object(const char *source, const char *folder, const char *tw_
     // practice (is_cpp_source has nothing left to say "c++" to in
     // common_sources) but guard on `compiler` anyway rather than assume.
     if (strcmp(compiler, "cc") == 0) {
-        nob_cmd_append(&cmd, "-std=c99", "-pedantic");
+        nob_cmd_append(&cmd, "-std=c99");
+        if (!is_glad_source(source)) nob_cmd_append(&cmd, "-pedantic");
     }
     append_platform_defines(&cmd);
     nob_cmd_append(&cmd, "-c", source, "-o", output);
