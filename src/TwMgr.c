@@ -149,17 +149,13 @@ extern const char *g_ErrUnknownAttrib;
 extern const char *g_ErrNoValue;
 extern const char *g_ErrBadValue;
 static const char *g_ErrInit       = "Already initialized";
-static const char *g_ErrShut       = "Already shutdown";
 static const char *g_ErrNotInit    = "Not initialized";
 static const char *g_ErrUnknownAPI = "Unsupported graph API";
-static const char *g_ErrBadDevice  = "Invalid graph device";
 static const char *g_ErrBadParam   = "Invalid parameter";
 static const char *g_ErrExist      = "Exists already";
 const char *g_ErrNotFound   = "Not found"; // shared with TwBar.c (see its own `extern const char *g_ErrNotFound;`)
-static const char *g_ErrNthToDo    = "Nothing to do";
 static const char *g_ErrBadSize    = "Bad size";
 static const char *g_ErrIsDrawing  = "Asynchronous drawing detected";
-static const char *g_ErrIsProcessing="Asynchronous processing detected";
 static const char *g_ErrOffset     = "Offset larger than StructSize";
 static const char *g_ErrDelStruct  = "Cannot delete a struct member";
 static const char *g_ErrNoBackQuote= "Name cannot include back-quote";
@@ -297,7 +293,7 @@ void ANT_CALL CColorExt_CopyVarFromExtCB(void *_VarValue, const void *_ExtValue,
             ext->m_HasAlpha = false;
 
         // Synchronize HLS and RGB
-        if( _ExtMemberIndex>=0 && _ExtMemberIndex<=2 )
+        if( _ExtMemberIndex<=2 )
             CColorExt_RGB2HLS(ext);
         else if( _ExtMemberIndex>=3 && _ExtMemberIndex<=5 )
             CColorExt_HLS2RGB(ext);
@@ -1864,8 +1860,7 @@ int ANT_CALL TwTerminate(void)
 {
     if( g_TwMgr==NULL )
     {
-        //TwGlobalError(g_ErrShut); -> not an error
-        return 0;  // already shutdown
+        return 0;  // already shutdown - not an error
     }
 
     // For multi-thread safety
@@ -3143,8 +3138,7 @@ int ANT_CALL TwDeleteAllBars(void)
 
     if( n==0 )
     {
-        //CTwMgr_SetLastError(g_TwMgr, g_ErrNthToDo);
-        return 0;
+        return 0; // nothing to do - not an error
     }
     else
         return 1;
@@ -4780,7 +4774,7 @@ TwType ANT_CALL TwDefineEnum(const char *_Name, const TwEnumVal *_EnumValues, un
         NewEnum.m_Entries.capacity = 0;
         tw_da_append(&g_TwMgr->m_Enums, NewEnum);
     }
-    assert( enumIndex>=0 && enumIndex<g_TwMgr->m_Enums.count );
+    assert( enumIndex<g_TwMgr->m_Enums.count );
     CEnum *e = &g_TwMgr->m_Enums.items[enumIndex];
     if( _Name!=NULL && strlen(_Name)>0 )
         e->m_Name = sdscpy(e->m_Name, _Name);
@@ -4860,7 +4854,7 @@ void ANT_CALL CStruct_DefaultSummary(char *_SummaryString, size_t _SummaryMaxLen
     size_t structIndex = (size_t)(_ClientData);
     if(    g_TwMgr && _SummaryString && _SummaryMaxLength>2
         && varGroup && CTwVar_IsGroup(&varGroup->m_Base)
-        && structIndex>=0 && structIndex<=g_TwMgr->m_Structs.count )
+        && structIndex<=g_TwMgr->m_Structs.count )
     {
         // return g_TwMgr->m_Structs.items[structIndex].m_Name;
         CStruct *s = &g_TwMgr->m_Structs.items[structIndex];

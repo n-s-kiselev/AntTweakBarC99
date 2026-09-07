@@ -22,7 +22,6 @@ static const char *g_ErrNotGroup       = "Value is not a group";
 const char *g_ErrNoValue        = "Value required"; // shared with TwMgr.c (see its own `extern const char *g_ErrNoValue;`)
 const char *g_ErrBadValue       = "Bad value"; // shared with TwMgr.c (see its own `extern const char *g_ErrBadValue;`)
 static const char *g_ErrUnknownType    = "Unknown type";
-static const char *g_ErrNotEnum        = "Must be of type Enum";
 
 #undef PERF         // comment to print benchs
 #define PERF(cmd)
@@ -3805,7 +3804,7 @@ void CTwBar_BrowseHierarchy(CTwBar *_Bar, int *_CurrLine, int _CurrLevel, const 
     {
         *_CurrLine = 0;
         _CurrLevel = -1;
-        tw_da_resize(&_Bar->m_HierTags, 0);
+        _Bar->m_HierTags.count = 0; // shrink only, no capacity growth needed
     }
 
     if( CTwVar_IsGroup(_Var) )
@@ -5799,10 +5798,6 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
 
 //  ---------------------------------------------------------------------------
 
-#ifdef ANT_WINDOWS
-#   pragma optimize("", off)
-//  disable optimizations because the conversion of Enum from unsigned int to double is not always exact if optimized and GraphAPI=DirectX !
-#endif
 static void ANT_CALL PopupCallback(void *_ClientData)
 {
     unsigned int fpuState = TwFPU_Save(); // force fpu precision
@@ -5825,9 +5820,6 @@ static void ANT_CALL PopupCallback(void *_ClientData)
     }
     TwFPU_Restore(fpuState);
 }
-#ifdef ANT_WINDOWS
-#   pragma optimize("", on)
-#endif
 
 //  ---------------------------------------------------------------------------
 
