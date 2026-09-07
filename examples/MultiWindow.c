@@ -335,6 +335,12 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
 {
     DemoWindow *dw = &g_Windows[windowIndex];
 
+    // Requested size is in "reference" (96 DPI) pixels; grow the actual
+    // window to match the monitor's real pixel density on platforms where
+    // window size and framebuffer size are otherwise always 1:1 (Windows,
+    // X11) - a no-op on macOS, which already does this by definition (see
+    // docs/plans/examples-hidpi-scaling.md).
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
     dw->window = glfwCreateWindow(500, 500, title, NULL, shareWith);
     if (dw->window == NULL) {
         fprintf(stderr, "Cannot open GLFW window '%s'\n", title);

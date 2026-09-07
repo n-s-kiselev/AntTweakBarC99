@@ -307,6 +307,12 @@ int main(void)
         return 1;
     }
 
+    // Requested size is in "reference" (96 DPI) pixels; grow the actual
+    // window to match the monitor's real pixel density on platforms where
+    // window size and framebuffer size are otherwise always 1:1 (Windows,
+    // X11) - a no-op on macOS, which already does this by definition (see
+    // docs/plans/examples-hidpi-scaling.md).
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
     window = glfwCreateWindow(g_Width, g_Height, "AntTweakBar + GLFW3 (Particles)", NULL, NULL);
     if (!window) {
         fprintf(stderr, "Cannot open GLFW window\n");

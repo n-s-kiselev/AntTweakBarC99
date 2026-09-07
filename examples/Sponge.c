@@ -683,6 +683,12 @@ int main(void)
     // OpenGL compatibility profile for the fixed-function renderer used
     // here (TW_OPENGL_CORE is a different code path), so we let GLFW3
     // create its default (non-core) context.
+    // Requested size is in "reference" (96 DPI) pixels; grow the actual
+    // window to match the monitor's real pixel density on platforms where
+    // window size and framebuffer size are otherwise always 1:1 (Windows,
+    // X11) - a no-op on macOS, which already does this by definition (see
+    // docs/plans/examples-hidpi-scaling.md).
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
     window = glfwCreateWindow(g_Width, g_Height, "AntTweakBar + GLFW3: Menger sponge", NULL, NULL);
     if (!window) {
         fprintf(stderr, "Cannot open GLFW window\n");
