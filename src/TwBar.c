@@ -5130,7 +5130,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
             if( !_Bar->m_IsPopupList )
             {
                 // Draw RotoSlider
-                CTwBar_RotoDraw(_Bar);
+                CTwBar_DrawRotoSlider(_Bar);
 
                 // Draw EditInPlace
                 CTwBar_EditInPlaceDraw(_Bar);
@@ -5464,13 +5464,13 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
             if( _Bar->m_MouseDragVar && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
                 // move rotoslider
-                if( !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider )
-                    CTwBar_RotoOnMouseMove(_Bar, _X, _Y);
-
-                if( ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly )
+                if( !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider ){
+                    CTwBar_RotoSliderOnMouseMove(_Bar, _X, _Y);
+                }
+                if( ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly ){
                     ANT_SET_CURSOR(No);
-                else if( ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider )
-                {
+                }
+                else if( ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_NoSlider ){
                     ANT_SET_CURSOR(Arrow);
                     CustomArea = true;
                 }
@@ -5874,9 +5874,9 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                 {
                     // begin rotoslider
                     if( _X>_Bar->m_PosX+_Bar->m_VarX1 && OnFocus )
-                        CTwBar_RotoOnLButtonDown(_Bar, _Bar->m_PosX+_Bar->m_VarX2-(1*IncrBtnWidth(_Bar->m_Font->m_CharHeight))/2, _Y);
+                        CTwBar_RotoSliderOnLButtonDown(_Bar, _Bar->m_PosX+_Bar->m_VarX2-(1*IncrBtnWidth(_Bar->m_Font->m_CharHeight))/2, _Y);
                     else
-                        CTwBar_RotoOnLButtonDown(_Bar, _X, _Y);
+                        CTwBar_RotoSliderOnLButtonDown(_Bar, _X, _Y);
                     _Bar->m_MouseDrag = true;
                     _Bar->m_MouseDragVar = true;
                 }
@@ -5988,7 +5988,7 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     _Bar->m_DrawHandles = false;
                 Handled = true;
                 // end rotoslider
-                CTwBar_RotoOnLButtonUp(_Bar, _X, _Y);
+                CTwBar_RotoSliderOnLButtonUp(_Bar, _X, _Y);
 
                 /* Incr/decr on right or left click
                 if( !_Bar->m_VarHasBeenIncr && !((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly )
@@ -6752,10 +6752,6 @@ static CPoint RotoPointOnCircle(CPoint _Origin, float _Radius, float _Angle, flo
                        _Origin.y - (int)(_Radius*sinf(angle)+0.5f));
 }
 
-// Where the knob sits relative to the mouse cursor, in pixels of arc: the
-// knob trails the cursor so the pointer never covers it.
-#define ROTO_KNOB_ARC   (-31.0f)
-
 // Angle of the mouse cursor on the roto circle, and the radius it is at.
 // Returns false when the cursor is exactly on the origin, where no angle is
 // defined.
@@ -6770,15 +6766,24 @@ static bool RotoCursorPolar(const CRotoSlider *_Roto, float *_OutRadius, float *
     return true;
 }
 
-// Screen position of the knob the roto slider actually tracks. Both drawing
-// and input use this rather than the raw cursor position, so the value
-// follows the knob the user is looking at.
-static CPoint RotoKnobPosition(const CRotoSlider *_Roto)
+// Bold stroke: the same line drawn three times, offset by a pixel in x and in y.
+static void RotoDrawThickLine(ITwGraph *_Gr, int _X0, int _Y0, int _X1, int _Y1, color32 _Color)
 {
-    float radius, angle;
-    if( !RotoCursorPolar(_Roto, &radius, &angle) )
-        return _Roto->m_Current;
-    return RotoPointOnCircle(_Roto->m_Origin, radius, angle, ROTO_KNOB_ARC);
+    _Gr->DrawLine(_Gr, _X0,   _Y0,   _X1,   _Y1,   _Color, _Color, true);
+    _Gr->DrawLine(_Gr, _X0+1, _Y0,   _X1+1, _Y1,   _Color, _Color, true);
+    _Gr->DrawLine(_Gr, _X0,   _Y0+1, _X1,   _Y1+1, _Color, _Color, true);
+}
+
+// One of the two bound markers (min/max): a thick spoke from the roto origin
+// out to the bound angle, capped by a filled dot with a thin white contrast
+// ring, echoing GLFW3's own high-contrast cursor style.
+static void RotoDrawBound(ITwGraph *_Gr, CPoint _Origin, double _AngleRad, color32 _Color, int _DotRadius, bool _AntiAliased)
+{
+    int x1 = _Origin.x + (int)(40*cos(_AngleRad));
+    int y1 = _Origin.y + (int)(40*sin(_AngleRad)+0.5);
+    RotoDrawThickLine(_Gr, _Origin.x, _Origin.y, x1, y1, _Color);
+    DrawFilledCircle(x1, y1, _DotRadius, _Color, _AntiAliased);
+    DrawArc(x1, y1, _DotRadius, 0, 360, COLOR32_WHITE);
 }
 
 //  ---------------------------------------------------------------------------
@@ -6788,10 +6793,10 @@ void CRotoSlider_Init(CRotoSlider *_Roto)
     _Roto->m_Var = NULL;
     _Roto->m_Active = false;
     _Roto->m_ActiveMiddle = false;
-    _Roto->m_Subdiv = 256; // will be recalculated in RotoOnLButtonDown
+    _Roto->m_Subdiv = 256; // will be recalculated in RotoSliderOnLButtonDown
 }
 
-void CTwBar_RotoDraw(CTwBar *_Bar)
+void CTwBar_DrawRotoSlider(CTwBar *_Bar)
 {
     ITwGraph *Gr = g_TwMgr->m_Graph;
     if( Gr==NULL || !Gr->IsDrawing(Gr) )
@@ -6799,15 +6804,17 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
 
     if( _Bar->m_Roto.m_Active )
     {
-        DrawArc(_Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, 32, 0, 360, _Bar->m_ColRoto);
-        DrawArc(_Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, 32, 0, 360, _Bar->m_ColRoto);
-        DrawArc(_Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, 32, 0, 360, _Bar->m_ColRoto);
+        const CPoint origin = _Bar->m_Roto.m_Origin;
+
+        DrawArc(origin.x, origin.y, 32, 0, 360, _Bar->m_ColRoto);
+        DrawArc(origin.x, origin.y, 33, 0, 360, _Bar->m_ColRoto);
+        DrawArc(origin.x, origin.y, 31, 0, 360, _Bar->m_ColRoto);
 
         if( _Bar->m_Roto.m_HasPrevious )
         {
-            double varMax = CTwBar_RotoGetMax(_Bar);
-            double varMin = CTwBar_RotoGetMin(_Bar);
-            double varStep = CTwBar_RotoGetStep(_Bar);
+            double varMax = CTwBar_GetRotoSliderMax(_Bar);
+            double varMin = CTwBar_GetRotoSliderMin(_Bar);
+            double varStep = CTwBar_GetRotoSliderStep(_Bar);
             if( varMax<DOUBLE_MAX && varMin>-DOUBLE_MAX && fabs(varStep)>DOUBLE_EPS && _Bar->m_Roto.m_Subdiv>0 )
             {
                 double dtMax = 360.0*(varMax-_Bar->m_Roto.m_ValueAngle0)/((double)_Bar->m_Roto.m_Subdiv*varStep);//+2;
@@ -6815,25 +6822,10 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
 
                 if( dtMax>=0 && dtMax<360 && dtMin<=0 && dtMin>-360 && fabs(dtMax-dtMin)<=360 )
                 {
-                    int x1, y1;
                     double da = 2.0*M_PI/_Bar->m_Roto.m_Subdiv;
 
-                    x1 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da));
-                    y1 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da)+0.5);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMax, _Bar->m_ColRotoMax, true);
-                    DrawFilledCircle(x1, y1, 7, _Bar->m_ColRotoMax, false);
-                    // Thin white contrast ring, echoing GLFW3's own high-contrast cursor style.
-                    DrawArc(x1, y1, 7, 0, 360, COLOR32_WHITE);
-
-                    x1 = _Bar->m_Roto.m_Origin.x + (int)(40*cos(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da));
-                    y1 = _Bar->m_Roto.m_Origin.y + (int)(40*sin(-M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da)+0.5);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y, x1, y1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x+1, _Bar->m_Roto.m_Origin.y, x1+1, y1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
-                    Gr->DrawLine(Gr, _Bar->m_Roto.m_Origin.x, _Bar->m_Roto.m_Origin.y+1, x1, y1+1, _Bar->m_ColRotoMin, _Bar->m_ColRotoMin, true);
-                    DrawFilledCircle(x1, y1, 4, _Bar->m_ColRotoMin, true);
-                    DrawArc(x1, y1, 4, 0, 360, COLOR32_WHITE);
+                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da, _Bar->m_ColRotoMax, 7, false);
+                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da, _Bar->m_ColRotoMin, 4, true);
                 }
             }
         }
@@ -6841,18 +6833,20 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
         float radius, cursorAngle;
         if( RotoCursorPolar(&_Bar->m_Roto, &radius, &cursorAngle) )
         {
-            // Tail of shrinking dots trailing the mouse cursor along the roto
-            // circle. Offsets are in pixels of arc, so the tail keeps its
-            // apparent length at any radius. Radii scaled down by 7/8 so the
-            // largest dot matches the red max-bound marker's radius (7).
+            // Comet tail of dots along the roto circle, shrinking from front to
+            // back. Offsets are in pixels of arc, so the tail keeps its apparent
+            // length at any radius. The middle dot (offset 0) sits exactly at
+            // the cursor angle; the others are purely decorative motion-trail
+            // marks ahead of and behind it.
             static const struct { float ArcOffset; int Radius; } tailDots[] = {
-                { 0.0f, 7 }, { -17.0f, 5 }, { ROTO_KNOB_ARC, 4 }, { -43.0f, 4 }, { -53.0f, 3 }
+                { 36.0f, 8 },
+                { 17.0f, 7 },
+                { 0.0f, 6 },
+                { -16.0f, 5 },
+                { -30.0f, 4 }
             };
-            const CPoint origin = _Bar->m_Roto.m_Origin;
-            const CPoint knob = RotoKnobPosition(&_Bar->m_Roto);
-            Gr->DrawLine(Gr, origin.x+1, origin.y, knob.x+1, knob.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
-            Gr->DrawLine(Gr, origin.x, origin.y+1, knob.x, knob.y+1, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
-            Gr->DrawLine(Gr, origin.x, origin.y, knob.x, knob.y, _Bar->m_ColRotoVal, _Bar->m_ColRotoVal, true);
+            const CPoint cursor = _Bar->m_Roto.m_Current;
+            RotoDrawThickLine(Gr, origin.x, origin.y, cursor.x, cursor.y, _Bar->m_ColRotoVal);
 
             for( size_t i=0; i<sizeof(tailDots)/sizeof(tailDots[0]); ++i )
             {
@@ -6863,28 +6857,50 @@ void CTwBar_RotoDraw(CTwBar *_Bar)
 
             // Short arc tick further behind the tail. DrawArc takes degrees.
             const float radToDeg = 180.0f/(float)M_PI;
-            const int   tickR     = (int)(radius+0.5f);
-            const float tickStart = (cursorAngle-62.0f/radius)*radToDeg;
-            const float tickEnd   = (cursorAngle-72.0f/radius)*radToDeg;
-            // Thicker white contour behind it: the same arc offset by a pixel
-            // in each direction, drawn first so the thin colored arc on top
-            // reads with a white outline around it.
-            DrawArc(origin.x-1, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x+1, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x,   origin.y-1, tickR, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x,   origin.y+1, tickR, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x,   origin.y,   tickR, tickStart, tickEnd, _Bar->m_ColRotoVal);
+            const int   tickR     = (int)(radius + 0.5f);
+            const float tickStart = (cursorAngle - 38.0f/radius)*radToDeg;
+            const float tickEnd   = (cursorAngle - 48.0f/radius)*radToDeg;
+            // Thickened radially: the same arc at three radii a pixel apart, so
+            // the tick reads as a solid white mark rather than a hairline.
+            DrawArc(origin.x, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x, origin.y,   tickR+1, tickStart, tickEnd, COLOR32_WHITE);
+            DrawArc(origin.x, origin.y,   tickR-1, tickStart, tickEnd, COLOR32_WHITE);
+
+            // Sweep arc showing how far the value has turned from the anchor
+            // angle (m_Angle0) set when this drag last crossed
+            // m_RotoMinRadius. Its near end is where the line above crosses
+            // the base circle, i.e. the live raw cursor angle: it doesn't use
+            // the incrementally accumulated m_AngleDT, since dt is
+            // integrated via acos() only when the stepped value updates, so
+            // over many small updates it can drift away from the true angle.
+            if( _Bar->m_Roto.m_HasPrevious )
+            {
+                float a0 = (float)_Bar->m_Roto.m_Angle0;
+                float a1deg = cursorAngle*radToDeg;
+                float diff = fmodf(a1deg-a0, 360.0f);
+                if( diff>180.0f )
+                    diff -= 360.0f;
+                else if( diff<-180.0f )
+                    diff += 360.0f;
+                if( fabsf(diff)>=1.0f )
+                {
+                    float a1 = a0+diff;
+                    DrawArc(origin.x,   origin.y,   32, a0, a1, _Bar->m_ColRotoVal);
+                    DrawArc(origin.x+1, origin.y,   32, a0, a1, _Bar->m_ColRotoVal);
+                    DrawArc(origin.x,   origin.y+1, 32, a0, a1, _Bar->m_ColRotoVal);
+                }
+            }
         }
     }
 }
 
-double CTwBar_RotoGetValue(const CTwBar *_Bar)
+double CTwBar_GetRotoSliderValue(const CTwBar *_Bar)
 {
     assert(_Bar->m_Roto.m_Var!=NULL);
     return CTwVarAtom_ValueToDouble(_Bar->m_Roto.m_Var);
 }
 
-void CTwBar_RotoSetValue(CTwBar *_Bar, double _Val)
+void CTwBar_SetRotoSliderValue(CTwBar *_Bar, double _Val)
 {
     assert(_Bar->m_Roto.m_Var!=NULL);
     if( _Val!=_Bar->m_Roto.m_CurrentValue )
@@ -6895,7 +6911,7 @@ void CTwBar_RotoSetValue(CTwBar *_Bar, double _Val)
     }
 }
 
-double CTwBar_RotoGetMin(const CTwBar *_Bar)
+double CTwBar_GetRotoSliderMin(const CTwBar *_Bar)
 {
     assert(_Bar->m_Roto.m_Var!=NULL);
     double min = -DOUBLE_MAX;
@@ -6903,7 +6919,7 @@ double CTwBar_RotoGetMin(const CTwBar *_Bar)
     return min;
 }
 
-double CTwBar_RotoGetMax(const CTwBar *_Bar)
+double CTwBar_GetRotoSliderMax(const CTwBar *_Bar)
 {
     assert(_Bar->m_Roto.m_Var!=NULL);
     double max = DOUBLE_MAX;
@@ -6911,7 +6927,7 @@ double CTwBar_RotoGetMax(const CTwBar *_Bar)
     return max;
 }
 
-double CTwBar_RotoGetStep(const CTwBar *_Bar)
+double CTwBar_GetRotoSliderStep(const CTwBar *_Bar)
 {
     assert(_Bar->m_Roto.m_Var!=NULL);
     double step = 1;
@@ -6919,68 +6935,63 @@ double CTwBar_RotoGetStep(const CTwBar *_Bar)
     return step;
 }
 
-double CTwBar_RotoGetSteppedValue(const CTwBar *_Bar)
+double CTwBar_GetRotoSliderSteppedValue(const CTwBar *_Bar)
 {
     double d = _Bar->m_Roto.m_PreciseValue-_Bar->m_Roto.m_Value0;
-    double n = (int)(d/CTwBar_RotoGetStep(_Bar));
-    return _Bar->m_Roto.m_Value0 + CTwBar_RotoGetStep(_Bar)*n;
+    double n = (int)(d/CTwBar_GetRotoSliderStep(_Bar));
+    return _Bar->m_Roto.m_Value0 + CTwBar_GetRotoSliderStep(_Bar)*n;
 }
 
-void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
+// NSK 1
+void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
 {
     CPoint p = CPoint_Make(_X, _Y);
-    if( _Bar->m_Roto.m_Active )
-    {
+    if( _Bar->m_Roto.m_Active ){
         _Bar->m_Roto.m_Current = p;
-        CTwBar_RotoSetValue(_Bar, CTwBar_RotoGetSteppedValue(_Bar));
+        CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));
         //DrawManip();
 
         double t = 0;
         float r = sqrtf((float)(  (_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x)*(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x) 
                               + (_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)*(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)));
-        if( r>_Bar->m_RotoMinRadius )
-        {
-            CPoint knob = RotoKnobPosition(&_Bar->m_Roto);
-            t = - atan2((double)(knob.y-_Bar->m_Roto.m_Origin.y), (double)(knob.x-_Bar->m_Roto.m_Origin.x));
-            if( _Bar->m_Roto.m_HasPrevious )
-            {
+        if( r>_Bar->m_RotoMinRadius ){
+            t = - atan2((double)(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y), (double)(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x));
+            if( _Bar->m_Roto.m_HasPrevious ){
                 CPoint v0 = CPoint_Sub(_Bar->m_Roto.m_Previous, _Bar->m_Roto.m_Origin);
-                CPoint v1 = CPoint_Sub(knob, _Bar->m_Roto.m_Origin);
+                CPoint v1 = CPoint_Sub(_Bar->m_Roto.m_Current, _Bar->m_Roto.m_Origin);
                 double l0 = sqrt((double)(v0.x*v0.x+v0.y*v0.y));
                 double l1 = sqrt((double)(v1.x*v1.x+v1.y*v1.y));
                 double dt = acos(max(-1+1.0e-30,min(1-1.0e-30,(double)(v0.x*v1.x+v0.y*v1.y)/(l0*l1))));
                 if( v0.x*v1.y-v0.y*v1.x>0 )
                     dt = - dt;
-                double preciseInc = (double)(_Bar->m_Roto.m_Subdiv) * dt/(2.0*M_PI) * CTwBar_RotoGetStep(_Bar);
-                if( preciseInc>CTwBar_RotoGetStep(_Bar) || preciseInc<-CTwBar_RotoGetStep(_Bar) )
+                double preciseInc = (double)(_Bar->m_Roto.m_Subdiv) * dt/(2.0*M_PI) * CTwBar_GetRotoSliderStep(_Bar);
+                if( preciseInc>CTwBar_GetRotoSliderStep(_Bar) || preciseInc<-CTwBar_GetRotoSliderStep(_Bar) )
                 {
                     _Bar->m_Roto.m_PreciseValue += preciseInc;
-                    if( _Bar->m_Roto.m_PreciseValue>CTwBar_RotoGetMax(_Bar) )
+                    if( _Bar->m_Roto.m_PreciseValue>CTwBar_GetRotoSliderMax(_Bar) )
                     {
-                        _Bar->m_Roto.m_PreciseValue = CTwBar_RotoGetMax(_Bar);
-                        _Bar->m_Roto.m_Value0 = CTwBar_RotoGetMax(_Bar);
+                        _Bar->m_Roto.m_PreciseValue = CTwBar_GetRotoSliderMax(_Bar);
+                        _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderMax(_Bar);
 
-                        double da = 360*(CTwBar_RotoGetMax(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_RotoGetStep(_Bar));
+                        double da = 360*(CTwBar_GetRotoSliderMax(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_GetRotoSliderStep(_Bar));
                         _Bar->m_Roto.m_Angle0 = (((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360) - da;
                         _Bar->m_Roto.m_AngleDT = da;
                     }
-                    else if( _Bar->m_Roto.m_PreciseValue<CTwBar_RotoGetMin(_Bar) )
+                    else if( _Bar->m_Roto.m_PreciseValue<CTwBar_GetRotoSliderMin(_Bar) )
                     {
-                        _Bar->m_Roto.m_PreciseValue = CTwBar_RotoGetMin(_Bar);
-                        _Bar->m_Roto.m_Value0 = CTwBar_RotoGetMin(_Bar);
+                        _Bar->m_Roto.m_PreciseValue = CTwBar_GetRotoSliderMin(_Bar);
+                        _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderMin(_Bar);
 
-                        double da = 360*(CTwBar_RotoGetMin(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_RotoGetStep(_Bar));
+                        double da = 360*(CTwBar_GetRotoSliderMin(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_GetRotoSliderStep(_Bar));
                         _Bar->m_Roto.m_Angle0 = (((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360) - da;
                         _Bar->m_Roto.m_AngleDT = da;
                     }
-                    _Bar->m_Roto.m_Previous = knob;
+                    _Bar->m_Roto.m_Previous = _Bar->m_Roto.m_Current;
                     _Bar->m_Roto.m_AngleDT += 180.0*dt/M_PI;
                 }
-            }
-            else
-            {
-                _Bar->m_Roto.m_Previous = knob;
-                _Bar->m_Roto.m_Value0 = CTwBar_RotoGetValue(_Bar);
+            }else{
+                _Bar->m_Roto.m_Previous = _Bar->m_Roto.m_Current;
+                _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderValue(_Bar);
                 _Bar->m_Roto.m_PreciseValue = _Bar->m_Roto.m_Value0;
                 _Bar->m_Roto.m_HasPrevious = true;
                 _Bar->m_Roto.m_Angle0 = ((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360;
@@ -6992,8 +7003,8 @@ void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
         {
             if( _Bar->m_Roto.m_HasPrevious )
             {
-                CTwBar_RotoSetValue(_Bar, CTwBar_RotoGetSteppedValue(_Bar));
-                _Bar->m_Roto.m_Value0 = CTwBar_RotoGetValue(_Bar);
+                CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));
+                _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderValue(_Bar);
                 _Bar->m_Roto.m_ValueAngle0 = _Bar->m_Roto.m_Value0;
                 _Bar->m_Roto.m_PreciseValue = _Bar->m_Roto.m_Value0;
                 _Bar->m_Roto.m_Angle0 = 0;    
@@ -7002,17 +7013,16 @@ void CTwBar_RotoOnMouseMove(CTwBar *_Bar, int _X, int _Y)
             _Bar->m_Roto.m_AngleDT = 0;
         }
         ANT_SET_CURSOR(Hidden);
-    }
-    else
-    {
-        if( _Bar->m_HighlightRotoBtn )
+    }else{
+        if( _Bar->m_HighlightRotoBtn ){
             ANT_SET_CURSOR(Cross);
-        else
+        }else{
             ANT_SET_CURSOR(Arrow);
+        }
     }
 }
 
-void CTwBar_RotoOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
+void CTwBar_RotoSliderOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
 {
     CPoint p = CPoint_Make(_X, _Y);
     if( !_Bar->m_Roto.m_Active && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
@@ -7027,11 +7037,11 @@ void CTwBar_RotoOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
         _Bar->m_Roto.m_AngleDT = 0;
         //SetCapture();
 
-        _Bar->m_Roto.m_Value0 = CTwBar_RotoGetValue(_Bar);
+        _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderValue(_Bar);
         _Bar->m_Roto.m_CurrentValue = _Bar->m_Roto.m_Value0;
         _Bar->m_Roto.m_ValueAngle0 = _Bar->m_Roto.m_Value0;
         _Bar->m_Roto.m_PreciseValue = _Bar->m_Roto.m_Value0;
-        //CTwBar_RotoSetValue(_Bar, CTwBar_RotoGetSteppedValue(_Bar));  Not here
+        //CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));  Not here
         //DrawManip();
 
         _Bar->m_Roto.m_Subdiv = _Bar->m_RotoNbSubdiv;
@@ -7049,13 +7059,13 @@ void CTwBar_RotoOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
     }
 }
 
-void CTwBar_RotoOnLButtonUp(CTwBar *_Bar, int _X, int _Y)
+void CTwBar_RotoSliderOnLButtonUp(CTwBar *_Bar, int _X, int _Y)
 {
     (void)_X, (void)_Y;
     if( !_Bar->m_Roto.m_ActiveMiddle )
     {
         //if( _Bar->m_Roto.m_Var )
-        //  CTwBar_RotoSetValue(_Bar, CTwBar_RotoGetSteppedValue(_Bar));
+        //  CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));
 
         _Bar->m_Roto.m_Var = NULL;
         _Bar->m_Roto.m_Active = false;
@@ -7063,21 +7073,21 @@ void CTwBar_RotoOnLButtonUp(CTwBar *_Bar, int _X, int _Y)
     }
 }
 
-void CTwBar_RotoOnMButtonDown(CTwBar *_Bar, int _X, int _Y)
+void CTwBar_RotoSliderOnMButtonDown(CTwBar *_Bar, int _X, int _Y)
 {
     if( !_Bar->m_Roto.m_Active )
     {
         _Bar->m_Roto.m_ActiveMiddle = true;
-        CTwBar_RotoOnLButtonDown(_Bar, _X, _Y);
+        CTwBar_RotoSliderOnLButtonDown(_Bar, _X, _Y);
     }
 }
 
-void CTwBar_RotoOnMButtonUp(CTwBar *_Bar, int _X, int _Y)
+void CTwBar_RotoSliderOnMButtonUp(CTwBar *_Bar, int _X, int _Y)
 {
     if( _Bar->m_Roto.m_ActiveMiddle )
     {
         _Bar->m_Roto.m_ActiveMiddle = false;
-        CTwBar_RotoOnLButtonUp(_Bar, _X, _Y);
+        CTwBar_RotoSliderOnLButtonUp(_Bar, _X, _Y);
     }
 }
 
