@@ -25,10 +25,12 @@ the rewrite — compiles cleanly as strict, pedantic C99
 (`-std=c99 -pedantic -Wall -Wextra`), with no C++ and no Objective-C
 anywhere in the library, on any platform. All 13 examples have been
 manually exercised on macOS (every interactive widget, including the
-color and quaternion/direction-vector visualizations) with no problems
-found; Windows and Linux have not yet been interactively tested by a
-human. See [`docs/plans/c99-rewrite.md`](docs/plans/c99-rewrite.md) for
-the full record and remaining limitations.
+color and quaternion/direction-vector visualizations) and on Linux
+(built and run interactively, all examples rendering and working
+correctly) with no problems found; Windows has not yet been
+interactively tested by a human. See
+[`docs/plans/c99-rewrite.md`](docs/plans/c99-rewrite.md) for the full
+record and remaining limitations.
 
 
 ## How to build
