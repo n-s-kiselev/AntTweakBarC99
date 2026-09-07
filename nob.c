@@ -15,6 +15,11 @@
 #define LIB_STATIC LIB_FOLDER "libAntTweakBarC99.a"
 
 #if defined(_WIN32)
+// Named but never built by build_all() - see its own comment for why the
+// Windows/MinGW shared build is skipped (kept defined so clean() can still
+// remove one left over from before that changed, and so anything that
+// references the name by mistake fails to build rather than silently
+// pointing at a stale path).
 #define LIB_SHARED LIB_FOLDER "libAntTweakBarC99.dll"
 #define LIB_IMPORT LIB_FOLDER "libAntTweakBarC99.dll.a"
 #elif defined(__APPLE__)
@@ -375,20 +380,45 @@ static bool build_all(const char *nob_exe)
     add_common_build_deps(&common_deps, nob_exe);
 
     Nob_File_Paths static_objects = {0};
+#if !defined(_WIN32)
     Nob_File_Paths shared_objects = {0};
+#endif
 
     for (size_t i = 0; i < sources.count; ++i) {
         if (!build_object(sources.items[i], BUILD_STATIC_FOLDER, "-DTW_STATIC", &common_deps)) return false;
         nob_da_append(&static_objects, object_path(BUILD_STATIC_FOLDER, sources.items[i]));
 
+#if !defined(_WIN32)
         if (!build_object(sources.items[i], BUILD_SHARED_FOLDER, "-DTW_EXPORTS", &common_deps)) return false;
         nob_da_append(&shared_objects, object_path(BUILD_SHARED_FOLDER, sources.items[i]));
+#endif
     }
 
     if (!build_static_archive(&static_objects, nob_exe)) return false;
-    if (!link_shared_library(&shared_objects, nob_exe)) return false;
 
+    // No LIB_SHARED (.dll) on Windows: TwBar.c/TwMgr.c call glfwGetTime/
+    // glfwGetClipboardString/glfwSetClipboardString directly and leave them
+    // as undefined symbols, resolved at final-link time against whichever
+    // single GLFW instance the consuming application itself initializes
+    // (see append_shared_link_flags()'s macOS `-Wl,-undefined,dynamic_lookup`
+    // and the matching GNU ld default on Linux, both of which tolerate this).
+    // Windows DLLs have no equivalent: every symbol a DLL uses must resolve
+    // at DLL build time, so LIB_SHARED would either fail to link (as
+    // originally observed) or - if forced through - load a broken import
+    // table. Embedding the vendored GLFW source into LIB_SHARED instead
+    // would link, but silently misbehave: that copy would never have
+    // glfwInit() called on it (only the app's own copy does), so every
+    // glfwGetTime()/clipboard call would return GLFW_NOT_INITIALIZED. See
+    // docs/plans/reapply-fork-changes-on-legacy-baseline.md Section 12 for
+    // the original risk analysis this confirms. `./nob -examples` already
+    // links against LIB_STATIC only, so this does not affect the examples.
+#if !defined(_WIN32)
+    if (!link_shared_library(&shared_objects, nob_exe)) return false;
     nob_log(NOB_INFO, "built %s and %s", LIB_STATIC, LIB_SHARED);
+#else
+    nob_log(NOB_INFO, "built %s (no %s on Windows/MinGW - see build_all()'s own comment for why)",
+             LIB_STATIC, LIB_SHARED);
+#endif
     return true;
 }
 

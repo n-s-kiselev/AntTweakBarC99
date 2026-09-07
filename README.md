@@ -57,10 +57,16 @@ To rebuild from scratch you have to clean the folder from artifacts:
 
 `./nob` produces:
 
-- `lib/libAntTweakBarC99.a` — static library
+- `lib/libAntTweakBarC99.a` — static library, on every platform
 - `lib/libAntTweakBarC99.so` (Linux) / `lib/libAntTweakBarC99.dylib`
-  (macOS) / `lib/libAntTweakBarC99.dll` + `.dll.a` (Windows/MinGW) —
-  dynamic library
+  (macOS) — dynamic library. **Not built on Windows/MinGW:** the library
+  calls a few GLFW3 functions (clipboard, timing) directly and leaves them
+  as undefined symbols, resolved at final-link time against whichever
+  single GLFW instance the consuming application itself initializes —
+  Linux/macOS shared libraries tolerate this, but a Windows DLL cannot, so
+  `./nob` only builds the static library there. Link
+  `lib/libAntTweakBarC99.a` instead (already what `./nob -examples` does
+  on every platform).
 
 `./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. All examples compile statically against `lib/libAntTweakBarC99.a` and place executbles in
 `build/examples/`.
