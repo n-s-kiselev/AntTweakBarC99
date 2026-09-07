@@ -23,11 +23,24 @@
 #   define _CRT_SECURE_NO_DEPRECATE // visual 8 secure crt warning
 #endif
 
+// glibc hides strdup/strcasecmp/usleep (used below via the _strdup/_stricmp
+// macros and directly) behind feature-test macros once -std=c99 defines
+// __STRICT_ANSI__; without this, strdup falls back to an implicit int-
+// returning declaration and its result is silently truncated to 32 bits.
+// Must be defined before the first system header include. Harmless on
+// non-glibc libcs (macOS's libc/MinGW's runtime expose these regardless).
+#if !defined(_WIN32) && !defined(_MSC_VER)
+#   define _DEFAULT_SOURCE
+#endif
+
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#if !defined(_WIN32) && !defined(_MSC_VER)
+#   include <strings.h> // strcasecmp (POSIX; declared here, not in <string.h>)
+#endif
 #include <stdlib.h>
 #include <memory.h>
 #include <ctype.h>
@@ -49,12 +62,7 @@
 
 #if defined(_UNIX)
 #   define ANT_UNIX
-#   include <X11/cursorfont.h>
-#   define GLX_GLXEXT_LEGACY
-#   include <GL/glx.h>
-#   include <X11/Xatom.h>
 #   include <unistd.h>
-#   include <malloc.h>
 #   undef _WIN32
 #   undef WIN32
 #   undef _WIN64
