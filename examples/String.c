@@ -239,9 +239,11 @@ void TW_CALL CopyCDStringToClient(char **destPtr, const char *src)
     else if( srcLen>destLen )
         *destPtr = (char *)realloc(*destPtr, srcLen+1);
 
-    // Copy src
+    // Copy src (memcpy, not strncpy: the buffer is sized srcLen+1 and the
+    // terminator is set explicitly right below, so strncpy's own null-
+    // padding/truncation behavior is neither needed nor wanted here).
     if( srcLen>0 )
-        strncpy(*destPtr, src, srcLen);
+        memcpy(*destPtr, src, srcLen);
     (*destPtr)[srcLen] = '\0'; // null-terminated string
 }
 
@@ -408,9 +410,15 @@ int main(void)
     TwAddButton(bar, "Echo", NULL, NULL,
                 " label=`" TEXTLINE "` group=CDString help='Echo of the text entered in the next field' ");
 
-    // Add a CDString variable accessed through callbacks
+    // Add a CDString variable accessed through callbacks. TEXTLINE is a
+    // fixed string literal (not attacker-controlled), so a plain strcpy
+    // into this generously-sized (sizeof(TEXTLINE)+1) buffer is safe -
+    // strncpy(dst, TEXTLINE, sizeof(TEXTLINE)) triggers
+    // -Wsizeof-pointer-memaccess because that's also the exact shape of
+    // the classic strncpy(dst, src, sizeof(src)) bug when src is a
+    // pointer variable instead of a literal.
     char *textLine = (char *)malloc(sizeof(TEXTLINE)+1);
-    strncpy(textLine, TEXTLINE, sizeof(TEXTLINE));
+    strcpy(textLine, TEXTLINE);
     TwAddVarCB(bar, "TextLine", TW_TYPE_CDSTRING, SetTextLineCB, GetTextLineCB, &textLine,
                " label='Change text above' group=CDString help='The text to be echoed.' ");
 
