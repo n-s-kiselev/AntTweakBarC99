@@ -9,6 +9,14 @@
 
 #include <glad/glad.h>
 
+// Must precede "TwOpenGLCore.h" (which pulls in TwGraph.h's ITwGraph
+// struct, whose DrawText member collides with <windows.h>'s own DrawText
+// macro): TwGraph.h's #undef DrawText guard only strips the macro if
+// windows.h has already defined it by the time that guard runs.
+#if defined(_WIN32)
+#   include <windows.h>
+#endif
+
 #include "TwOpenGLCore.h"
 
 #include <stdio.h>
@@ -16,9 +24,6 @@
 #include <string.h>
 #include <assert.h>
 
-#if defined(_WIN32)
-#   include <windows.h>
-#endif
 #if defined(__APPLE__)
 #   include <AvailabilityMacros.h>
 #endif
