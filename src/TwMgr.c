@@ -126,8 +126,8 @@ unsigned int TwFPU_Save(void)
     unsigned int state0;
 #ifdef ANT_WINDOWS
     state0 = _controlfp(0, 0);
-    if( (state0&MCW_PC)==_PC_24 )   // we need at least _PC_53
-        _controlfp(_PC_53, MCW_PC);
+    if( (state0&_MCW_PC)==_PC_24 )   // we need at least _PC_53
+        _controlfp(_PC_53, _MCW_PC);
 #else
     state0 = 0;
 #endif
@@ -137,8 +137,8 @@ unsigned int TwFPU_Save(void)
 void TwFPU_Restore(unsigned int state0)
 {
 #ifdef ANT_WINDOWS
-    if( (state0&MCW_PC)==_PC_24 )
-        _controlfp(_PC_24, MCW_PC);
+    if( (state0&_MCW_PC)==_PC_24 )
+        _controlfp(_PC_24, _MCW_PC);
 #else
     (void)state0;
 #endif
