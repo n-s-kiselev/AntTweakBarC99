@@ -15,13 +15,18 @@
 #define LIB_STATIC LIB_FOLDER "libAntTweakBarC99.a"
 
 #if defined(_WIN32)
-// Named but never built by build_all() - see its own comment for why the
-// Windows/MinGW shared build is skipped (kept defined so clean() can still
-// remove one left over from before that changed, and so anything that
-// references the name by mistake fails to build rather than silently
-// pointing at a stale path).
 #define LIB_SHARED LIB_FOLDER "libAntTweakBarC99.dll"
 #define LIB_IMPORT LIB_FOLDER "libAntTweakBarC99.dll.a"
+// Vendored GLFW3 built as its own DLL, Windows-only: libAntTweakBarC99.dll
+// calls glfwGetTime()/glfwGetClipboardString()/glfwSetClipboardString()
+// directly (see build_all()'s comment) and, unlike a Linux .so or macOS
+// .dylib, a Windows DLL cannot leave those as unresolved symbols to be
+// serviced by whatever GLFW the host application happens to link. Naming
+// it distinctly from a generic "glfw3.dll" avoids a DLL-search-order
+// collision with an unrelated, ABI-incompatible glfw3.dll that might
+// already be on PATH (see docs/TASK2.md Section 2).
+#define GLFW_SHARED        LIB_FOLDER "AntTweakBarC99-glfw3.dll"
+#define GLFW_SHARED_IMPORT LIB_FOLDER "AntTweakBarC99-glfw3.dll.a"
 #elif defined(__APPLE__)
 #define LIB_SHARED LIB_FOLDER "libAntTweakBarC99.dylib"
 #else
@@ -32,6 +37,14 @@
 
 #define EXAMPLES_FOLDER       "examples/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
+// Split by link mode, not just a shared EXAMPLES_BUILD_FOLDER, so switching
+// between `./nob -examples` and `./nob -examples -dynamic` always rebuilds:
+// build_needed() only compares mtimes against a fixed output path, so a
+// static and a dynamic build sharing one executable path could otherwise
+// look "up to date" against the wrong link mode's binary left over from a
+// previous run.
+#define EXAMPLES_STATIC_FOLDER EXAMPLES_BUILD_FOLDER "static/"
+#define EXAMPLES_SHARED_FOLDER EXAMPLES_BUILD_FOLDER "shared/"
 
 // sds (Simple Dynamic Strings, vendored from https://github.com/antirez/sds,
 // BSD-2-Clause) replaces std::string for the library's own internal string
@@ -48,6 +61,26 @@
 #define GLAD_INCLUDE  "vendor/glad/include/"
 #define GLAD_SRC      "vendor/glad/src/glad.c"
 #define GLAD_OBJ      EXAMPLES_BUILD_FOLDER "glad.o"
+
+#if defined(_WIN32)
+// Vendored GLAD built as its own DLL, Windows-only, for the same reason as
+// GLFW_SHARED above: GLAD keeps every loaded GL entry point in a global
+// function-pointer variable (see vendor/glad/include/glad/glad.h's
+// glad_gl* declarations), populated once at runtime by gladLoadGLLoader().
+// libAntTweakBarC99.dll's own TwOpenGL.c/TwOpenGLCore.c call through those
+// same globals - if GLAD were instead compiled as a private, separate copy
+// baked into the DLL (as build_object()'s normal per-object-set compile
+// would do), the DLL's copy would never have gladLoadGLLoader() called on
+// it (only the application's own copy does), leaving every GL call
+// resolving through a NULL pointer. GLAD already ships the fix for this
+// (vendor/glad/include/glad/glad.h's GLAD_GLAPI_EXPORT/
+// GLAD_GLAPI_EXPORT_BUILD dllexport/dllimport switch, the same pattern
+// GLFWAPI uses) - build one shared GLAD instance and have both
+// libAntTweakBarC99.dll and the consuming application import from it,
+// exactly mirroring GLFW_SHARED.
+#define GLAD_SHARED        LIB_FOLDER "AntTweakBarC99-glad.dll"
+#define GLAD_SHARED_IMPORT LIB_FOLDER "AntTweakBarC99-glad.dll.a"
+#endif
 
 // GLFW3 is vendored (unity build, see vendor/glfw/glfw_unity.c, already
 // present in this repo and written in anticipation of this function - its
@@ -133,6 +166,18 @@ static bool delete_if_exists(const char *path)
 {
     if (nob_file_exists(path)) return nob_delete_file(path);
     return true;
+}
+
+// Deletes every path in objects - used once a set of intermediate .o files
+// has been folded into a final archive/shared library/executable and is no
+// longer needed, so they don't linger on disk as stale build output.
+static bool delete_objects(Nob_File_Paths *objects)
+{
+    bool ok = true;
+    for (size_t i = 0; i < objects->count; ++i) {
+        ok = delete_if_exists(objects->items[i]) && ok;
+    }
+    return ok;
 }
 
 // Deletes every regular file directly inside folder (not recursive), so a
@@ -261,8 +306,13 @@ static void append_platform_defines(Nob_Cmd *cmd)
 #endif
 }
 
+// extra_defines is a NULL-terminated array of additional -D flags (may be
+// NULL itself for "none") - a plain array rather than one more nullable
+// string parameter because the Windows shared object set needs two
+// independent extra defines (-DGLFW_DLL and -DGLAD_GLAPI_EXPORT, see
+// build_all()) applied together, not one.
 static bool build_object(const char *source, const char *folder, const char *tw_define,
-                          Nob_File_Paths *common_deps)
+                          const char **extra_defines, Nob_File_Paths *common_deps)
 {
     const char *output = object_path(folder, source);
 
@@ -286,12 +336,19 @@ static bool build_object(const char *source, const char *folder, const char *tw_
     // -I GLFW_INCLUDE: TwBar.c's EditInPlaceGetClipboard/SetClipboard call
     // glfwGetClipboardString/glfwSetClipboardString directly (see its own
     // header comment) - only the header is needed here, not GLFW_OBJ. The
-    // symbols stay undefined in LIB_STATIC/LIB_SHARED and resolve at
-    // final-link time against whichever single GLFW instance the consuming
-    // application itself initializes (see docs/plans/
-    // reapply-fork-changes-on-legacy-baseline.md Step 4b).
+    // symbols stay undefined in LIB_STATIC (every platform) and LIB_SHARED
+    // on Linux/macOS, resolved at final-link time against whichever single
+    // GLFW instance the consuming application itself initializes (see
+    // docs/plans/reapply-fork-changes-on-legacy-baseline.md Step 4b). On
+    // Windows, LIB_SHARED instead imports them from GLFW_SHARED at build
+    // time (extra_defines passes -DGLFW_DLL for that object set - see
+    // build_all()'s own comment). The same applies to GLAD's glad_gl*
+    // function-pointer globals via -DGLAD_GLAPI_EXPORT/GLAD_SHARED.
     nob_cmd_append(&cmd, "-Wall", "-Wextra", "-O3", "-fno-strict-aliasing", "-fPIC",
                         "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE, "-I" GLFW_INCLUDE, "-I" SDS_INCLUDE, tw_define);
+    if (extra_defines) {
+        for (const char **d = extra_defines; *d; ++d) nob_cmd_append(&cmd, *d);
+    }
     // The whole library is real C99 now (Clusters 1-4 + Step 7 complete -
     // every common_sources entry compiles with "cc", not "c++"; nothing
     // left in this build needs a C++ standard at all) - request it
@@ -358,6 +415,10 @@ static bool link_shared_library(Nob_File_Paths *objects, const char *nob_exe)
     Nob_File_Paths inputs = {0};
     for (size_t i = 0; i < objects->count; ++i) nob_da_append(&inputs, objects->items[i]);
     add_common_build_deps(&inputs, nob_exe);
+#if defined(_WIN32)
+    nob_da_append(&inputs, GLFW_SHARED_IMPORT);
+    nob_da_append(&inputs, GLAD_SHARED_IMPORT);
+#endif
 
     if (!build_needed(LIB_SHARED, inputs.items, inputs.count)) {
         nob_log(NOB_INFO, "%s is up to date", LIB_SHARED);
@@ -365,9 +426,17 @@ static bool link_shared_library(Nob_File_Paths *objects, const char *nob_exe)
     }
 
     Nob_Cmd cmd = {0};
-    nob_cmd_append(&cmd, "c++");
+    // "cc", not "c++": the library became pure C99 in an earlier session
+    // (same reasoning as build_example()'s own "cc", not "c++" fix - see
+    // git log --oneline -- nob.c for "build C99 examples with cc, not c++").
+    // Nothing left in shared_objects needs the C++ driver at link time.
+    nob_cmd_append(&cmd, "cc");
     append_shared_link_flags(&cmd);
     for (size_t i = 0; i < objects->count; ++i) nob_cmd_append(&cmd, objects->items[i]);
+#if defined(_WIN32)
+    nob_cmd_append(&cmd, GLFW_SHARED_IMPORT);
+    nob_cmd_append(&cmd, GLAD_SHARED_IMPORT);
+#endif
     append_shared_link_libs(&cmd);
     if (!nob_cmd_run(&cmd)) return false;
 
@@ -380,6 +449,15 @@ static bool link_shared_library(Nob_File_Paths *objects, const char *nob_exe)
 
     return true;
 }
+
+// Defined further below, next to build_glfw()/build_glad_for_examples()
+// (all compile the same vendored sources, just with different
+// flags/outputs); forward declared here since build_all() calls them before
+// that point in the file.
+#if defined(_WIN32)
+static bool build_glfw_shared(const char *nob_exe);
+static bool build_glad_shared(const char *nob_exe);
+#endif
 
 static bool build_all(const char *nob_exe)
 {
@@ -396,54 +474,78 @@ static bool build_all(const char *nob_exe)
     add_common_build_deps(&common_deps, nob_exe);
 
     Nob_File_Paths static_objects = {0};
-#if !defined(_WIN32)
     Nob_File_Paths shared_objects = {0};
-#endif
 
     for (size_t i = 0; i < sources.count; ++i) {
-        if (!build_object(sources.items[i], BUILD_STATIC_FOLDER, "-DTW_STATIC", &common_deps)) return false;
+        if (!build_object(sources.items[i], BUILD_STATIC_FOLDER, "-DTW_STATIC", NULL, &common_deps)) return false;
         nob_da_append(&static_objects, object_path(BUILD_STATIC_FOLDER, sources.items[i]));
 
-#if !defined(_WIN32)
-        if (!build_object(sources.items[i], BUILD_SHARED_FOLDER, "-DTW_EXPORTS", &common_deps)) return false;
-        nob_da_append(&shared_objects, object_path(BUILD_SHARED_FOLDER, sources.items[i]));
+        // TwBar.c/TwMgr.c call glfwGetTime()/glfwGetClipboardString()/
+        // glfwSetClipboardString() directly (see build_object()'s own
+        // GLFW_INCLUDE comment) and leave them as undefined symbols in
+        // LIB_STATIC and, on Linux/macOS, LIB_SHARED too - both tolerate an
+        // unresolved symbol at build time and resolve it at load time
+        // against whichever single GLFW instance the consuming application
+        // itself initializes (see append_shared_link_flags()'s macOS
+        // `-Wl,-undefined,dynamic_lookup` and the matching GNU ld default on
+        // Linux). Windows DLLs have no equivalent: every imported symbol
+        // must resolve to a concrete exporter at the DLL's own link time.
+        // So on Windows this object set instead imports those three symbols
+        // from GLFW_SHARED (built by build_glfw_shared() below and linked in
+        // by link_shared_library()) via -DGLFW_DLL, which switches
+        // <GLFW/glfw3.h>'s GLFWAPI to __declspec(dllimport). The same
+        // problem exists for GLAD's glad_gl* function-pointer globals
+        // (populated once by whichever gladLoadGLLoader() call happens to
+        // run - normally the application's) - a private per-object-set copy
+        // of glad.c baked into LIB_SHARED would never have that call
+        // reach it, so on Windows glad.c is excluded from this object set
+        // entirely (is_glad_source below) and imported from GLAD_SHARED
+        // instead, via -DGLAD_GLAPI_EXPORT switching glad.h's GLAPI to
+        // __declspec(dllimport). See docs/TASK2.md for the full reasoning
+        // and the rejected alternative (embedding a second, separately-
+        // uninitialized copy of GLFW's/GLAD's source directly into
+        // LIB_SHARED).
+#if defined(_WIN32)
+        if (is_glad_source(sources.items[i])) continue;
+        static const char *shared_extra_defines[] = { "-DGLFW_DLL", "-DGLAD_GLAPI_EXPORT", NULL };
+        if (!build_object(sources.items[i], BUILD_SHARED_FOLDER, "-DTW_EXPORTS", shared_extra_defines, &common_deps)) return false;
+#else
+        if (!build_object(sources.items[i], BUILD_SHARED_FOLDER, "-DTW_EXPORTS", NULL, &common_deps)) return false;
 #endif
+        nob_da_append(&shared_objects, object_path(BUILD_SHARED_FOLDER, sources.items[i]));
     }
 
     if (!build_static_archive(&static_objects, nob_exe)) return false;
 
-    // No LIB_SHARED (.dll) on Windows: TwBar.c/TwMgr.c call glfwGetTime/
-    // glfwGetClipboardString/glfwSetClipboardString directly and leave them
-    // as undefined symbols, resolved at final-link time against whichever
-    // single GLFW instance the consuming application itself initializes
-    // (see append_shared_link_flags()'s macOS `-Wl,-undefined,dynamic_lookup`
-    // and the matching GNU ld default on Linux, both of which tolerate this).
-    // Windows DLLs have no equivalent: every symbol a DLL uses must resolve
-    // at DLL build time, so LIB_SHARED would either fail to link (as
-    // originally observed) or - if forced through - load a broken import
-    // table. Embedding the vendored GLFW source into LIB_SHARED instead
-    // would link, but silently misbehave: that copy would never have
-    // glfwInit() called on it (only the app's own copy does), so every
-    // glfwGetTime()/clipboard call would return GLFW_NOT_INITIALIZED. See
-    // docs/plans/reapply-fork-changes-on-legacy-baseline.md Section 12 for
-    // the original risk analysis this confirms. `./nob -examples` already
-    // links against LIB_STATIC only, so this does not affect the examples.
-#if !defined(_WIN32)
-    if (!link_shared_library(&shared_objects, nob_exe)) return false;
-    nob_log(NOB_INFO, "built %s and %s", LIB_STATIC, LIB_SHARED);
-#else
-    nob_log(NOB_INFO, "built %s (no %s on Windows/MinGW - see build_all()'s own comment for why)",
-             LIB_STATIC, LIB_SHARED);
+#if defined(_WIN32)
+    if (!build_glfw_shared(nob_exe)) return false;
+    if (!build_glad_shared(nob_exe)) return false;
 #endif
+    if (!link_shared_library(&shared_objects, nob_exe)) return false;
+
+    // LIB_STATIC/LIB_SHARED above already contain everything these
+    // intermediate .o files provided, so remove them (and the now-empty
+    // per-object-set folders) rather than leave stale build output behind.
+    // Trade-off: build_object()'s build_needed() sees a missing .o as
+    // needing a rebuild, so every subsequent `./nob` always recompiles
+    // every source from scratch - there is no longer an incremental/no-op
+    // `./nob` re-run once this cleanup runs.
+    if (!delete_objects(&static_objects)) return false;
+    if (!delete_objects(&shared_objects)) return false;
+    if (!delete_if_exists(BUILD_STATIC_FOLDER)) return false;
+    if (!delete_if_exists(BUILD_SHARED_FOLDER)) return false;
+
+    nob_log(NOB_INFO, "built %s and %s", LIB_STATIC, LIB_SHARED);
     return true;
 }
 
-static const char *example_executable_path(const char *source)
+static const char *example_executable_path(const char *source, bool dynamic)
 {
     char *base = nob_temp_strdup(nob_path_name(source));
     char *dot = strrchr(base, '.');
     if (dot) *dot = '\0';
-    return nob_temp_sprintf("%s%s" EXE_EXT, EXAMPLES_BUILD_FOLDER, base);
+    const char *folder = dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER;
+    return nob_temp_sprintf("%s%s" EXE_EXT, folder, base);
 }
 
 // Only the examples build compiles GLFW's X11 backend (vendor/glfw/
@@ -479,9 +581,33 @@ static bool check_linux_x11_deps(void)
 #endif
 }
 
-static bool check_examples_deps(void)
+static bool check_examples_deps(bool dynamic)
 {
-    if (!nob_file_exists(LIB_STATIC)) {
+    if (dynamic) {
+        if (!nob_file_exists(LIB_SHARED)) {
+            nob_log(NOB_ERROR, "%s does not exist yet.", LIB_SHARED);
+            nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples -dynamic`.");
+            return false;
+        }
+#if defined(_WIN32)
+        // On Windows, the example must import GLFW/GLAD from the very same
+        // DLLs libAntTweakBarC99.dll itself imports them from (see
+        // GLAD_SHARED's own comment above and build_all()'s) - a private
+        // per-example copy of GLFW/GLAD, as the static build uses, would
+        // give the process two independent, uninitialized-against-each-
+        // other GLFW/GLAD instances.
+        static const struct { const char *path; } required[] = {
+            { LIB_IMPORT }, { GLFW_SHARED_IMPORT }, { GLAD_SHARED_IMPORT },
+        };
+        for (size_t i = 0; i < NOB_ARRAY_LEN(required); ++i) {
+            if (!nob_file_exists(required[i].path)) {
+                nob_log(NOB_ERROR, "%s does not exist yet.", required[i].path);
+                nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples -dynamic`.");
+                return false;
+            }
+        }
+#endif
+    } else if (!nob_file_exists(LIB_STATIC)) {
         nob_log(NOB_ERROR, "%s does not exist yet.", LIB_STATIC);
         nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples`.");
         return false;
@@ -503,6 +629,34 @@ static bool build_glad_for_examples(const char *nob_exe)
     nob_cmd_append(&cmd, "cc", "-O2", "-I" GLAD_INCLUDE, "-c", GLAD_SRC, "-o", GLAD_OBJ);
     return nob_cmd_run(&cmd);
 }
+
+#if defined(_WIN32)
+// Compiles vendor/glad/src/glad.c into its own DLL, for
+// libAntTweakBarC99.dll (and any application that links it) to import
+// GLAD's glad_gl* function-pointer globals from - see GLAD_SHARED's own
+// comment for why a private per-DLL copy of GLAD does not work. Unlike
+// build_glfw_shared(), there is no separate plain-object compile of GLAD to
+// contrast this with for the library build - build_glad_for_examples()'s
+// GLAD_OBJ is a distinct, examples-only compile, not part of the library's
+// own object sets. GLAD's win32 loader dlopen's opengl32.dll itself
+// (LoadLibraryW("opengl32.dll") in glad.c) rather than importing it, so
+// no -lopengl32 is needed at this link step, unlike build_glfw_shared()'s.
+static bool build_glad_shared(const char *nob_exe)
+{
+    const char *inputs[] = { GLAD_SRC, "nob.c", nob_exe, NOB_HEADER };
+    if (!build_needed(GLAD_SHARED, inputs, NOB_ARRAY_LEN(inputs))) {
+        nob_log(NOB_INFO, "%s is up to date", GLAD_SHARED);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "cc", "-O2", "-I" GLAD_INCLUDE,
+                        "-DGLAD_GLAPI_EXPORT", "-DGLAD_GLAPI_EXPORT_BUILD");
+    nob_cmd_append(&cmd, "-shared", GLAD_SRC, "-o", GLAD_SHARED,
+                        "-Wl,--out-implib," GLAD_SHARED_IMPORT);
+    return nob_cmd_run(&cmd);
+}
+#endif
 
 // Compiles the vendored GLFW3 unity build (vendor/glfw/glfw_unity.c, see
 // its own header comment - this file already named this function before it
@@ -530,13 +684,50 @@ static bool build_glfw(const char *nob_exe)
     return nob_cmd_run(&cmd);
 }
 
+#if defined(_WIN32)
+// Compiles vendor/glfw/glfw_unity.c into its own DLL, for
+// libAntTweakBarC99.dll to import GLFW3 functions from (see build_all()'s
+// comment and docs/TASK2.md). This is a second, separate compile of the
+// same source as build_glfw() with different defines (-D_GLFW_BUILD_DLL
+// instead of a plain object) - the two outputs are not interchangeable.
+static bool build_glfw_shared(const char *nob_exe)
+{
+    const char *inputs[] = { GLFW_SRC, "nob.c", nob_exe, NOB_HEADER };
+    if (!build_needed(GLFW_SHARED, inputs, NOB_ARRAY_LEN(inputs))) {
+        nob_log(NOB_INFO, "%s is up to date", GLFW_SHARED);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "cc", "-O2", "-I" GLFW_INCLUDE,
+                        "-D_GLFW_WIN32", "-D_GLFW_BUILD_DLL");
+    nob_cmd_append(&cmd, "-shared", GLFW_SRC, "-o", GLFW_SHARED,
+                        "-Wl,--out-implib," GLFW_SHARED_IMPORT);
+    nob_cmd_append(&cmd, "-lopengl32", "-lgdi32");
+    return nob_cmd_run(&cmd);
+}
+#endif
+
 static void append_glfw_flags(Nob_Cmd *cmd)
 {
     nob_cmd_append(cmd, "-I" GLFW_INCLUDE);
 }
 
-static void append_glfw_libs(Nob_Cmd *cmd)
+// dynamic selects, on Windows only, importing GLFW from GLFW_SHARED_IMPORT
+// (the same DLL libAntTweakBarC99.dll itself imports GLFW from) instead of
+// linking in the example's own private GLFW_OBJ - see check_examples_deps()'s
+// comment. Elsewhere, LIB_SHARED already leaves its few direct GLFW calls
+// unresolved for the consuming application's own GLFW instance to satisfy
+// (see build_object()'s GLFW_INCLUDE comment), so every other platform links
+// GLFW_OBJ the same way regardless of dynamic.
+static void append_glfw_libs(Nob_Cmd *cmd, bool dynamic)
 {
+#if defined(_WIN32)
+    if (dynamic) {
+        nob_cmd_append(cmd, GLFW_SHARED_IMPORT);
+        return;
+    }
+#endif
     nob_cmd_append(cmd, GLFW_OBJ);
 #if defined(_WIN32)
     nob_cmd_append(cmd, "-lopengl32", "-lgdi32");
@@ -557,15 +748,30 @@ static void append_glfw_libs(Nob_Cmd *cmd)
 #endif
 }
 
-static bool build_example(const char *source, const char *nob_exe)
+// dynamic links the example against the shared library (LIB_SHARED, plus
+// LIB_IMPORT/GLFW_SHARED_IMPORT/GLAD_SHARED_IMPORT on Windows - see
+// check_examples_deps()) instead of LIB_STATIC; the caller is otherwise
+// identical either way.
+static bool build_example(const char *source, const char *nob_exe, bool dynamic)
 {
-    const char *output = example_executable_path(source);
+    const char *output = example_executable_path(source, dynamic);
 
     Nob_File_Paths inputs = {0};
     nob_da_append(&inputs, source);
-    nob_da_append(&inputs, LIB_STATIC);
+    nob_da_append(&inputs, dynamic ? LIB_SHARED : LIB_STATIC);
+#if defined(_WIN32)
+    if (dynamic) {
+        nob_da_append(&inputs, LIB_IMPORT);
+        nob_da_append(&inputs, GLFW_SHARED_IMPORT);
+        nob_da_append(&inputs, GLAD_SHARED_IMPORT);
+    } else {
+        nob_da_append(&inputs, GLAD_OBJ);
+        nob_da_append(&inputs, GLFW_OBJ);
+    }
+#else
     nob_da_append(&inputs, GLAD_OBJ);
     nob_da_append(&inputs, GLFW_OBJ);
+#endif
     add_common_build_deps(&inputs, nob_exe);
 
     if (!build_needed(output, inputs.items, inputs.count)) {
@@ -586,28 +792,84 @@ static bool build_example(const char *source, const char *nob_exe)
     // build_object() does when compiling it.
     const char *compiler = compiler_for_source(source);
     nob_cmd_append(&cmd, compiler);
-    nob_cmd_append(&cmd, "-Wall", "-O2", "-DTW_STATIC", "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE);
+    nob_cmd_append(&cmd, "-Wall", "-O2", "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE);
+    // Not defining TW_STATIC when dynamic leaves AntTweakBar.h's TW_API at
+    // its default (TW_IMPORT_API, __declspec(dllimport) on Windows) - the
+    // correct declaration for calling into libAntTweakBarC99.dll/.so/.dylib.
+    if (!dynamic) nob_cmd_append(&cmd, "-DTW_STATIC");
+#if defined(_WIN32)
+    // Matches the -DGLFW_DLL/-DGLAD_GLAPI_EXPORT pair build_all() compiles
+    // LIB_SHARED itself with (see its own comment) - the example must agree
+    // with the DLL it is importing GLFW/GLAD from on whether those symbols
+    // are dllimport-declared.
+    if (dynamic) nob_cmd_append(&cmd, "-DGLFW_DLL", "-DGLAD_GLAPI_EXPORT");
+#endif
     append_glfw_flags(&cmd);
 
-    nob_cmd_append(&cmd, source, GLAD_OBJ, LIB_STATIC);
+    nob_cmd_append(&cmd, source);
+#if defined(_WIN32)
+    if (dynamic) {
+        nob_cmd_append(&cmd, GLAD_SHARED_IMPORT, LIB_IMPORT);
+    } else {
+        nob_cmd_append(&cmd, GLAD_OBJ, LIB_STATIC);
+    }
+#else
+    nob_cmd_append(&cmd, GLAD_OBJ, dynamic ? LIB_SHARED : LIB_STATIC);
+#endif
     nob_cmd_append(&cmd, "-o", output);
-    append_glfw_libs(&cmd);
+    append_glfw_libs(&cmd, dynamic);
 
     return nob_cmd_run(&cmd);
 }
 
-static bool build_examples(const char *nob_exe)
+// Printed after a successful `-examples -dynamic` build: unlike the static
+// build (a single self-contained .exe/ELF/Mach-O with no runtime library
+// dependency), these executables need their shared library dependencies to
+// be locatable at *run* time, not just link time, and that is easy to miss
+// since the build itself succeeds either way.
+static void print_dynamic_runtime_notice(void)
 {
-    if (!check_examples_deps()) return false;
+#if defined(_WIN32)
+    // Three separate DLLs, not one: libAntTweakBarC99.dll itself imports
+    // GLFW/GLAD from GLFW_SHARED/GLAD_SHARED rather than embedding private
+    // copies (see GLAD_SHARED's own comment above), so the example needs all
+    // three at once, not just libAntTweakBarC99.dll.
+    nob_log(NOB_INFO, "-dynamic executables need these 3 DLLs next to the .exe, or on PATH:");
+    nob_log(NOB_INFO, "  %s", LIB_SHARED);
+    nob_log(NOB_INFO, "  %s", GLFW_SHARED);
+    nob_log(NOB_INFO, "  %s", GLAD_SHARED);
+#elif defined(__APPLE__)
+    nob_log(NOB_INFO, "-dynamic executables need %s to be locatable at runtime", LIB_SHARED);
+    nob_log(NOB_INFO, "(next to the executable, on DYLD_LIBRARY_PATH, or installed to a standard library path).");
+#else
+    nob_log(NOB_INFO, "-dynamic executables need %s to be locatable at runtime", LIB_SHARED);
+    nob_log(NOB_INFO, "(e.g. via LD_LIBRARY_PATH=lib, an rpath, or installed to a standard library path).");
+#endif
+}
+
+static bool build_examples(const char *nob_exe, bool dynamic)
+{
+    if (!check_examples_deps(dynamic)) return false;
     if (!nob_mkdir_if_not_exists(EXAMPLES_BUILD_FOLDER)) return false;
+    if (!nob_mkdir_if_not_exists(dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER)) return false;
     if (!build_glad_for_examples(nob_exe)) return false;
     if (!build_glfw(nob_exe)) return false;
 
     for (size_t i = 0; i < NOB_ARRAY_LEN(examples); ++i) {
-        if (!build_example(examples[i], nob_exe)) return false;
+        if (!build_example(examples[i], nob_exe, dynamic)) return false;
     }
 
-    nob_log(NOB_INFO, "built %zu examples into %s", NOB_ARRAY_LEN(examples), EXAMPLES_BUILD_FOLDER);
+    // GLAD_OBJ/GLFW_OBJ are only needed while linking the examples above -
+    // remove them afterward rather than leave them as stale leftovers (same
+    // trade-off as build_all()'s matching cleanup: the next `./nob
+    // -examples` always recompiles GLAD/GLFW from scratch too).
+    if (!delete_if_exists(GLAD_OBJ)) return false;
+    if (!delete_if_exists(GLFW_OBJ)) return false;
+
+    nob_log(NOB_INFO, "built %zu examples into %s (%s)", NOB_ARRAY_LEN(examples),
+            dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER,
+            dynamic ? "dynamically linked" : "statically linked");
+    if (dynamic) print_dynamic_runtime_notice();
     return true;
 }
 
@@ -619,6 +881,10 @@ static bool clean(void)
     ok = delete_if_exists(LIB_SHARED) && ok;
 #if defined(_WIN32)
     ok = delete_if_exists(LIB_IMPORT) && ok;
+    ok = delete_if_exists(GLFW_SHARED) && ok;
+    ok = delete_if_exists(GLFW_SHARED_IMPORT) && ok;
+    ok = delete_if_exists(GLAD_SHARED) && ok;
+    ok = delete_if_exists(GLAD_SHARED_IMPORT) && ok;
 #elif !defined(__APPLE__)
     ok = delete_if_exists(LIB_SHARED_SONAME) && ok;
 #endif
@@ -626,6 +892,10 @@ static bool clean(void)
     // clear_directory() (not just the known current examples/sources) so a
     // stale binary/object left over from a since-renamed or removed
     // example/source doesn't block removing the folder itself.
+    ok = clear_directory(EXAMPLES_STATIC_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_STATIC_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_SHARED_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_SHARED_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_BUILD_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_BUILD_FOLDER) && ok;
 
@@ -641,10 +911,12 @@ static bool clean(void)
 
 static void usage(const char *program)
 {
-    printf("usage: %s [-clean] [-examples] [-help]\n", program);
+    printf("usage: %s [-clean] [-examples [-dynamic]] [-help]\n", program);
     printf("  -clean     remove generated build files and exit\n");
     printf("  -examples  build the example programs against lib/libAntTweakBarC99.a\n");
     printf("             (requires the library to already be built with ./nob)\n");
+    printf("  -dynamic   with -examples, link them against the shared library\n");
+    printf("             (lib/libAntTweakBarC99.{dll,so,dylib}) instead of the static one\n");
     printf("  -help      print this help and exit\n");
 }
 
@@ -655,12 +927,15 @@ int main(int argc, char **argv)
     const char *nob_exe = argv[0];
     bool clean_requested = false;
     bool examples_requested = false;
+    bool dynamic_requested = false;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-clean") == 0) {
             clean_requested = true;
         } else if (strcmp(argv[i], "-examples") == 0) {
             examples_requested = true;
+        } else if (strcmp(argv[i], "-dynamic") == 0) {
+            dynamic_requested = true;
         } else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
             return 0;
@@ -671,7 +946,11 @@ int main(int argc, char **argv)
         }
     }
 
+    if (dynamic_requested && !examples_requested) {
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples");
+    }
+
     if (clean_requested) return clean() ? 0 : 1;
-    if (examples_requested) return build_examples(nob_exe) ? 0 : 1;
+    if (examples_requested) return build_examples(nob_exe, dynamic_requested) ? 0 : 1;
     return build_all(nob_exe) ? 0 : 1;
 }

@@ -44,9 +44,10 @@ gcc nob.c -o nob
 Then:
 
 ```sh
-./nob            # build the library (lib/libAntTweakBarC99.{a,so/dylib/dll})
-./nob -examples  # build the example programs (requires ./nob to have run first)
-./nob -help      # list all flags
+./nob                     # build the library (lib/libAntTweakBarC99.{a,so/dylib/dll})
+./nob -examples           # build the example programs, statically linked (requires ./nob to have run first)
+./nob -examples -dynamic  # build the example programs against the shared library instead
+./nob -help               # list all flags
 ```
 
 To rebuild from scratch you have to clean the folder from artifacts:
@@ -57,19 +58,41 @@ To rebuild from scratch you have to clean the folder from artifacts:
 
 `./nob` produces:
 
-- `lib/libAntTweakBarC99.a` — static library, on every platform
+- `lib/libAntTweakBarC99.a` — static library, on every platform. This is
+  the simplest option (no extra runtime DLLs to ship) and is what
+  `./nob -examples` links against on every platform.
 - `lib/libAntTweakBarC99.so` (Linux) / `lib/libAntTweakBarC99.dylib`
-  (macOS) — dynamic library. **Not built on Windows/MinGW:** the library
-  calls a few GLFW3 functions (clipboard, timing) directly and leaves them
-  as undefined symbols, resolved at final-link time against whichever
-  single GLFW instance the consuming application itself initializes —
-  Linux/macOS shared libraries tolerate this, but a Windows DLL cannot, so
-  `./nob` only builds the static library there. Link
-  `lib/libAntTweakBarC99.a` instead (already what `./nob -examples` does
-  on every platform).
+  (macOS) / `lib/libAntTweakBarC99.dll` (Windows/MinGW) — dynamic library.
+  The library calls a few GLFW3 functions (clipboard, timing) and GLAD's
+  loaded OpenGL entry points directly. On Linux/macOS this simply leaves
+  them as undefined symbols, resolved at load time against whichever
+  single GLFW/GLAD instance the consuming application itself initializes.
+  A Windows DLL cannot do that (every imported symbol must resolve to a
+  concrete exporter at the DLL's own link time), so on Windows `./nob`
+  additionally builds two small companion DLLs -
+  `lib/AntTweakBarC99-glfw3.dll` and `lib/AntTweakBarC99-glad.dll` (+ their
+  `.dll.a` import libraries) - and links `libAntTweakBarC99.dll` against
+  them. **Anyone linking `libAntTweakBarC99.dll` on Windows must also link
+  their own application against the same two `.dll.a` import libraries**
+  (not their own separately-built GLFW/GLAD) **and ship both `.dll` files
+  alongside `libAntTweakBarC99.dll`** at runtime - linking a second,
+  separate copy of GLFW or GLAD instead would silently reproduce a
+  "two uninitialized instances" bug (frozen timing, empty clipboard, or a
+  black window depending on which one). Distinctly named, rather than
+  generic `glfw3.dll`/`glad.dll`, to avoid a Windows DLL-search-order
+  collision with an unrelated, ABI-incompatible DLL of the same name that
+  might already be on `PATH`. If you don't need a DLL, link
+  `lib/libAntTweakBarC99.a` instead - no extra DLLs involved.
 
-`./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. All examples compile statically against `lib/libAntTweakBarC99.a` and place executbles in
-`build/examples/`.
+`./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. By
+default, examples compile statically against `lib/libAntTweakBarC99.a` and place executables in
+`build/examples/static/`. Add `-dynamic` (`./nob -examples -dynamic`) to instead link them against
+the shared library (`lib/libAntTweakBarC99.{so,dylib,dll}`), placing executables in
+`build/examples/shared/`; on Windows this also links the examples against
+`lib/AntTweakBarC99-glfw3.dll.a`/`lib/AntTweakBarC99-glad.dll.a` (the same two companion DLLs
+`libAntTweakBarC99.dll` itself imports GLFW/GLAD from - see above), so running a dynamically-linked
+example on Windows requires `lib/libAntTweakBarC99.dll`, `lib/AntTweakBarC99-glfw3.dll`, and
+`lib/AntTweakBarC99-glad.dll` to be on `PATH` or copied next to the executable.
 
 You do not need to install GLFW3 in your system. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source automatically.
 
