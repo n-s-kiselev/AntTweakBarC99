@@ -1233,7 +1233,8 @@ enum EVarAtomAttribs
     VA_TRUE,
     VA_FALSE,
     VA_ENUM,
-    VA_VALUE
+    VA_VALUE,
+    VA_LINES
 };
 
 int CTwVarAtom_HasAttrib(const CTwVarAtom *_Atom, const char *_Attrib, bool *_HasValue)
@@ -1268,6 +1269,8 @@ int CTwVarAtom_HasAttrib(const CTwVarAtom *_Atom, const char *_Attrib, bool *_Ha
         return VA_ENUM;
     else if( _stricmp(_Attrib, "value")==0 )
         return VA_VALUE;
+    else if( _stricmp(_Attrib, "lines")==0 )
+        return VA_LINES;
 
     return CTwVar_HasAttribBase(_Attrib, _HasValue);
 }
@@ -1633,6 +1636,30 @@ int CTwVarAtom_SetAttrib(CTwVarAtom *_Atom, int _AttribID, const char *_Value, T
             }
         }
         return 0;
+    case VA_LINES:
+        if( _Value==NULL || strlen(_Value)==0 )
+        {
+            CTwMgr_SetLastError(g_TwMgr, g_ErrNoValue);
+            return 0;
+        }
+        else if( _Atom->m_Type!=TW_TYPE_CDSTRING && !IsCSStringType(_Atom->m_Type) )
+        {
+            CTwMgr_SetLastError(g_TwMgr, g_ErrUnknownType);
+            return 0;
+        }
+        else
+        {
+            int NbLines = 0;
+            if( sscanf(_Value, "%d", &NbLines)!=1 || NbLines<2 )
+            {
+                CTwMgr_SetLastError(g_TwMgr, g_ErrBadValue);
+                return 0;
+            }
+            _Atom->m_Val.m_Multiline.m_NbLines = NbLines;
+            _Atom->m_Val.m_Multiline.m_FirstTextLine = 0;
+            CTwBar_NotUpToDate(_Bar);
+            return 1;
+        }
     default:
         return CTwVar_SetAttribBase(&_Atom->m_Base, _AttribID, _Value, _Bar, _VarParent, _VarIndex);
     }
@@ -1810,6 +1837,17 @@ ERetType CTwVarAtom_GetAttrib(const CTwVarAtom *_Atom, int _AttribID, TwBar *_Ba
         }
         CTwMgr_SetLastError(g_TwMgr, g_ErrInvalidAttrib);
         return RET_ERROR;
+    case VA_LINES:
+        if( _Atom->m_Type==TW_TYPE_CDSTRING || IsCSStringType(_Atom->m_Type) )
+        {
+            tw_da_append(outDoubles,  _Atom->m_Val.m_Multiline.m_NbLines );
+            return RET_DOUBLE;
+        }
+        else
+        {
+            CTwMgr_SetLastError(g_TwMgr, g_ErrInvalidAttrib);
+            return RET_ERROR;
+        }
     default:
         return CTwVar_GetAttribBase(&_Atom->m_Base, _AttribID, _Bar, _VarParent, _VarIndex, outDoubles, outString);
     }
@@ -2884,6 +2922,7 @@ CTwBar *CTwBar_Create(const char *_Name)
     Bar->m_MouseDragResizeLR = false;
     Bar->m_MouseDragResizeLL = false;
     Bar->m_MouseDragValWidth = false;
+    Bar->m_MultilineScrollDragVar = NULL;
     Bar->m_MouseOriginX = 0;
     Bar->m_MouseOriginY = 0;
     Bar->m_ValuesWidthRatio = 0;
@@ -3785,20 +3824,356 @@ static inline int IncrBtnWidth(int _CharHeight)
 
 //  ---------------------------------------------------------------------------
 
+//  Multiline-text widget: string variables configured with the "lines=N" (N>=2)
+//  param, and the help bar's own read-only help-text atoms, both laid out as a
+//  block of N consecutive rows (one CHierTag each, m_SubLine 0..N-1) with their
+//  own scrollbar - see docs/plans/multiline-text-widget.md.
+
+// A multiline-text atom's own scrollbar column (screen X bounds), inside the value
+// column at its own right edge. Recomputed from the bar's *current* layout rather than
+// cached, like the bar's own scrollbar X bounds in CTwBar_Draw - only the Y thumb bounds
+// are cached (in CTwBar_Update), since those need the costlier thumb-size calc.
+static inline void CTwBar_MultilineScrollbarX(const CTwBar *_Bar, int *_X0, int *_X1)
+{
+    *_X1 = _Bar->m_PosX+_Bar->m_VarX2-2;
+    *_X0 = *_X1-CTwMultilineScrollbarWidth(_Bar->m_Font);
+}
+
+// True if _Var is displayed by the multiline-text widget, whichever column its text
+// actually renders through. Note that m_Val is a union, so m_Multiline's fields are only
+// meaningful once the atom's type has been checked. The places that need to tell the two
+// kinds apart use IsMultilineValueVar/IsMultilineHelpVar below instead.
+static inline bool IsMultilineTextVar(const CTwVar *_Var)
+{
+    if( _Var==NULL || CTwVar_IsGroup(_Var) )
+        return false;
+    const CTwVarAtom *Atom = (const CTwVarAtom *)_Var;
+    bool MultilineType = Atom->m_Type==TW_TYPE_CDSTRING || IsCSStringType(Atom->m_Type)
+                      || Atom->m_Type==TW_TYPE_HELP_ATOM || Atom->m_Type==TW_TYPE_HELP_GRP;
+    return MultilineType && Atom->m_Val.m_Multiline.m_NbLines>=2;
+}
+
+// The two kinds of multiline atom wrap a different source string and render it
+// through a different column, so the code that does the wrapping/backgrounds
+// (CTwBar_ListValues, CTwBar_ListLabels, CTwBar_DrawMultilineWidgets) narrows it down with these.
+static inline bool IsMultilineValueVar(const CTwVar *_Var) // TW_TYPE_CDSTRING/CSSTRING: wraps CTwVarAtom_ValueToString() in the value column
+{
+    if( !IsMultilineTextVar(_Var) )
+        return false;
+    ETwType Type = ((const CTwVarAtom *)_Var)->m_Type;
+    return Type==TW_TYPE_CDSTRING || IsCSStringType(Type);
+}
+static inline bool IsMultilineHelpVar(const CTwVar *_Var) // TW_TYPE_HELP_ATOM/HELP_GRP: wraps m_Base.m_Name in the label column, full row width
+{
+    if( !IsMultilineTextVar(_Var) )
+        return false;
+    ETwType Type = ((const CTwVarAtom *)_Var)->m_Type;
+    return Type==TW_TYPE_HELP_ATOM || Type==TW_TYPE_HELP_GRP;
+}
+
+// The multiline-text atom whose block starts at HierTag row _Line, or NULL if that
+// row isn't the first (m_SubLine==0) row of such a block - the common prelude of
+// every loop below that walks the visible rows looking for multiline blocks.
+static inline CTwVarAtom *CTwBar_MultilineAtomAtLine(const CTwBar *_Bar, int _Line)
+{
+    const CHierTag *Tag = &_Bar->m_HierTags.items[_Line];
+    if( Tag->m_SubLine!=0 || !IsMultilineTextVar(Tag->m_Var) )
+        return NULL;
+    return (CTwVarAtom *)Tag->m_Var;
+}
+
+// Screen Y range [*_Y0,*_Y1) of the block reserved by the multiline-text atom whose
+// first row (m_SubLine==0) is HierTag row _Line, clamped to the bar's visible variable
+// area since the block may be partly scrolled out of it - its text and background
+// still have to render correctly for the part that is on screen.
+static inline void CTwBar_MultilineBlockY(const CTwBar *_Bar, int _Line, int *_Y0, int *_Y1)
+{
+    const CTwVarAtom *Atom = (const CTwVarAtom *)_Bar->m_HierTags.items[_Line].m_Var;
+    int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
+    int MaxY1 = _Bar->m_PosY+_Bar->m_VarY1+1;
+    *_Y0 = _Bar->m_PosY+_Bar->m_VarY0+_Line*RowH;
+    *_Y1 = *_Y0+Atom->m_Val.m_Multiline.m_NbLines*RowH;
+    if( *_Y1>MaxY1 )
+        *_Y1 = MaxY1;
+}
+
+// Height of the scrollbar track inside such a block: the block minus its two arrow
+// boxes, as for the bar's own scrollbar (CTwBar_Update). Each arrow box is drawn square,
+// so exactly CTwMultilineScrollbarWidth() tall - deriving the track from that same width
+// (rather than from CharHeight) is what keeps the thumb flush against both arrows at the
+// scroll extremes.
+static inline int CTwBar_MultilineTrackHeight(const CTwBar *_Bar, int _BlockY0, int _BlockY1)
+{
+    int Track = _BlockY1-_BlockY0-2*CTwMultilineScrollbarWidth(_Bar->m_Font);
+    return (Track<4) ? 4 : Track;
+}
+
+// Keeps a scroll offset within its text: 0 when the text fits.
+static inline void CTwBar_MultilineClampFirstTextLine(struct CTwMultilineVal *_ML)
+{
+    if( _ML->m_FirstTextLine>_ML->m_NbTextLines-_ML->m_NbLines )
+        _ML->m_FirstTextLine = _ML->m_NbTextLines-_ML->m_NbLines;
+    if( _ML->m_FirstTextLine<0 )
+        _ML->m_FirstTextLine = 0;
+}
+
+// True if the multiline-text atom whose first row (m_SubLine==0) is HierTag row
+// _Line both overflows its visible lines and has its ENTIRE reserved block - all
+// m_NbLines rows, not just the first - currently present in _Bar->m_HierTags. This
+// is the single source of truth for whether the widget's own scrollbar exists at
+// all right now: a scrollbar for a block that the bar's own outer scroll window
+// cuts through would look broken (there is no way to see "the rest" of a view you
+// cannot even fully see), so it is hidden - and therefore also not interactive -
+// until the whole block is back in view.
+static bool CTwBar_MultilineNeedsScrollbar(const CTwBar *_Bar, int _Line)
+{
+    const CTwVar *Var = _Bar->m_HierTags.items[_Line].m_Var;
+    const struct CTwMultilineVal *ML = &((const CTwVarAtom *)Var)->m_Val.m_Multiline;
+    if( ML->m_NbTextLines<=ML->m_NbLines )
+        return false; // fits - no scrollbar needed regardless of visibility
+    int nh = (int)_Bar->m_HierTags.count;
+    if( _Line+ML->m_NbLines>nh )
+        return false; // block's later rows extend past the end of the visible window
+    for( int s=1; s<ML->m_NbLines; ++s )
+        if( _Bar->m_HierTags.items[_Line+s].m_Var!=Var || _Bar->m_HierTags.items[_Line+s].m_SubLine!=s )
+            return false; // window ends (or something else begins) before the block does
+    return true;
+}
+
+// The multiline-text atom whose block currently covers screen Y _Y and whose own
+// scrollbar exists right now (see CTwBar_MultilineNeedsScrollbar), or NULL. X is
+// left to the caller: the widget's own scrollbar column for clicks (see
+// CTwBar_MultilineScrollbarAtomAt below), the whole value column for the wheel.
+static CTwVarAtom *CTwBar_MultilineScrollableAtomAtY(CTwBar *_Bar, int _Y)
+{
+    int nh = (int)_Bar->m_HierTags.count;
+    for( int h=0; h<nh; ++h )
+    {
+        CTwVarAtom *Atom = CTwBar_MultilineAtomAtLine(_Bar, h);
+        if( Atom==NULL || !CTwBar_MultilineNeedsScrollbar(_Bar, h) )
+            continue;
+        int ty0, ty1;
+        CTwBar_MultilineBlockY(_Bar, h, &ty0, &ty1);
+        if( _Y>=ty0 && _Y<ty1 )
+            return Atom;
+    }
+    return NULL;
+}
+
+// Same, restricted to the widget's own scrollbar column: the atom whose scrollbar
+// currently occupies screen position (_X,_Y), or NULL.
+static CTwVarAtom *CTwBar_MultilineScrollbarAtomAt(CTwBar *_Bar, int _X, int _Y)
+{
+    int mx0, mx1;
+    CTwBar_MultilineScrollbarX(_Bar, &mx0, &mx1);
+    if( _X<mx0 || _X>=mx1 )
+        return NULL;
+    return CTwBar_MultilineScrollableAtomAtY(_Bar, _Y);
+}
+
+// Block Y-range of a *known* multiline-text atom, found by scanning for its m_SubLine==0
+// entry in the currently laid-out CHierTags - used by drag-motion updates, where the cursor
+// may have moved outside the atom's own rect (unlike the position-based lookups above).
+// Returns false if that row isn't in the visible HierTags window.
+static bool CTwBar_MultilineBlockYForAtom(const CTwBar *_Bar, const CTwVarAtom *_Atom, int *_Y0, int *_Y1)
+{
+    int nh = (int)_Bar->m_HierTags.count;
+    for( int h=0; h<nh; ++h )
+        if( CTwBar_MultilineAtomAtLine(_Bar, h)==_Atom )
+        {
+            CTwBar_MultilineBlockY(_Bar, h, _Y0, _Y1);
+            return true;
+        }
+    return false;
+}
+
+// Scrolls a multiline-text atom's wrapped text by _Delta lines, clamped to its text -
+// used by the widget's scrollbar arrows and by the mouse wheel.
+static void CTwBar_MultilineScrollStep(CTwBar *_Bar, CTwVarAtom *_Atom, int _Delta)
+{
+    struct CTwMultilineVal *ML = &_Atom->m_Val.m_Multiline;
+    int PrevFirst = ML->m_FirstTextLine;
+    ML->m_FirstTextLine += _Delta;
+    CTwBar_MultilineClampFirstTextLine(ML);
+    if( ML->m_FirstTextLine!=PrevFirst )
+        CTwBar_NotUpToDate(_Bar);
+}
+
+// Clears the hover state of every multiline-text atom's own scrollbar, mirroring the
+// bar-level m_Highlight*Scroll reset in CTwBar_MouseMotion.
+static void CTwBar_MultilineClearHighlights(CTwBar *_Bar)
+{
+    for( int h=0; h<(int)_Bar->m_HierTags.count; ++h )
+    {
+        CTwVarAtom *Atom = CTwBar_MultilineAtomAtLine(_Bar, h);
+        if( Atom!=NULL )
+        {
+            Atom->m_Val.m_Multiline.m_HighlightScroll = false;
+            Atom->m_Val.m_Multiline.m_HighlightUpScroll = false;
+            Atom->m_Val.m_Multiline.m_HighlightDnScroll = false;
+        }
+    }
+}
+
+// Shifts every multiline-text atom's cached scrollbar thumb bounds by _DeltaY, for the same
+// reason as the bar's own m_ScrollY0/Y1 patch while dragging the bar around: they are
+// absolute screen coords computed in CTwBar_Update, not re-derived on the fly.
+static void CTwBar_MultilineOffsetScrollY(CTwBar *_Bar, int _DeltaY)
+{
+    for( int h=0; h<(int)_Bar->m_HierTags.count; ++h )
+    {
+        CTwVarAtom *Atom = CTwBar_MultilineAtomAtLine(_Bar, h); // only a block's first row matches, so each atom is shifted exactly once
+        if( Atom!=NULL )
+        {
+            Atom->m_Val.m_Multiline.m_ScrollY0 += _DeltaY;
+            Atom->m_Val.m_Multiline.m_ScrollY1 += _DeltaY;
+        }
+    }
+}
+
+// Wrapped-lines cache for one multiline-text atom, kept by its caller as a static scratch:
+// the K rows of a block are laid out back to back, so the wrap is computed on the first of
+// them that is walked and reused for the rest.
+typedef struct
+{
+    const CTwVarAtom *  m_Atom;
+    CSdsArray           m_Lines;
+} CTwMultilineWrapCache;
+
+// _Text wrapped to _WrapWidth for _Atom, re-wrapping only when _Atom is not the one already
+// cached - keyed on the atom rather than on m_SubLine==0, so a frame where the bar's own outer
+// scroll cuts through the middle of a block still re-wraps instead of reusing another atom's
+// lines. Refreshes the atom's cached line count and re-clamps its scroll offset on each wrap.
+static const CSdsArray *CTwBar_MultilineWrapText(CTwMultilineWrapCache *_Cache, CTwVarAtom *_Atom, const char *_Text, int _WrapWidth, const CTexFont *_Font)
+{
+    if( _Atom!=_Cache->m_Atom )
+    {
+        for( size_t k=0; k<_Cache->m_Lines.count; ++k )
+            sdsfree(_Cache->m_Lines.items[k]);
+        _Cache->m_Lines.count = 0;
+        SplitString(&_Cache->m_Lines, _Text, _WrapWidth, _Font);
+        _Atom->m_Val.m_Multiline.m_NbTextLines = (int)_Cache->m_Lines.count;
+        CTwBar_MultilineClampFirstTextLine(&_Atom->m_Val.m_Multiline);
+        _Cache->m_Atom = _Atom;
+    }
+    return &_Cache->m_Lines;
+}
+
+// The wrapped line to display on HierTag row _Line of _Atom's block, or NULL when that row
+// falls past the end of the text (the block keeps its fixed height and shows a blank row).
+static sds CTwBar_MultilineLineAt(const CTwBar *_Bar, const CTwVarAtom *_Atom, const CSdsArray *_Lines, int _Line)
+{
+    int LineIdx = _Atom->m_Val.m_Multiline.m_FirstTextLine + _Bar->m_HierTags.items[_Line].m_SubLine;
+    return (LineIdx>=0 && LineIdx<(int)_Lines->count) ? _Lines->items[LineIdx] : NULL;
+}
+
+// Draws every visible multiline-text block: its continuous value background, and its own
+// scrollbar in the same style as the bar's own (CTwBar_DrawHierHandle), but positioned
+// inside the value column at its own right edge rather than in the bar's outer gutter to
+// the right of m_VarX2. Called from CTwBar_DrawHierHandle.
+static void CTwBar_DrawMultilineWidgets(CTwBar *_Bar)
+{
+    ITwGraph *Gr = g_TwMgr->m_Graph;
+    int nh = (int)_Bar->m_HierTags.count;
+    for( int h=0; h<nh; ++h )
+    {
+        CTwVarAtom *MLAtom = CTwBar_MultilineAtomAtLine(_Bar, h);
+        if( MLAtom==NULL )
+            continue;
+        struct CTwMultilineVal *ML = &MLAtom->m_Val.m_Multiline;
+
+        int x0, x1, y0, y1;
+        CTwBar_MultilineScrollbarX(_Bar, &x0, &x1);
+        CTwBar_MultilineBlockY(_Bar, h, &y0, &y1);
+        int w = x1-x0;
+
+        // One continuous background rect for the whole block instead of the per-row quads
+        // ITwGraph::BuildText would build (CTwBar_ListValues pushes a transparent bg color
+        // for every row of such an atom for exactly this reason): those only span each line's
+        // CharHeight, leaving an m_LineSep-tall gap between rows - a deliberate separator
+        // between distinct variables, but a stray line splitting one wrapped paragraph.
+        // Value-column atoms only: help text has no background of its own and spans the full
+        // row through the label column, so this rect would use the wrong X range for it and
+        // wrongly darken it to look like an interactive variable's row.
+        if( IsMultilineValueVar(&MLAtom->m_Base) )
+            Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX1, y0, _Bar->m_PosX+_Bar->m_VarX2, y1-1, _Bar->m_ColValBg, _Bar->m_ColValBg, _Bar->m_ColValBg, _Bar->m_ColValBg);
+
+        if( !CTwBar_MultilineNeedsScrollbar(_Bar, h) )
+            continue; // fits, or only part of the block is currently visible
+
+        // Unlike the bar's own scrollbar (which keeps a simplified flat thumb visible on an
+        // unfocused bar), this one disappears completely, leaving just the paragraph above.
+        if( !(_Bar->m_DrawHandles || _Bar->m_IsPopupList) )
+            continue;
+
+        int sy0 = ML->m_ScrollY0;
+        int sy1 = ML->m_ScrollY1;
+        color32 ColTint = (_Bar->m_ColBg&0xffffff)|0x11000000;
+        color32 ColUpArrow = ML->m_HighlightUpScroll ? ((_Bar->m_ColLine&0xffffff)|0x4f000000) : _Bar->m_ColLine;
+        color32 ColDnArrow = ML->m_HighlightDnScroll ? ((_Bar->m_ColLine&0xffffff)|0x4f000000) : _Bar->m_ColLine;
+        color32 ColHandle = ML->m_HighlightScroll ? _Bar->m_ColHighBtn : _Bar->m_ColBtn;
+
+        // Solid gutter background over the block's full height, arrows included: the bar's own
+        // scrollbar gets that rectangular-strip look for free by never being covered by a row
+        // background, but this one sits inside the value-column background drawn just above.
+        Gr->DrawRect(Gr, x0, y0, x1, y1-1, _Bar->m_ColBg, _Bar->m_ColBg, _Bar->m_ColBg, _Bar->m_ColBg);
+        Gr->DrawRect(Gr, x0+2, y0+w, x1-2, y1-1-w, ColTint, ColTint, ColTint, ColTint);
+
+        // scroll handle shadow lines
+        Gr->DrawLine(Gr, x1-1, sy0+1, x1-1, sy1+1, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+        Gr->DrawLine(Gr, x0+2, sy1+1, x1, sy1+1, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+
+        // up & down arrow
+        for( int i=0; i<(x1-x0-2)/2; ++i )
+        {
+            Gr->DrawLine(Gr, x0+2+i, y0+w-2*i, x1-i, y0+w-2*i, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+            Gr->DrawLine(Gr, x0+1+i, y0+w-1-2*i, x1-1-i, y0+w-1-2*i, ColUpArrow, ColUpArrow, false);
+
+            Gr->DrawLine(Gr, x0+2+i, y1-w+2+2*i, x1-i, y1-w+2+2*i, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+            Gr->DrawLine(Gr, x0+1+i, y1-w+1+2*i, x1-1-i, y1-w+1+2*i, ColDnArrow, ColDnArrow, false);
+        }
+
+        // middle lines
+        Gr->DrawLine(Gr, (x0+x1)/2-1, y0+w, (x0+x1)/2-1, sy0, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, (x0+x1)/2, y0+w, (x0+x1)/2, sy0, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, (x0+x1)/2+1, y0+w, (x0+x1)/2+1, sy0, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+        Gr->DrawLine(Gr, (x0+x1)/2-1, sy1, (x0+x1)/2-1, y1-w+1, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, (x0+x1)/2, sy1, (x0+x1)/2, y1-w+1, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, (x0+x1)/2+1, sy1, (x0+x1)/2+1, y1-w+1, _Bar->m_ColLineShadow, _Bar->m_ColLineShadow, false);
+        // scroll handle lines
+        Gr->DrawRect(Gr, x0+2, sy0+1, x1-3, sy1-1, ColHandle, ColHandle, ColHandle, ColHandle);
+        Gr->DrawLine(Gr, x1-2, sy0, x1-2, sy1, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, x0+1, sy0, x0+1, sy1, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, x0+1, sy1, x1-1, sy1, _Bar->m_ColLine, _Bar->m_ColLine, false);
+        Gr->DrawLine(Gr, x0+1, sy0, x1-2, sy0, _Bar->m_ColLine, _Bar->m_ColLine, false);
+    }
+}
+
+//  ---------------------------------------------------------------------------
+
 void CTwBar_BrowseHierarchy(CTwBar *_Bar, int *_CurrLine, int _CurrLevel, const CTwVar *_Var, int _First, int _Last)
 {
     assert(_Var!=NULL);
     if( !_Var->m_IsRoot )
     {
-        if( (*_CurrLine)>=_First && (*_CurrLine)<=_Last )
+        // A multiline-text atom reserves N consecutive rows in the hierarchy instead of the
+        // usual one, all pointing at the same var and distinguished by m_SubLine.
+        int NbSubLines = 1;
+        if( IsMultilineTextVar(_Var) )
+            NbSubLines = ((const CTwVarAtom *)_Var)->m_Val.m_Multiline.m_NbLines;
+        for( int SubLine=0; SubLine<NbSubLines; ++SubLine )
         {
-            CHierTag Tag;
-            Tag.m_Level = _CurrLevel;
-            Tag.m_Var = (CTwVar *)(_Var);
-            Tag.m_Closing = false;
-            tw_da_append(&_Bar->m_HierTags, Tag);
+            if( (*_CurrLine)>=_First && (*_CurrLine)<=_Last )
+            {
+                CHierTag Tag;
+                Tag.m_Level = _CurrLevel;
+                Tag.m_Var = (CTwVar *)(_Var);
+                Tag.m_Closing = false;
+                Tag.m_SubLine = SubLine;
+                tw_da_append(&_Bar->m_HierTags, Tag);
+            }
+            *_CurrLine += 1;
         }
-        *_CurrLine += 1;
     }
     else
     {
@@ -3835,13 +4210,48 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     int nh = (int)_Bar->m_HierTags.count;
     for( int h=0; h<nh; ++h )
     {
-        Len = (int)sdslen(_Bar->m_HierTags.items[h].m_Var->m_Label);
-        if( Len>0 )
-            Text = (const unsigned char *)(_Bar->m_HierTags.items[h].m_Var->m_Label);
+        if( IsMultilineHelpVar(_Bar->m_HierTags.items[h].m_Var) )
+        {
+            // Help-bar text block (TW_TYPE_HELP_ATOM/HELP_GRP, one atom per help string -
+            // see AppendHelpString in TwMgr.c): same lazy wrapping as a multiline CDSTRING's
+            // value in CTwBar_ListValues, but sourced from m_Base.m_Name and rendered through
+            // the label column. m_WrapWidth was fixed at generation time, so this re-wraps
+            // identically to the line count AppendHelpString based m_NbLines on.
+            static CTwMultilineWrapCache HelpWrap = {0};
+            CTwVarAtom *HAtom = (CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
+            const CSdsArray *Lines = CTwBar_MultilineWrapText(&HelpWrap, HAtom, HAtom->m_Base.m_Name, HAtom->m_Val.m_Multiline.m_WrapWidth, _Font);
+            // Reconstructs AppendHelpString's original per-line decal (_Level literal leading
+            // spaces) from m_LeftMargin=(_Level+1)*Space, so every wrapped line is indented
+            // as much as each of its former per-line atoms was, not just the block's first.
+            static sds DecaledLine = NULL;
+            if( DecaledLine==NULL )
+                DecaledLine = sdsempty();
+            sdsclear(DecaledLine);
+            for( int sp=0; sp<HAtom->m_Base.m_LeftMargin/Space-1; ++sp )
+                DecaledLine = sdscatlen(DecaledLine, " ", 1);
+            sds WrappedLine = CTwBar_MultilineLineAt(_Bar, HAtom, Lines, h);
+            if( WrappedLine!=NULL )
+                DecaledLine = sdscatsds(DecaledLine, WrappedLine);
+            Text = (const unsigned char *)DecaledLine;
+            Len = (int)sdslen(DecaledLine);
+        }
+        // Rows 1..K-1 of a multiline-text atom's block (m_SubLine>0) are continuation
+        // rows of the same variable - only the first row (m_SubLine==0) shows its label.
+        else if( _Bar->m_HierTags.items[h].m_SubLine>0 )
+        {
+            Text = NULL;
+            Len = 0;
+        }
         else
         {
-            Text = (const unsigned char *)(_Bar->m_HierTags.items[h].m_Var->m_Name);
-            Len = (int)sdslen(_Bar->m_HierTags.items[h].m_Var->m_Name);
+            Len = (int)sdslen(_Bar->m_HierTags.items[h].m_Var->m_Label);
+            if( Len>0 )
+                Text = (const unsigned char *)(_Bar->m_HierTags.items[h].m_Var->m_Label);
+            else
+            {
+                Text = (const unsigned char *)(_Bar->m_HierTags.items[h].m_Var->m_Name);
+                Len = (int)sdslen(_Bar->m_HierTags.items[h].m_Var->m_Name);
+            }
         }
         x = 0;
         Etc = 0;
@@ -3937,6 +4347,22 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
             {
                 Atom = (const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
                 CTwVarAtom_ValueToString(Atom, &ValStr);
+
+                // Multiline-text widget (string atom with "lines=N" set): replace the full
+                // value string with just this row's wrapped line. All K rows of one atom's
+                // block appear as consecutive HierTag entries (see CTwBar_BrowseHierarchy),
+                // so the wrap itself is computed once per block and cached.
+                if( IsMultilineValueVar(_Bar->m_HierTags.items[h].m_Var) )
+                {
+                    static CTwMultilineWrapCache ValueWrap = {0}; // persistent scratch, like Summary above
+                    CTwVarAtom *MLAtom = (CTwVarAtom *)Atom; // cached fields only, no value change
+                    const CSdsArray *Lines = CTwBar_MultilineWrapText(&ValueWrap, MLAtom, ValStr, CTwMultilineWrapWidth(_Font, _WidthMax), _Font);
+                    sds WrappedLine = CTwBar_MultilineLineAt(_Bar, MLAtom, Lines, h);
+                    if( WrappedLine!=NULL )
+                        ValStr = sdscpy(ValStr, WrappedLine);
+                    else
+                        sdsclear(ValStr);
+                }
                 if( !_Bar->m_IsHelpBar || (Atom->m_Type==TW_TYPE_SHORTCUT && (Atom->m_Val.m_Shortcut.m_Incr[0]>0 || Atom->m_Val.m_Shortcut.m_Decr[0]>0)) )
                     ReadOnly = Atom->m_ReadOnly;
                 if( !Atom->m_NoSlider )
@@ -3997,6 +4423,8 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
                 tw_da_append(_Colors, _Bar->m_ColValText);
             if( !HasBgColor )
                 tw_da_append(_BgColors, (color32)0x00000000);
+            else if( IsMultilineValueVar(_Bar->m_HierTags.items[h].m_Var) )
+                tw_da_append(_BgColors, (color32)0x00000000); // drawn as one continuous rect in CTwBar_Draw instead - avoids an m_LineSep-tall gap splitting the wrapped paragraph
             else if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) )
             {
                 const CTwVarGroup *Grp = (const CTwVarGroup *)_Bar->m_HierTags.items[h].m_Var;
@@ -4339,6 +4767,47 @@ void CTwBar_Update(CTwBar *_Bar)
     _Bar->m_ScrollY0 = y0+w+yscr;
     _Bar->m_ScrollY1 = y0+w+yscr+hscr;
 
+    // Widget-local scrollbar thumbs for multiline-text atoms: same thumb-size/position
+    // formula as the bar's own scrollbar just above, scoped to each atom's own reserved
+    // row-span instead of the whole bar. Computed for every block that starts in the
+    // visible HierTags window; whether the resulting scrollbar is actually drawn and
+    // interactive is decided separately, by CTwBar_MultilineNeedsScrollbar.
+    {
+        int nhml = (int)_Bar->m_HierTags.count;
+        for( int hml=0; hml<nhml; ++hml )
+        {
+            CTwVarAtom *MLAtom = CTwBar_MultilineAtomAtLine(_Bar, hml);
+            if( MLAtom==NULL )
+                continue;
+            struct CTwMultilineVal *ML = &MLAtom->m_Val.m_Multiline;
+
+            int by0, by1;
+            CTwBar_MultilineBlockY(_Bar, hml, &by0, &by1);
+            int sw = CTwMultilineScrollbarWidth(_Bar->m_Font); // also the height of each arrow box
+            int htrack = CTwBar_MultilineTrackHeight(_Bar, by0, by1);
+
+            int hscrml = (ML->m_NbTextLines>0) ? ((htrack*ML->m_NbLines)/ML->m_NbTextLines) : htrack;
+            if( hscrml<=4 )
+                hscrml = 4;
+            if( hscrml>htrack )
+                hscrml = htrack;
+            int yscrml = (ML->m_NbTextLines>0) ? ((htrack*ML->m_FirstTextLine)/ML->m_NbTextLines) : 0;
+            if( yscrml<0 )
+                yscrml = 0;
+            if( yscrml>htrack-4 )
+                yscrml = htrack-4;
+            if( yscrml+hscrml>htrack )
+                hscrml = htrack-yscrml;
+            if( hscrml>htrack )
+                hscrml = htrack;
+            if( hscrml<=4 )
+                hscrml = 4;
+
+            ML->m_ScrollY0 = by0+sw+yscrml;
+            ML->m_ScrollY1 = by0+sw+yscrml+hscrml;
+        }
+    }
+
     // Build title
     sds Title = sdsempty();
     if( sdslen(_Bar->m_Label)>0 )
@@ -4599,6 +5068,8 @@ void CTwBar_DrawHierHandle(CTwBar *_Bar)
             Gr->DrawRect(Gr, x0+3, _Bar->m_ScrollY0+1, x1-3, _Bar->m_ScrollY1-1, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn, _Bar->m_ColBtn);
     }
 
+    CTwBar_DrawMultilineWidgets(_Bar);
+
     if( _Bar->m_DrawHandles && !_Bar->m_IsPopupList )
     {
         if( _Bar->m_Resizable ) // Draw resize handles
@@ -4743,9 +5214,13 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
 
         if( _DrawPart&DRAW_CONTENT )
         {
-            // Draw highlighted line
-            if( _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var!=NULL
-                && (CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) 
+            // Draw highlighted line. A row of a multiline-text atom's block never highlights:
+            // all K rows are one variable, not K distinct ones, so a per-row highlight band
+            // would cut a stray stripe across what is drawn as one seamless paragraph.
+            bool HasHighlightedLine = _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count
+                                      && !IsMultilineTextVar(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var);
+            if( HasHighlightedLine && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var!=NULL
+                && (CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)
                     || (!((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly && !_Bar->m_IsHelpBar
                         && !CTwVar_IsCustom(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) ) ) )
             {
@@ -4755,7 +5230,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                 if( !_Bar->m_EditInPlace.m_Active )
                     Gr->DrawLine(Gr, _Bar->m_PosX+LevelSpace+6+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_ColUnderline, _Bar->m_ColUnderline, false);
             }
-            else if( _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
+            else if( HasHighlightedLine && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
                 int y0 = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
                 color32 col = ColorBlend(_Bar->m_ColHighBg0, _Bar->m_ColHighBg1, 0.5f);
@@ -5334,8 +5809,35 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
             _Bar->m_HighlightValWidth = false;
             _Bar->m_HighlightLabelsHeader = false;
             _Bar->m_HighlightValuesHeader = false;
+            CTwBar_MultilineClearHighlights(_Bar); // set again below if the mouse is over one
             //if( InBar && _X>_Bar->m_PosX+_Bar->m_Font->m_CharHeight+1 && _X<_Bar->m_PosX+_Bar->m_VarX2 && _Y>=_Bar->m_PosY+_Bar->m_VarY0 && _Y<_Bar->m_PosY+_Bar->m_VarY1 )
-            if( InBar && _X>_Bar->m_PosX+2 && _X<_Bar->m_PosX+_Bar->m_VarX2 && _Y>=_Bar->m_PosY+_Bar->m_VarY0 && _Y<_Bar->m_PosY+_Bar->m_VarY1 )
+            CTwVarAtom *HoveredMLAtom = InBar ? CTwBar_MultilineScrollbarAtomAt(_Bar, _X, _Y) : NULL;
+            if( HoveredMLAtom!=NULL )
+            {   // mouse over a multiline-text atom's own scrollbar - takes priority
+                // over the generic "mouse over var line" branch just below, since
+                // that scrollbar lives inside the same value-column X range.
+                struct CTwMultilineVal *ML = &HoveredMLAtom->m_Val.m_Multiline;
+                if( _Y>=ML->m_ScrollY0 && _Y<ML->m_ScrollY1 )
+                {
+                    ML->m_HighlightScroll = true;
+                  #ifdef ANT_WINDOWS
+                    ANT_SET_CURSOR(NS);
+                  #else
+                    ANT_SET_CURSOR(Arrow);
+                  #endif
+                }
+                else if( _Y<ML->m_ScrollY0 )
+                {
+                    ML->m_HighlightUpScroll = true;
+                    ANT_SET_CURSOR(Arrow);
+                }
+                else
+                {
+                    ML->m_HighlightDnScroll = true;
+                    ANT_SET_CURSOR(Arrow);
+                }
+            }
+            else if( InBar && _X>_Bar->m_PosX+2 && _X<_Bar->m_PosX+_Bar->m_VarX2 && _Y>=_Bar->m_PosY+_Bar->m_VarY0 && _Y<_Bar->m_PosY+_Bar->m_VarY1 )
             {   // mouse over var line
                 _Bar->m_HighlightedLine = (_Y-_Bar->m_PosY-_Bar->m_VarY0)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
                 if( _Bar->m_HighlightedLine>=(int)_Bar->m_HierTags.count )
@@ -5514,6 +6016,7 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
                 }
                 _Bar->m_ScrollY0 += _Bar->m_PosY-y;
                 _Bar->m_ScrollY1 += _Bar->m_PosY-y;
+                CTwBar_MultilineOffsetScrollY(_Bar, _Bar->m_PosY-y);
                 ANT_SET_CURSOR(Move);
                 Handled = true;
             }
@@ -5525,6 +6028,29 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
                 if( _Bar->m_IsHelpBar )
                     g_TwMgr->m_HelpBarNotUpToDate = true;
                 ANT_SET_CURSOR(WE);
+                Handled = true;
+                _Bar->m_DrawHandles = true;
+            }
+            else if( _Bar->m_MultilineScrollDragVar!=NULL )
+            {
+                // Widget-local scrollbar drag update: same delta formula as the bar's own
+                // scrollbar drag just below, scoped to this atom's track/line-count.
+                CTwVarAtom *MLAtom = _Bar->m_MultilineScrollDragVar;
+                struct CTwMultilineVal *ML = &MLAtom->m_Val.m_Multiline;
+                int BlockY0, BlockY1;
+                if( CTwBar_MultilineBlockYForAtom(_Bar, MLAtom, &BlockY0, &BlockY1) && ML->m_NbTextLines>0 )
+                {
+                    int htrack = CTwBar_MultilineTrackHeight(_Bar, BlockY0, BlockY1);
+                    int dl = ((_Y-_Bar->m_MouseOriginY)*ML->m_NbTextLines)/htrack;
+                    ML->m_FirstTextLine = ML->m_FirstTextLine0+dl;
+                    CTwBar_MultilineClampFirstTextLine(ML);
+                    CTwBar_NotUpToDate(_Bar);
+                }
+              #ifdef ANT_WINDOWS
+                ANT_SET_CURSOR(NS);
+              #else
+                ANT_SET_CURSOR(Arrow);
+              #endif
                 Handled = true;
                 _Bar->m_DrawHandles = true;
             }
@@ -5834,6 +6360,10 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
 
     if( !_Bar->m_IsMinimized )
     {
+        // Multiline-text atom whose own scrollbar is under the cursor, if any (see the
+        // branch using it further below, next to the bar's own scrollbar handling).
+        CTwVarAtom *ClickedMLAtom = CTwBar_MultilineScrollbarAtomAt(_Bar, _X, _Y);
+
         Handled = (_X>=_Bar->m_PosX && _X<_Bar->m_PosX+_Bar->m_Width && _Y>=_Bar->m_PosY && _Y<_Bar->m_PosY+_Bar->m_Height);
         if( _Button==TW_MOUSE_LEFT && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var )
         {
@@ -5954,7 +6484,18 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                         //  dw = 2*IncrBtnWidth(_Bar->m_Font->m_CharHeight);
                         if( !_Bar->m_EditInPlace.m_Active || _Bar->m_EditInPlace.m_Var!=Var )
                         {
-                            CTwBar_EditInPlaceStart(_Bar, Var, _Bar->m_VarX1, _Bar->m_VarY0+(_Bar->m_HighlightedLine)*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep), _Bar->m_VarX2-_Bar->m_VarX1-dw-1);
+                            // A multiline-text atom still edits through this single-line overlay
+                            // unchanged - just pin its Y to the block's first row, since any row
+                            // of the block may be the clicked one. The identity check catches a
+                            // block whose first row is scrolled out of the bar's own window.
+                            int EditLine = _Bar->m_HighlightedLine;
+                            if( IsMultilineValueVar(&Var->m_Base) )
+                            {
+                                int First = EditLine-_Bar->m_HierTags.items[EditLine].m_SubLine;
+                                if( First>=0 && _Bar->m_HierTags.items[First].m_Var==(CTwVar *)Var )
+                                    EditLine = First;
+                            }
+                            CTwBar_EditInPlaceStart(_Bar, Var, _Bar->m_VarX1, _Bar->m_VarY0+EditLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep), _Bar->m_VarX2-_Bar->m_VarX1-dw-1);
                             if( CTwBar_EditInPlaceIsReadOnly(_Bar) )
                                 CTwBar_EditInPlaceMouseMove(_Bar, _X, _Y, false);
                             _Bar->m_MouseDrag = false;
@@ -6064,6 +6605,35 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
             _Bar->m_MouseDrag = false;
             _Bar->m_MouseDragValWidth = false;
             ANT_SET_CURSOR(Arrow);
+        }
+        else if( !_Pressed && _Bar->m_MultilineScrollDragVar!=NULL )
+        {
+            _Bar->m_MouseDrag = false;
+            _Bar->m_MultilineScrollDragVar = NULL;
+            ANT_SET_CURSOR(Arrow);
+        }
+        else if( _Pressed && !_Bar->m_MouseDrag && _Button==TW_MOUSE_LEFT && ClickedMLAtom!=NULL )
+        {
+            // Widget-local scrollbar, analogous to the bar's own scrollbar click-handling
+            // just below: on the thumb starts a drag, above/below it single-steps.
+            struct CTwMultilineVal *ML = &ClickedMLAtom->m_Val.m_Multiline;
+            if( _Y>=ML->m_ScrollY0 && _Y<ML->m_ScrollY1 )
+            {
+                _Bar->m_MouseDrag = true;
+                _Bar->m_MultilineScrollDragVar = ClickedMLAtom;
+                _Bar->m_MouseOriginX = _X;
+                _Bar->m_MouseOriginY = _Y;
+                ML->m_FirstTextLine0 = ML->m_FirstTextLine;
+              #ifdef ANT_WINDOWS
+                ANT_SET_CURSOR(NS);
+              #else
+                ANT_SET_CURSOR(Arrow);
+              #endif
+            }
+            else if( _Y<ML->m_ScrollY0 )
+                CTwBar_MultilineScrollStep(_Bar, ClickedMLAtom, -1);
+            else // _Y>=ML->m_ScrollY1
+                CTwBar_MultilineScrollStep(_Bar, ClickedMLAtom, +1);
         }
         else if( _Pressed && !_Bar->m_MouseDrag && _Bar->m_NbDisplayedLines<_Bar->m_NbHierLines && _Button==TW_MOUSE_LEFT && _X>=_Bar->m_PosX+_Bar->m_VarX2+2 && _X<_Bar->m_PosX+_Bar->m_Width-2 && _Y>=_Bar->m_ScrollY0 && _Y<_Bar->m_ScrollY1 )
         {
@@ -6290,6 +6860,27 @@ bool CTwBar_MouseWheel(CTwBar *_Bar, int _Pos, int _PrevPos, int _MouseX, int _M
     bool Handled = false;
     if( !_Bar->m_IsMinimized && _MouseX>=_Bar->m_PosX && _MouseX<_Bar->m_PosX+_Bar->m_Width && _MouseY>=_Bar->m_PosY && _MouseY<_Bar->m_PosY+_Bar->m_Height )
     {
+        // If the cursor is over a multiline-text atom's own block and its text overflows,
+        // scroll that widget instead of the bar; otherwise fall through to the bar's own
+        // wheel handling below. Gated from m_VarX0 rather than m_VarX1 so it also covers a
+        // help-text block, which renders through the label column, further left than a
+        // CDSTRING's value column - harmless for the value-column case, since
+        // CTwBar_MultilineScrollableAtomAtY still scopes to each atom's own Y-span.
+        if( _MouseX>=_Bar->m_PosX+_Bar->m_VarX0 && _MouseX<_Bar->m_PosX+_Bar->m_VarX2 )
+        {
+            CTwVarAtom *MLAtom = CTwBar_MultilineScrollableAtomAtY(_Bar, _MouseY);
+            if( MLAtom!=NULL )
+            {
+                if( _Pos>_PrevPos )
+                    CTwBar_MultilineScrollStep(_Bar, MLAtom, -1);
+                else if( _Pos<_PrevPos )
+                    CTwBar_MultilineScrollStep(_Bar, MLAtom, +1);
+                if( _Pos!=_PrevPos && _Bar->m_EditInPlace.m_Active )
+                    CTwBar_EditInPlaceEnd(_Bar, true);
+                return (_Pos!=_PrevPos);
+            }
+        }
+
         if( _Pos>_PrevPos && _Bar->m_FirstLine>0 )
         {
             --_Bar->m_FirstLine;

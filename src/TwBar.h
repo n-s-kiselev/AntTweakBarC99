@@ -184,6 +184,21 @@ struct CTwCustomVal
 {
     CMemberProxy *m_MemberProxy;
 };
+// Multiline-text widget state, used by TW_TYPE_CDSTRING/TW_TYPE_CSSTRING(n) atoms configured
+// with the "lines" param and by the help bar's own read-only TW_TYPE_HELP_ATOM/HELP_GRP text
+// blocks (see AppendHelpString in TwMgr.c).
+struct CTwMultilineVal
+{
+    int  m_NbLines;            // visible lines, >=2; 0 = not multiline (classic single-line widget)
+    int  m_FirstTextLine;      // scroll offset: index of the first visible wrapped text line
+    int  m_NbTextLines;        // cached total wrapped-line count, refreshed on each re-wrap (CTwBar_MultilineWrapText)
+    int  m_FirstTextLine0;     // m_FirstTextLine snapshot at scrollbar drag start (the drag itself is tracked by CTwBar's m_MultilineScrollDragVar/m_MouseOriginY)
+    int  m_WrapWidth;          // TW_TYPE_HELP_ATOM/HELP_GRP only: wrap width decided at generation time (AppendHelpString) and reused verbatim at render time, so the rendered line count can never disagree with the one m_NbLines was based on. Unused (0) for CDSTRING/CSSTRING, which re-derive it from the current value-column layout.
+    bool m_HighlightScroll, m_HighlightUpScroll, m_HighlightDnScroll; // hover state, mirrors CTwBar's own m_Highlight*Scroll fields
+    // Cached scrollbar thumb Y bounds (absolute screen coords, like CTwBar's own m_ScrollY0/Y1),
+    // set in CTwBar_Update. The X bounds are recomputed on the fly instead (CTwBar_MultilineScrollbarX).
+    int  m_ScrollY0, m_ScrollY1;
+};
 
 typedef union CTwVal
 {
@@ -202,6 +217,7 @@ typedef union CTwVal
     struct CTwHelpStructVal m_HelpStruct;
     struct CTwButtonVal     m_Button;
     struct CTwCustomVal     m_Custom;
+    struct CTwMultilineVal  m_Multiline;
 } CTwVal;
 
 
@@ -287,6 +303,7 @@ typedef struct CHierTag
     CTwVar *            m_Var;
     int                 m_Level;
     bool                m_Closing;
+    int                 m_SubLine; // 0 for every ordinary row; 0..K-1 for the K rows reserved by a multiline-text atom's own block (all K entries share the same m_Var)
 } CHierTag;
 // Replaces std::vector<CHierTag>.
 typedef struct { CHierTag *items; size_t count; size_t capacity; } CHierTagArray;
@@ -443,6 +460,7 @@ struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a point
     bool                    m_MouseDragResizeLR;
     bool                    m_MouseDragResizeLL;
     bool                    m_MouseDragValWidth;
+    CTwVarAtom *            m_MultilineScrollDragVar; // non-NULL while dragging a multiline-text atom's own scrollbar thumb (m_MouseDrag is also set true, mirroring every other drag mode, so CTwBar_IsDragging/event capture need no change)
     int                     m_MouseOriginX;
     int                     m_MouseOriginY;
     double                  m_ValuesWidthRatio;
@@ -529,6 +547,20 @@ void                        CTwBar_Update(CTwBar *_Bar);
 void                        CTwBar_BrowseHierarchy(CTwBar *_Bar, int *_LineNum, int _CurrLevel, const CTwVar *_Var, int _First, int _Last);
 void                        CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors, CColor32Array *_BgColors, bool *_HasBgColors, const CTexFont *_Font, int _AtomWidthMax, int _GroupWidthMax);
 void                        CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors, CColor32Array *_BgColors, const CTexFont *_Font, int _WidthMax);
+// Word-wraps _String to fit _Width pixels in _Font, honoring explicit '\n'/tabs (defined in TwMgr.c, used there by
+// AppendHelpString and here by the multiline-text widget's own wrapping).
+void                        SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font);
+// Width of a multiline-text atom's own scrollbar. Matches the bar's own scrollbar's drawn width
+// (CTwBar_DrawHierHandle: x1-x0 with x0/x1 built from CharHeight-4) so both render at the same size.
+static inline int CTwMultilineScrollbarWidth(const CTexFont *_Font) { return _Font->m_CharHeight-4; }
+// Text width available inside a multiline-text widget _Width pixels wide: minus the gutter reserved
+// for its own scrollbar, and never narrower than a space. The gutter is reserved permanently, whether
+// or not the scrollbar ends up drawn, so wrapping never depends on whether one will be shown.
+static inline int CTwMultilineWrapWidth(const CTexFont *_Font, int _Width)
+{
+    int WrapWidth = _Width - (CTwMultilineScrollbarWidth(_Font)+2);
+    return (WrapWidth<_Font->m_CharWidth[(int)' ']) ? _Font->m_CharWidth[(int)' '] : WrapWidth;
+}
 int                         CTwBar_ComputeLabelsWidth(CTwBar *_Bar, const CTexFont *_Font);
 int                         CTwBar_ComputeValuesWidth(CTwBar *_Bar, const CTexFont *_Font);
 void                        CTwBar_DrawHierHandle(CTwBar *_Bar);

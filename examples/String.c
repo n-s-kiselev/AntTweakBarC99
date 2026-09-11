@@ -398,11 +398,14 @@ int main(void)
 
     // Create a tweak bar
     TwBar *bar = TwNewBar("Main");
-    TwDefine(" Main label='~ String variable examples ~' fontSize=3 position='180 16' valuesWidth=100 ");
+    // valuesWidth/size widened relative to the original demo so the "Multiline" text
+    // variable below has room to wrap legibly (the narrower column also truncated the
+    // other, short string values with "...").
+    TwDefine(" Main label='~ String variable examples ~' fontSize=3 position='180 16' valuesWidth=200 ");
     {
         // Scaled by content scale so the panel keeps up with the
         // now-larger scaled contents.
-        int barSize[2] = { (int)(270 * contentScaleX + 0.5f), (int)(320 * contentScaleY + 0.5f) };
+        int barSize[2] = { (int)(370 * contentScaleX + 0.5f), (int)(380 * contentScaleY + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
 
@@ -440,6 +443,17 @@ int main(void)
     strcpy(textLine, TEXTLINE);
     TwAddVarCB(bar, "TextLine", TW_TYPE_CDSTRING, SetTextLineCB, GetTextLineCB, &textLine,
                " label='Change text above' group=CDString help='The text to be echoed.' ");
+
+    // Add a multiline-text variable exercising the "lines" param: a CDString whose value is
+    // wrapped over a fixed number of visible lines, with its own scrollbar when it overflows.
+    char *multilineText = NULL;
+    CopyCDStringToClient(&multilineText,
+        "This description is long enough that it needs to wrap across "
+        "several lines and will not fit in the four lines configured "
+        "below, so the widget's own scrollbar should appear on the right "
+        "to reach the rest of the text.");
+    TwAddVarRW(bar, "Multiline", TW_TYPE_CDSTRING, &multilineText,
+               " label='Multiline text' group=CDString lines=4 help='Demonstrates the new lines= param (a multiline text widget with its own scrollbar).' ");
 
     // Set the group label & separator
     TwDefine(" Main/CDString label='Echo some text' help='This example demonstates different use of C-Dynamic string variables.' ");

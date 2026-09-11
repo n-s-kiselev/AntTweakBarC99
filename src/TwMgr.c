@@ -5822,7 +5822,7 @@ static void InsertUsedStructs(StructSet *_Set, const CTwVarGroup *_Grp)
         }
 }
 
-static void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font)
+void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font)
 {
     assert( _Font!=NULL && _String!=NULL );
     _OutSplits->count = 0;
@@ -5907,51 +5907,58 @@ static void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, 
     }
 }
 
+// Visible-line count given to every help/description string that wraps at all. Fixed,
+// exactly like a "lines=N" CDSTRING variable, rather than adapted to each string's own
+// natural height: a 2-line entry gets a blank trailing row, a 4+-line entry gets the
+// widget's own scrollbar straight away.
+static const int g_HelpTextLines = 3;
+
 static int AppendHelpString(CTwVarGroup *_Grp, const char *_String, int _Level, int _Width, ETwType _Type)
 {
     assert( _Grp!=NULL && g_TwMgr!=NULL && g_TwMgr->m_HelpBar!=NULL);
     assert( _String!=NULL );
-    int n = 0;
     const CTexFont *Font = g_TwMgr->m_HelpBar->m_Font;
     assert(Font!=NULL);
-    sds Decal = sdsempty();
-    for( int s=0; s<_Level; ++s )
-        Decal = sdscatlen(Decal, " ", 1);
+    // Room for the per-line visual indent applied at render time (CTwBar_ListLabels derives
+    // it back from m_LeftMargin) plus a small margin - same formula this function used before
+    // the multiline widget existed, so the line count decided here cannot disagree with what
+    // actually gets rendered.
     int DecalWidth = (_Level+2)*Font->m_CharWidth[(int)' '];
+    if( _Width<=DecalWidth )
+        return 0;
+    int WrapWidth = CTwMultilineWrapWidth(Font, _Width-DecalWidth);
 
-    if( _Width>DecalWidth )
+    // Wrapped once here only to learn whether the text needs the widget at all; the lines
+    // themselves are re-wrapped, from WrapWidth, at render time.
+    CSdsArray Split = {0};
+    SplitString(&Split, _String, WrapWidth, Font);
+    int NbWrappedLines = (int)Split.count;
+    for( size_t i=0; i<Split.count; ++i )
+        sdsfree(Split.items[i]);
+    tw_da_free(&Split);
+
+    CTwVarAtom *Var = CTwVarAtom_New();
+    Var->m_Base.m_Name = sdscpy(Var->m_Base.m_Name, _String); // raw text - wrapped lazily at render time, like the CDSTRING multiline widget wraps its value
+    Var->m_Ptr = NULL;
+    if( _Type==TW_TYPE_HELP_HEADER )
+        Var->m_ReadOnly = false;
+    else
+        Var->m_ReadOnly = true;
+    Var->m_NoSlider = true;
+    Var->m_Base.m_DontClip = true;
+    Var->m_Type = _Type;
+    Var->m_Base.m_LeftMargin = (signed short)((_Level+1)*Font->m_CharWidth[(int)' ']);
+    Var->m_Base.m_TopMargin  = (signed short)(-g_TwMgr->m_HelpBar->m_Sep);
+    //Var->m_TopMargin  = 1;
+    Var->m_Base.m_ColorPtr = &(g_TwMgr->m_HelpBar->m_ColHelpText);
+    CTwVarAtom_SetDefaults(Var);
+    if( NbWrappedLines>=2 )
     {
-        CSdsArray Split = {0};
-        SplitString(&Split, _String, _Width-DecalWidth, Font);
-        for( size_t i=0; i<Split.count; ++i )
-        {
-            CTwVarAtom *Var = CTwVarAtom_New();
-            sds combined = sdsdup(Decal);
-            combined = sdscatsds(combined, Split.items[i]);
-            Var->m_Base.m_Name = sdscpy(Var->m_Base.m_Name, combined);
-            sdsfree(combined);
-            Var->m_Ptr = NULL;
-            if( _Type==TW_TYPE_HELP_HEADER )
-                Var->m_ReadOnly = false;
-            else
-                Var->m_ReadOnly = true;
-            Var->m_NoSlider = true;
-            Var->m_Base.m_DontClip = true;
-            Var->m_Type = _Type;
-            Var->m_Base.m_LeftMargin = (signed short)((_Level+1)*Font->m_CharWidth[(int)' ']);
-            Var->m_Base.m_TopMargin  = (signed short)(-g_TwMgr->m_HelpBar->m_Sep);
-            //Var->m_TopMargin  = 1;
-            Var->m_Base.m_ColorPtr = &(g_TwMgr->m_HelpBar->m_ColHelpText);
-            CTwVarAtom_SetDefaults(Var);
-            tw_da_append(&_Grp->m_Vars, &Var->m_Base);
-            ++n;
-        }
-        for( size_t i=0; i<Split.count; ++i )
-            sdsfree(Split.items[i]);
-        tw_da_free(&Split);
+        Var->m_Val.m_Multiline.m_NbLines = g_HelpTextLines;
+        Var->m_Val.m_Multiline.m_WrapWidth = WrapWidth; // cached so CTwBar_ListLabels re-wraps identically to NbWrappedLines above
     }
-    sdsfree(Decal);
-    return n;
+    tw_da_append(&_Grp->m_Vars, &Var->m_Base);
+    return 1;
 }
 
 static int AppendHelp(CTwVarGroup *_Grp, const CTwVarGroup *_ToAppend, int _Level, int _Width)
@@ -5960,7 +5967,10 @@ static int AppendHelp(CTwVarGroup *_Grp, const CTwVarGroup *_ToAppend, int _Leve
     assert( _ToAppend!=NULL );
     int n = 0;
     sds Decal = sdsempty();
-    for( int s=0; s<_Level; ++s )
+    // _Level+1, matching AppendHelpString's own (_Level+1)-space indent: otherwise a subgroup's
+    // header row sits one space short of its own description/members, and at a narrow bar width
+    // close enough to the left edge to look like it overlaps it.
+    for( int s=0; s<_Level+1; ++s )
         Decal = sdscatlen(Decal, " ", 1);
 
     if( sdslen(_ToAppend->m_Base.m_Help)>0 )
@@ -6011,7 +6021,9 @@ static int AppendHelp(CTwVarGroup *_Grp, const CTwVarGroup *_ToAppend, int _Leve
                 else
                 {
                     Var->m_Type = TW_TYPE_HELP_GRP;
-                    Var->m_Base.m_DontClip = true;
+                    // No m_DontClip: this header has no wrapping/scrolling of its own to fall back
+                    // on, so it clips with an ellipsis like a real CTwVarGroup's label rather than
+                    // overflowing past the label column at a narrow bar width.
                     Var->m_Base.m_LeftMargin = (signed short)((_Level+2)*g_TwMgr->m_HelpBar->m_Font->m_CharWidth[(int)' ']);
                     //Var->m_TopMargin  = (signed short)(g_TwMgr->m_HelpBar->m_Font->m_CharHeight/2-2+2*(_Level-1));
                     Var->m_Base.m_TopMargin  = 2;
@@ -6173,12 +6185,15 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
                     CTwVarAtom *Var = CTwVarAtom_New();
                     Var->m_Ptr = NULL;
                     Var->m_Type = TW_TYPE_HELP_GRP;
-                    Var->m_Base.m_DontClip = true;
+                    // No m_DontClip, for the same reason as the sub-group header in AppendHelp:
+                    // clip with an ellipsis rather than overflow the label column at a narrow bar
+                    // width. The "  " prefix on the name below gives it the same leading indent as
+                    // its own member rows, instead of sitting flush against the bar's left edge.
                     Var->m_Base.m_LeftMargin = (signed short)(3*g_TwMgr->m_HelpBar->m_Font->m_CharWidth[(int)' ']);
                     Var->m_Base.m_TopMargin  = 2;
                     Var->m_ReadOnly = true;
                     Var->m_NoSlider = true;
-                    Var->m_Base.m_Name = sdscpy(Var->m_Base.m_Name, "{");
+                    Var->m_Base.m_Name = sdscpy(Var->m_Base.m_Name, "  {");
                     Var->m_Base.m_Name = sdscat(Var->m_Base.m_Name, g_TwMgr->m_Structs.items[idx].m_Name);
                     Var->m_Base.m_Name = sdscat(Var->m_Base.m_Name, "}");
                     tw_da_append(&StructGrp->m_Vars, &Var->m_Base);
@@ -6250,10 +6265,20 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
     RotoGrp->m_Open = false;
     RotoGrp->m_Base.m_ColorPtr = &(_Mgr->m_HelpBar->m_ColGrpText);
     tw_da_append(&_Mgr->m_HelpBar->m_VarRoot.m_Vars, &RotoGrp->m_Base);
-    AppendHelpString(RotoGrp, "The RotoSlider allows rapid editing of numerical values.", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
-    AppendHelpString(RotoGrp, "To modify a numerical value, click on its label or on its roto [.] button, then move the mouse outside of the grey circle while keeping the mouse button pressed, and turn around the circle to increase or decrease the numerical value.", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
-    AppendHelpString(RotoGrp, "The two grey lines depict the min and max bounds.", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
-    AppendHelpString(RotoGrp, "Moving the mouse far form the circle allows precise increase or decrease, while moving near the circle allows fast increase or decrease.", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
+    // Deliberately one AppendHelpString call, hence one multiline-text widget with a single
+    // scrollbar. These four sentences used to be four calls, which looked identical under the
+    // old "one atom per wrapped line" mechanism, but each call now reserves its own rows and
+    // scrollbar - splitting what should read as one block into several disjointed ones.
+    AppendHelpString(RotoGrp,
+        "The RotoSlider allows rapid editing of numerical values. "
+        "To modify a numerical value, click on its label or on its roto [.] "
+        "button, then move the mouse outside of the grey circle while keeping "
+        "the mouse button pressed, and turn around the circle to increase or "
+        "decrease the numerical value. "
+        "The two grey lines depict the min and max bounds. "
+        "Moving the mouse far form the circle allows precise increase or "
+        "decrease, while moving near the circle allows fast increase or decrease.",
+        0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
 
     SynchroHierarchy(&_Mgr->m_HelpBar->m_VarRoot, &prevHierarchy);
     CTwVarGroup_Free(&prevHierarchy);
