@@ -311,17 +311,26 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     self->m_FontTexID = 0;
     self->m_FontTex = NULL;
 
-    // Was: LoadOpenGLCore(), a custom dynamic-loading step. GLAD (already
-    // linked into the library, loaded by the host application before
-    // TwInit()) already resolves every Core Profile function this renderer
-    // needs; LoadOGLCore.cpp/.h were redundant with it and have been
-    // deleted. This is the cheap defensive check the C99 rewrite plan
-    // called for in their place: glCreateShader is representative of any
-    // Core Profile function - if GLAD hasn't been loaded yet, it (and
-    // everything else here) is NULL.
+    // Was: LoadOpenGLCore(), a custom dynamic-loading step. GLAD already
+    // resolves every Core Profile function this renderer needs;
+    // LoadOGLCore.cpp/.h were redundant with it and have been deleted.
+    // gladLoadGL() loads this renderer's own private copy of GLAD's
+    // function pointers itself - mirroring the original AntTweakBar's
+    // self-contained LoadOGL.cpp - rather than depending on the consuming
+    // application having already called gladLoadGLLoader() before TwInit()
+    // (see docs/plans/self-contained-windows-dll.md). Requires a GL
+    // context already current, same precondition TwInit() always had;
+    // harmless to call even when the application already loaded its own,
+    // separate GLAD instance for its own GL calls.
+    gladLoadGL();
+
+    // glCreateShader is representative of any Core Profile function - if
+    // it's still NULL after the self-load above, there was no current GL
+    // context (or it exposes no Core Profile entry points) to resolve
+    // against.
     if( glCreateShader==NULL )
     {
-        TwSetLastError("OpenGL Core Profile functions are not loaded - call gladLoadGLLoader (or equivalent) before TwInit");
+        TwSetLastError("OpenGL Core Profile functions are not loaded - no OpenGL context is current, or it is not a Core Profile context");
         return 0;
     }
 

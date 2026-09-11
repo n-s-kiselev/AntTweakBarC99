@@ -6,8 +6,11 @@ This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar
 
 **Key features compared to legacy ATB:**
 
-- **Clipboard support via GLFW3** — `glfwGetClipboardString`/
-  `glfwSetClipboardString` replace the original's native Win32/NSPasteboard/X11 clipboard code.
+- **Clipboard support via a callback** — a new `TwSetClipboardCallback()`
+  API (mirroring `TwSetCursorCallback()` below) lets the application route
+  clipboard access through its own toolkit instead of AntTweakBar reaching
+  into the system clipboard natively; every example wires it up to GLFW3's
+  `glfwGetClipboardString`/`glfwSetClipboardString`.
 - **Custom cursors via GLFW3** — a new `TwSetCursorCallback()` API routes
   cursor changes through `glfwSetCursor()`/`glfwCreateCursor()` instead of
   AntTweakBar setting the system cursor natively.
@@ -44,7 +47,7 @@ gcc nob.c -o nob
 Then:
 
 ```sh
-./nob                     # build the library (lib/libAntTweakBarC99.{a,so/dylib/dll})
+./nob                     # build the library (build/lib/libAntTweakBarC99.{a,so/dylib/dll})
 ./nob -examples           # build the example programs, statically linked (requires ./nob to have run first)
 ./nob -examples -dynamic  # build the example programs against the shared library instead
 ./nob -help               # list all flags
@@ -56,57 +59,53 @@ To rebuild from scratch you have to clean the folder from artifacts:
 ./nob -clean     # remove all generated build output
 ```
 
-`./nob` produces:
+`./nob` produces everything under `build/` - the repository root stays source-only:
 
-- `lib/libAntTweakBarC99.a` — static library, on every platform. This is
-  the simplest option (no extra runtime DLLs to ship) and is what
-  `./nob -examples` links against on every platform.
-- `lib/libAntTweakBarC99.so` (Linux) / `lib/libAntTweakBarC99.dylib`
-  (macOS) / `lib/libAntTweakBarC99.dll` (Windows/MinGW) — dynamic library.
-  The library calls a few GLFW3 functions (clipboard, timing) and GLAD's
-  loaded OpenGL entry points directly. On Linux/macOS this simply leaves
-  them as undefined symbols, resolved at load time against whichever
-  single GLFW/GLAD instance the consuming application itself initializes.
-  A Windows DLL cannot do that (every imported symbol must resolve to a
-  concrete exporter at the DLL's own link time), so on Windows `./nob`
-  additionally builds two small companion DLLs -
-  `lib/AntTweakBarC99-glfw3.dll` and `lib/AntTweakBarC99-glad.dll` (+ their
-  `.dll.a` import libraries) - and links `libAntTweakBarC99.dll` against
-  them. **Anyone linking `libAntTweakBarC99.dll` on Windows must also link
-  their own application against the same two `.dll.a` import libraries**
-  (not their own separately-built GLFW/GLAD) **and ship both `.dll` files
-  alongside `libAntTweakBarC99.dll`** at runtime - linking a second,
-  separate copy of GLFW or GLAD instead would silently reproduce a
-  "two uninitialized instances" bug (frozen timing, empty clipboard, or a
-  black window depending on which one). Distinctly named, rather than
-  generic `glfw3.dll`/`glad.dll`, to avoid a Windows DLL-search-order
-  collision with an unrelated, ABI-incompatible DLL of the same name that
-  might already be on `PATH`. If you don't need a DLL, link
-  `lib/libAntTweakBarC99.a` instead - no extra DLLs involved.
+- `build/lib/libAntTweakBarC99.a` — static library, on every platform. This is
+  the simplest option (no extra runtime files to ship) and is what
+  `./nob -examples` links against by default.
+- `build/lib/libAntTweakBarC99.so` (Linux) / `build/lib/libAntTweakBarC99.dylib`
+  (macOS) / `build/lib/libAntTweakBarC99.dll` (Windows/MinGW) — dynamic library,
+  self-contained on every platform: the library loads its own private copy
+  of GLAD's OpenGL function pointers itself (`gladLoadGL()`, called from
+  `TwInit()`) rather than depending on the consuming application having
+  already loaded them, and reaches the system clipboard only through an
+  application-supplied `TwSetClipboardCallback()` (see above) rather than
+  linking a toolkit directly - so no companion DLL, and no extra `.dll.a`
+  import library, is needed on Windows either. If you don't need a shared
+  library at all, link `build/lib/libAntTweakBarC99.a` instead.
+- `build/include/AntTweakBar.h` — a copy of [`include/AntTweakBar.h`](include/AntTweakBar.h)
+  (the real, git-tracked source, unchanged) placed next to the libraries above, so `build/`
+  is a self-contained `lib`+`include` pair for anything linking against it.
 
 `./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. By
-default, examples compile statically against `lib/libAntTweakBarC99.a` and place executables in
+default, examples compile statically against `build/lib/libAntTweakBarC99.a` and place executables in
 `build/examples/static/`. Add `-dynamic` (`./nob -examples -dynamic`) to instead link them against
-the shared library (`lib/libAntTweakBarC99.{so,dylib,dll}`), placing executables in
-`build/examples/shared/`; on Windows this also links the examples against
-`lib/AntTweakBarC99-glfw3.dll.a`/`lib/AntTweakBarC99-glad.dll.a` (the same two companion DLLs
-`libAntTweakBarC99.dll` itself imports GLFW/GLAD from - see above), so running a dynamically-linked
-example on Windows requires `lib/libAntTweakBarC99.dll`, `lib/AntTweakBarC99-glfw3.dll`, and
-`lib/AntTweakBarC99-glad.dll` to be on `PATH` or copied next to the executable. See "Running
-dynamically linked examples" below for how to do that without copying any files.
+the shared library (`build/lib/libAntTweakBarC99.{so,dylib,dll}`), placing executables in
+`build/examples/shared/`; running a dynamically-linked example only requires
+`build/lib/libAntTweakBarC99.{so,dylib,dll}` to be on `PATH` or copied next to the executable. See
+"Running dynamically linked examples" below for how to do that without copying any files.
 
 ### Running dynamically linked examples
 
 Executables in `build/examples/shared/` are not self-contained - unlike the static build, they need
-to find their shared library dependencies (in `lib/`) at runtime. Rather than copying those library
-files next to every executable or permanently adding `lib/` to your system `PATH`, point the loader
-at `lib/` for just the current shell session or command instead:
+to find their shared library dependencies (in `build/lib/`) at runtime. Rather than copying those
+library files next to every executable or permanently adding `build/lib/` to your system `PATH`,
+point the loader at `build/lib/` for just the current shell session or command instead:
+
+**Windows (Command Prompt)**
+
+```bat
+cd build\examples\shared
+set PATH=..\..\lib;%PATH%
+Advanced_c99.exe
+```
 
 **Windows (PowerShell)**
 
 ```powershell
 cd build\examples\shared
-$env:PATH = "..\..\..\lib;$env:PATH"
+$env:PATH = "..\..\lib;$env:PATH"
 .\Advanced_c99.exe
 ```
 
@@ -114,20 +113,20 @@ $env:PATH = "..\..\..\lib;$env:PATH"
 
 ```sh
 cd build/examples/shared
-LD_LIBRARY_PATH=../../../lib ./Advanced_c99
+LD_LIBRARY_PATH=../../lib ./Advanced_c99
 ```
 
 **macOS (bash)**
 
 ```sh
 cd build/examples/shared
-DYLD_LIBRARY_PATH=../../../lib ./Advanced_c99
+DYLD_LIBRARY_PATH=../../lib ./Advanced_c99
 ```
 
-The Windows `$env:PATH` assignment only lasts for the current PowerShell session; the
-`LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` prefix form only applies to that single command. Either way,
-your system-wide `PATH`/library search path is left untouched, and no `.dll`/`.so`/`.dylib` file
-needs to be copied anywhere.
+The `set PATH=`/`$env:PATH` assignment only lasts for the current Command Prompt/PowerShell session;
+the `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` prefix form only applies to that single command. Either
+way, your system-wide `PATH`/library search path is left untouched, and no `.dll`/`.so`/`.dylib`
+file needs to be copied anywhere.
 
 You do not need to install GLFW3 in your system. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source automatically.
 

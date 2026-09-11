@@ -15,10 +15,12 @@
 #include "TwFonts.h"
 #include "TwOpenGL.h"
 #include "TwOpenGLCore.h"
-// glfwGetTime() replaces the deleted PerfTimer/AntPerfTimer.h m_Timer field
-// (see TwMgr.h) - this project already hard-depends on GLFW3 elsewhere
-// (TwBar.cpp includes it directly for clipboard access).
-#include <GLFW/glfw3.h>
+// TwGetTimeSeconds() (TwTime.h) replaces the deleted PerfTimer/AntPerfTimer.h
+// m_Timer field (see TwMgr.h) - a self-contained monotonic clock rather than
+// TwGetTimeSeconds(), so the library needs no shared GLFW instance with the
+// consuming application on Windows (see
+// docs/plans/self-contained-windows-dll.md).
+#include "TwTime.h"
 #ifdef ANT_WINDOWS
 #   include "resource.h"
 #   ifdef _DEBUG
@@ -49,6 +51,9 @@ TwCopyCDStringToClient  g_InitCopyCDStringToClient = NULL;
 float g_FontScaling = 1.0f;
 TwCursorCB g_CursorCallback = NULL;
 void *     g_CursorCallbackClientData = NULL;
+TwClipboardGetCB g_ClipboardGetCallback = NULL;
+TwClipboardSetCB g_ClipboardSetCallback = NULL;
+void *           g_ClipboardCallbackClientData = NULL;
 
 // multi-windows
 static const int TW_MASTER_WINDOW_ID = 0;
@@ -1741,8 +1746,8 @@ static inline int TwFreeAsyncDrawing(void)
     if( g_TwMgr && g_TwMgr->m_Graph && g_TwMgr->m_Graph->IsDrawing(g_TwMgr->m_Graph) )
     {
         const double SLEEP_MAX = 0.25; // wait at most 1/4 second
-        double startTime = glfwGetTime();
-        while( g_TwMgr->m_Graph->IsDrawing(g_TwMgr->m_Graph) && glfwGetTime()-startTime<SLEEP_MAX )
+        double startTime = TwGetTimeSeconds();
+        while( g_TwMgr->m_Graph->IsDrawing(g_TwMgr->m_Graph) && TwGetTimeSeconds()-startTime<SLEEP_MAX )
         {
             #if defined(ANT_WINDOWS)
                 Sleep(1); // milliseconds
@@ -1990,7 +1995,7 @@ int ANT_CALL TwDraw(void)
         return 0;
 
     // Autorepeat TW_MOUSE_PRESSED
-    double CurrTime = glfwGetTime();
+    double CurrTime = TwGetTimeSeconds();
     double RepeatDT = CurrTime - g_TwMgr->m_LastMousePressedTime;
     double DrawDT = CurrTime - g_TwMgr->m_LastDrawTime;
     if(    RepeatDT>2.0*g_TwMgr->m_RepeatMousePressedDelay 
@@ -2007,7 +2012,7 @@ int ANT_CALL TwDraw(void)
             || (g_TwMgr->m_IsRepeatingMousePressed && RepeatDT>g_TwMgr->m_RepeatMousePressedPeriod) )
         {
             g_TwMgr->m_IsRepeatingMousePressed = true;
-            g_TwMgr->m_LastMousePressedTime = glfwGetTime();
+            g_TwMgr->m_LastMousePressedTime = TwGetTimeSeconds();
             TwMouseMotion(g_TwMgr->m_LastMouseX,g_TwMgr->m_LastMouseY);
             TwMouseButton(TW_MOUSE_PRESSED, g_TwMgr->m_LastMousePressedButtonID);
         }
@@ -5430,7 +5435,7 @@ static int TwMouseEvent(ETwMouseAction _EventType, TwMouseButtonID _Button, int 
     // for autorepeat
     if( (!g_TwMgr->m_IsRepeatingMousePressed || !g_TwMgr->m_CanRepeatMousePressed) && _EventType==TW_MOUSE_PRESSED )
     {
-        g_TwMgr->m_LastMousePressedTime = glfwGetTime();
+        g_TwMgr->m_LastMousePressedTime = TwGetTimeSeconds();
         g_TwMgr->m_LastMousePressedButtonID = _Button;
         g_TwMgr->m_LastMousePressedPosition[0] = _MouseX;
         g_TwMgr->m_LastMousePressedPosition[1] = _MouseY;
@@ -6100,10 +6105,10 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
 {
     if( _Mgr->m_HelpBar==NULL || CTwBar_IsMinimized(_Mgr->m_HelpBar) )
         return;
-    if( !_Mgr->m_HelpBarUpdateNow && (float)glfwGetTime()<_Mgr->m_LastHelpUpdateTime+2 )    // update at most every 2 seconds
+    if( !_Mgr->m_HelpBarUpdateNow && (float)TwGetTimeSeconds()<_Mgr->m_LastHelpUpdateTime+2 )    // update at most every 2 seconds
         return;
     _Mgr->m_HelpBarUpdateNow = false;
-    _Mgr->m_LastHelpUpdateTime = (float)glfwGetTime();
+    _Mgr->m_LastHelpUpdateTime = (float)TwGetTimeSeconds();
     #ifdef _DEBUG
         //printf("UPDATE HELPBAR\n");
     #endif // _DEBUG
@@ -6286,6 +6291,32 @@ void TW_CALL TwSetCursorCallback(TwCursorCB _Callback, void *_ClientData)
 {
     g_CursorCallback = _Callback;
     g_CursorCallbackClientData = _ClientData;
+}
+
+//  ---------------------------------------------------------------------------
+
+// Entry points used by TwBar.c's CTwBar_EditInPlaceGetClipboard/
+// SetClipboard: dispatch to the callback installed via
+// TwSetClipboardCallback (see AntTweakBar.h), mirroring
+// DispatchCursorCallback/CTwMgr_SetCursor above.
+const char *CTwMgr_GetClipboard(void)
+{
+    if( g_ClipboardGetCallback==NULL )
+        return NULL;
+    return g_ClipboardGetCallback(g_ClipboardCallbackClientData);
+}
+
+void CTwMgr_SetClipboard(const char *_Text)
+{
+    if( g_ClipboardSetCallback!=NULL )
+        g_ClipboardSetCallback(_Text, g_ClipboardCallbackClientData);
+}
+
+void TW_CALL TwSetClipboardCallback(TwClipboardGetCB _GetCallback, TwClipboardSetCB _SetCallback, void *_ClientData)
+{
+    g_ClipboardGetCallback = _GetCallback;
+    g_ClipboardSetCallback = _SetCallback;
+    g_ClipboardCallbackClientData = _ClientData;
 }
 
 //  ---------------------------------------------------------------------------

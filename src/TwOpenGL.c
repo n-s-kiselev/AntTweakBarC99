@@ -33,7 +33,7 @@ int TwSetLastError(const char *_StaticErrorMessage);
 }
 #endif
 
-static const char *g_ErrGLADNotLoaded = "OpenGL not loaded: call gladLoadGLLoader() before TwInit()";
+static const char *g_ErrGLADNotLoaded = "OpenGL not loaded: no OpenGL context is current, or it exposes no OpenGL functions - make sure a context is current before calling TwInit()";
 
 // These 3 are plain enum tokens from old ARB extensions (predating the
 // features they name being promoted to core, if ever) - GLAD's generated
@@ -181,11 +181,23 @@ static int TwGraphOpenGL_Init(ITwGraph *_This)
     self->m_FontTex = NULL;
     self->m_MaxClipPlanes = -1;
 
-    // GLAD is expected to already be loaded (gladLoadGLLoader()) by the
-    // application before TwInit() - true of every example in examples/.
+    // Load this renderer's own private copy of GLAD's function pointers,
+    // mirroring the original AntTweakBar's self-contained LoadOGL.cpp
+    // (wglGetProcAddress/GetProcAddress(opengl32.dll)) - the library no
+    // longer depends on the consuming application having already called
+    // gladLoadGLLoader() itself before TwInit() (see
+    // docs/plans/self-contained-windows-dll.md). Requires a GL context
+    // already current, same precondition TwInit() always had. Harmless to
+    // call even when the application already loaded its own, separate GLAD
+    // instance for its own GL calls - both resolve to the same underlying
+    // OpenGL entry points.
+    gladLoadGL();
+
     // glBegin is the most fundamental function this compatibility-profile
     // renderer depends on (used by every Draw* method below); if it's
-    // NULL, GLAD was never loaded.
+    // still NULL after the self-load above, there was no current GL
+    // context (or it exposes no compatibility-profile entry points) to
+    // resolve against.
     if( glBegin==NULL )
     {
         TwSetLastError(g_ErrGLADNotLoaded);

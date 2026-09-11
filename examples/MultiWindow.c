@@ -98,6 +98,18 @@ static int GLFWStandardCursorShape(ETwCursor _Cursor)
     }
 }
 
+static const char * TW_CALL ClipboardGetGLFW(void *_ClientData)
+{
+    (void)_ClientData;
+    return glfwGetClipboardString(NULL);
+}
+
+static void TW_CALL ClipboardSetGLFW(const char *_Text, void *_ClientData)
+{
+    (void)_ClientData;
+    glfwSetClipboardString(NULL, _Text);
+}
+
 static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
 {
     GLFWwindow *window = g_ActiveWindow;
@@ -382,6 +394,7 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
             return false;
         }
         TwSetCursorCallback(GLFWCursorCB, NULL);
+        TwSetClipboardCallback(ClipboardGetGLFW, ClipboardSetGLFW, NULL);
     } else {
         // Later windows: their context shares object namespace with window
         // 0 (required so a single TwTerminate() call, made with only one

@@ -236,6 +236,22 @@ typedef enum ETwCursor
 typedef void (TW_CALL * TwCursorCB)(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData);
 TW_API void     TW_CALL TwSetCursorCallback(TwCursorCB _Callback, void *_ClientData);
 
+// Same rationale and contract as TwSetCursorCallback above: AntTweakBar
+// used to reach the system clipboard directly (via GLFW3), which requires
+// the library to share a single GLFW instance with the consuming
+// application - impossible for a Windows DLL to do safely without extra
+// companion DLLs. Installing these callbacks instead keeps the library
+// itself toolkit-agnostic; the in-place text editor falls back to its own
+// internal per-bar clipboard buffer (copy/paste within/between AntTweakBar
+// fields keeps working) when no callback is installed, same as it already
+// does when the system clipboard is unavailable. _GetCallback's return
+// value has the same contract as glfwGetClipboardString(): valid only
+// until the next call into whatever produced it - AntTweakBar copies it
+// out immediately.
+typedef const char *(TW_CALL * TwClipboardGetCB)(void *_ClientData);
+typedef void        (TW_CALL * TwClipboardSetCB)(const char *_Text, void *_ClientData);
+TW_API void     TW_CALL TwSetClipboardCallback(TwClipboardGetCB _GetCallback, TwClipboardSetCB _SetCallback, void *_ClientData);
+
 typedef enum ETwKeyModifier
 {
     TW_KMOD_NONE        = 0x0000,   // same codes as SDL keysym.mod

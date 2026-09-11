@@ -359,6 +359,14 @@ void        CTwMgr_SetCurrentDbgParams(CTwMgr *_Mgr, const char *file, int line)
 // cursor-shape mechanism.
 void        CTwMgr_SetCursor(ETwCursor _Semantic);
 
+// Entry points used by TwBar.c's CTwBar_EditInPlaceGetClipboard/
+// SetClipboard: dispatch to the callback installed via
+// TwSetClipboardCallback (see AntTweakBar.h), mirroring CTwMgr_SetCursor
+// above. CTwMgr_GetClipboard returns NULL, and CTwMgr_SetClipboard does
+// nothing, when no callback is installed.
+const char *CTwMgr_GetClipboard(void);
+void        CTwMgr_SetClipboard(const char *_Text);
+
 // CEnum helpers: keep m_Entries sorted ascending by Value (see the
 // comment above CEnum) - use these instead of touching .items
 // directly so the sort invariant can't be broken by a call site.

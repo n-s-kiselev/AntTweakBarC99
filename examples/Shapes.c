@@ -76,6 +76,18 @@ static int GLFWStandardCursorShape(ETwCursor _Cursor)
     }
 }
 
+static const char * TW_CALL ClipboardGetGLFW(void *_ClientData)
+{
+    (void)_ClientData;
+    return glfwGetClipboardString(NULL);
+}
+
+static void TW_CALL ClipboardSetGLFW(const char *_Text, void *_ClientData)
+{
+    (void)_ClientData;
+    glfwSetClipboardString(NULL, _Text);
+}
+
 static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
 {
     GLFWwindow *window = (GLFWwindow *)_ClientData;
@@ -582,6 +594,7 @@ int main(void)
     }
     // Give GLFW3 authoritative cursor ownership (see GLFWCursorCB above).
     TwSetCursorCallback(GLFWCursorCB, window);
+    TwSetClipboardCallback(ClipboardGetGLFW, ClipboardSetGLFW, NULL);
     {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);

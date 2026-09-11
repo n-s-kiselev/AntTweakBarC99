@@ -13,7 +13,7 @@
 #include "TwMgr.h"
 #include "TwBar.h"
 #include "TwColors.h"
-#include <GLFW/glfw3.h> // EditInPlaceGetClipboard/SetClipboard delegate to GLFW3's clipboard
+#include "TwTime.h"
 
 extern const char *g_ErrNotFound;
 const char *g_ErrUnknownAttrib  = "Unknown parameter"; // shared with TwMgr.c (see its own `extern const char *g_ErrUnknownAttrib;`)
@@ -28,8 +28,8 @@ static const char *g_ErrUnknownType    = "Unknown type";
 
 // Was PerfTimer g_BarTimer - a free-running clock never Reset() after
 // construction, so "elapsed since construction" was really just "elapsed
-// since program start," identical to what glfwGetTime() already provides.
-// All 4 call sites now call glfwGetTime() directly.
+// since program start," identical to what TwGetTimeSeconds() (TwTime.h)
+// already provides. All call sites now call it directly.
 
 // Maps each named native cursor to the toolkit-agnostic ETwCursor value
 // reported to a callback installed via TwSetCursorCallback (see
@@ -4471,7 +4471,7 @@ void CTwBar_Update(CTwBar *_Bar)
         Gr->EndDraw(Gr);
 
     _Bar->m_UpToDate = true;
-    _Bar->m_LastUpdateTime = (float)(glfwGetTime());
+    _Bar->m_LastUpdateTime = (float)(TwGetTimeSeconds());
 }
 
 //  ---------------------------------------------------------------------------
@@ -4668,7 +4668,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
 
     _Bar->m_CustomRecords.count = 0;
 
-    if( (float)(glfwGetTime())>_Bar->m_LastUpdateTime+_Bar->m_UpdatePeriod )
+    if( (float)(TwGetTimeSeconds())>_Bar->m_LastUpdateTime+_Bar->m_UpdatePeriod )
         CTwBar_NotUpToDate(_Bar);
 
     if( _Bar->m_HighlightedLine!=_Bar->m_HighlightedLinePrev )
@@ -4859,7 +4859,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     int cby1 = yh+_Bar->m_Font->m_CharHeight-3;
                     if( !((CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_ReadOnly )
                     {
-                        double BtnAutoDelta = glfwGetTime() - _Bar->m_HighlightClickBtnAuto;
+                        double BtnAutoDelta = TwGetTimeSeconds() - _Bar->m_HighlightClickBtnAuto;
                         if( (_Bar->m_HighlightClickBtn || (BtnAutoDelta>=0 && BtnAutoDelta<0.1)) && h==_Bar->m_HighlightedLine )
                         {
                             cbx0--; cby0--; cbx1--; cby1--;
@@ -5097,9 +5097,9 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                         g_TwMgr->m_Graph->BuildText(g_TwMgr->m_Graph, g_TwMgr->m_KeyPressedTextObj, &StrC, NULL, NULL, 1, g_TwMgr->m_HelpBar->m_Font, 0, 0);
                         sdsfree(Str);
                         g_TwMgr->m_KeyPressedBuildText = false;
-                        g_TwMgr->m_KeyPressedTime = (float)glfwGetTime();
+                        g_TwMgr->m_KeyPressedTime = (float)TwGetTimeSeconds();
                     }
-                    if( (float)glfwGetTime()>g_TwMgr->m_KeyPressedTime+1.0f ) // draw key pressed at least 1 second
+                    if( (float)TwGetTimeSeconds()>g_TwMgr->m_KeyPressedTime+1.0f ) // draw key pressed at least 1 second
                         sdsclear(g_TwMgr->m_KeyPressedStr);
                     PERF( Timer.Reset(); )  
                     Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_Font->m_CharHeight-2, _Bar->m_PosY+_Bar->m_VarY1+1, _Bar->m_PosX+_Bar->m_Width-_Bar->m_Font->m_CharHeight-2, _Bar->m_PosY+_Bar->m_VarY1+1+_Bar->m_Font->m_CharHeight, _Bar->m_ColShortcutBg, _Bar->m_ColShortcutBg, _Bar->m_ColShortcutBg, _Bar->m_ColShortcutBg);
@@ -6389,7 +6389,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                     CTwVarAtom_Increment(Atom, DoIncr ? +1 : -1 );
                     if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
                         return true;
-                    _Bar->m_HighlightClickBtnAuto = glfwGetTime();
+                    _Bar->m_HighlightClickBtnAuto = TwGetTimeSeconds();
                 }
                 CTwBar_NotUpToDate(_Bar);
                 CTwBar_Show(_Bar, &Atom->m_Base);
@@ -6410,7 +6410,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                             CTwVarAtom_Increment(Atom, +1);
                             if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
                                 return true;
-                            _Bar->m_HighlightClickBtnAuto = glfwGetTime();
+                            _Bar->m_HighlightClickBtnAuto = TwGetTimeSeconds();
                             CTwBar_NotUpToDate(_Bar);
                         }
                     } 
@@ -6438,7 +6438,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                             CTwVarAtom_Increment(Atom, -1);
                             if( g_TwMgr==NULL ) // Mgr might have been destroyed by the client inside a callback call
                                 return true;
-                            _Bar->m_HighlightClickBtnAuto = glfwGetTime();
+                            _Bar->m_HighlightClickBtnAuto = TwGetTimeSeconds();
                             CTwBar_NotUpToDate(_Bar);
                         }
                     } 
@@ -6468,7 +6468,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                                 if( g_TwMgr==NULL // Mgr might have been destroyed by the client inside a callback call
                                     || isPopup )  // A popup destroys itself
                                     return true;
-                                _Bar->m_HighlightClickBtnAuto = glfwGetTime();
+                                _Bar->m_HighlightClickBtnAuto = TwGetTimeSeconds();
                                 CTwBar_NotUpToDate(_Bar);
                             } 
                             else // if( IsEnumType(Atom->m_Type) )
@@ -7515,13 +7515,14 @@ bool CTwBar_EditInPlaceGetClipboard(CTwBar *_Bar, sds *_OutString)
     assert( _OutString!=NULL );
     *_OutString = sdscpy(*_OutString, _Bar->m_EditInPlace.m_Clipboard); // default implementation, used if
                                               // the system clipboard is empty
-                                              // or glfwGetClipboardString fails
+                                              // or no TwSetClipboardCallback is installed
 
-    // Delegate to GLFW3 rather than AntTweakBar's own hand-rolled
-    // Win32/NSPasteboard/X11-ICCCM clipboard code - GLFW3 already solves _Bar
-    // portably (window param is deprecated/nullable since GLFW 3.0, see
-    // glfw3.h), so there's no need to duplicate or maintain it here.
-    const char *ClipboardText = glfwGetClipboardString(NULL);
+    // Delegate to the callback installed via TwSetClipboardCallback (see
+    // AntTweakBar.h and CTwMgr_GetClipboard) rather than AntTweakBar's own
+    // hand-rolled Win32/NSPasteboard/X11-ICCCM clipboard code, or reaching
+    // into a toolkit (e.g. GLFW3) directly - keeps the library itself
+    // toolkit-agnostic, same rationale as TwSetCursorCallback.
+    const char *ClipboardText = CTwMgr_GetClipboard();
     if( ClipboardText!=NULL )
         *_OutString = sdscpy(*_OutString, ClipboardText);
 
@@ -7535,7 +7536,7 @@ bool CTwBar_EditInPlaceSetClipboard(CTwBar *_Bar, const char *_String)
         return false;   // keep last clipboard
     _Bar->m_EditInPlace.m_Clipboard = sdscpy(_Bar->m_EditInPlace.m_Clipboard, _String); // default implementation
 
-    glfwSetClipboardString(NULL, _String);
+    CTwMgr_SetClipboard(_String);
 
     return true;
 }
@@ -7545,11 +7546,12 @@ bool CTwBar_EditInPlaceSetClipboard(CTwBar *_Bar, const char *_String)
 int TW_CALL TwHandleX11SelectionRequest(void *_XEvent)
 {
     // AntTweakBar no longer claims the X11 CLIPBOARD/PRIMARY selection
-    // itself (see EditInPlaceSetClipboard, above - GLFW3's own X11 backend
-    // does that internally now), so there is nothing left to answer here.
-    // Kept as a no-op (rather than removed) since it's still a documented
-    // part of the public API (AntTweakBar.h) for callers pumping X11
-    // events through their own event loop.
+    // itself (see EditInPlaceSetClipboard, above - clipboard access is
+    // delegated to whatever TwSetClipboardCallback installs, if anything),
+    // so there is nothing left to answer here. Kept as a no-op (rather than
+    // removed) since it's still a documented part of the public API
+    // (AntTweakBar.h) for callers pumping X11 events through their own
+    // event loop.
     (void)_XEvent;
     return 0;
 }
