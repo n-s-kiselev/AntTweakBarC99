@@ -5907,13 +5907,14 @@ void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const C
     }
 }
 
-// Visible-line count given to every help/description string that wraps at all. Fixed,
+// Default visible-line count given to a help/description string that wraps at all. Fixed,
 // exactly like a "lines=N" CDSTRING variable, rather than adapted to each string's own
 // natural height: a 2-line entry gets a blank trailing row, a 4+-line entry gets the
-// widget's own scrollbar straight away.
+// widget's own scrollbar straight away. Callers with unusually long help text (e.g. the
+// RotoSlider's) pass their own _NbLines instead of this default.
 static const int g_HelpTextLines = 3;
 
-static int AppendHelpString(CTwVarGroup *_Grp, const char *_String, int _Level, int _Width, ETwType _Type)
+static int AppendHelpString(CTwVarGroup *_Grp, const char *_String, int _Level, int _Width, ETwType _Type, int _NbLines)
 {
     assert( _Grp!=NULL && g_TwMgr!=NULL && g_TwMgr->m_HelpBar!=NULL);
     assert( _String!=NULL );
@@ -5954,7 +5955,7 @@ static int AppendHelpString(CTwVarGroup *_Grp, const char *_String, int _Level, 
     CTwVarAtom_SetDefaults(Var);
     if( NbWrappedLines>=2 )
     {
-        Var->m_Val.m_Multiline.m_NbLines = g_HelpTextLines;
+        Var->m_Val.m_Multiline.m_NbLines = _NbLines;
         Var->m_Val.m_Multiline.m_WrapWidth = WrapWidth; // cached so CTwBar_ListLabels re-wraps identically to NbWrappedLines above
     }
     tw_da_append(&_Grp->m_Vars, &Var->m_Base);
@@ -5974,7 +5975,7 @@ static int AppendHelp(CTwVarGroup *_Grp, const CTwVarGroup *_ToAppend, int _Leve
         Decal = sdscatlen(Decal, " ", 1);
 
     if( sdslen(_ToAppend->m_Base.m_Help)>0 )
-        n += AppendHelpString(_Grp, _ToAppend->m_Base.m_Help, _Level, _Width, TW_TYPE_HELP_GRP);
+        n += AppendHelpString(_Grp, _ToAppend->m_Base.m_Help, _Level, _Width, TW_TYPE_HELP_GRP, g_HelpTextLines);
 
     for( size_t i=0; i<_ToAppend->m_Vars.count; ++i )
         if( _ToAppend->m_Vars.items[i]!=NULL && _ToAppend->m_Vars.items[i]->m_Visible )
@@ -6047,7 +6048,7 @@ static int AppendHelp(CTwVarGroup *_Grp, const CTwVarGroup *_ToAppend, int _Leve
                         n += nAppended;
                 }
                 else if( sdslen(_ToAppend->m_Vars.items[i]->m_Help)>0 )
-                    n += AppendHelpString(_Grp, _ToAppend->m_Vars.items[i]->m_Help, _Level+1, _Width, TW_TYPE_HELP_ATOM);
+                    n += AppendHelpString(_Grp, _ToAppend->m_Vars.items[i]->m_Help, _Level+1, _Width, TW_TYPE_HELP_ATOM, g_HelpTextLines);
             }
         }
     sdsfree(Decal);
@@ -6135,10 +6136,10 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
         CTwBar_Update(_Mgr->m_HelpBar);
 
     if( sdslen(_Mgr->m_Help)>0 )
-        AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), _Mgr->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
+        AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), _Mgr->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM, g_HelpTextLines);
     if( sdslen(_Mgr->m_HelpBar->m_Help)>0 )
-        AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), _Mgr->m_HelpBar->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
-    AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), "", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_HEADER);
+        AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), _Mgr->m_HelpBar->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM, g_HelpTextLines);
+    AppendHelpString(&(_Mgr->m_HelpBar->m_VarRoot), "", 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_HEADER, g_HelpTextLines);
 
     for( size_t ib=0; ib<_Mgr->m_Bars.count; ++ib )
         if( _Mgr->m_Bars.items[ib]!=NULL && !(_Mgr->m_Bars.items[ib]->m_IsHelpBar) && _Mgr->m_Bars.items[ib]!=_Mgr->m_PopupBar && _Mgr->m_Bars.items[ib]->m_Visible )
@@ -6156,7 +6157,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
             Grp->m_Base.m_ColorPtr = &(_Mgr->m_HelpBar->m_ColGrpText);
             tw_da_append(&_Mgr->m_HelpBar->m_VarRoot.m_Vars, &Grp->m_Base);
             if( sdslen(_Mgr->m_Bars.items[ib]->m_Help)>0 )
-                AppendHelpString(Grp, _Mgr->m_Bars.items[ib]->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_GRP);
+                AppendHelpString(Grp, _Mgr->m_Bars.items[ib]->m_Help, 0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_GRP, g_HelpTextLines);
 
             // Append variables (recursive)
             AppendHelp(Grp, &(_Mgr->m_Bars.items[ib]->m_VarRoot), 1, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0);
@@ -6199,7 +6200,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
                     tw_da_append(&StructGrp->m_Vars, &Var->m_Base);
                     size_t structIndex = StructGrp->m_Vars.count-1;
                     if( sdslen(g_TwMgr->m_Structs.items[idx].m_Help)>0 )
-                        AppendHelpString(StructGrp, g_TwMgr->m_Structs.items[idx].m_Help, 2, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0-2*Var->m_Base.m_LeftMargin, TW_TYPE_HELP_ATOM);
+                        AppendHelpString(StructGrp, g_TwMgr->m_Structs.items[idx].m_Help, 2, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0-2*Var->m_Base.m_LeftMargin, TW_TYPE_HELP_ATOM, g_HelpTextLines);
 
                     // Append struct members
                     for( size_t im=0; im<g_TwMgr->m_Structs.items[idx].m_Members.count; ++im )
@@ -6227,7 +6228,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
                             }
                             tw_da_append(&StructGrp->m_Vars, &Var->m_Base);
                             //if( sdslen(g_TwMgr->m_Structs.items[idx].m_Members.items[im].m_Help)>0 )
-                            AppendHelpString(StructGrp, g_TwMgr->m_Structs.items[idx].m_Members.items[im].m_Help, 3, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0-4*Var->m_Base.m_LeftMargin, TW_TYPE_HELP_ATOM);
+                            AppendHelpString(StructGrp, g_TwMgr->m_Structs.items[idx].m_Members.items[im].m_Help, 3, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0-4*Var->m_Base.m_LeftMargin, TW_TYPE_HELP_ATOM, g_HelpTextLines);
                         }
                     }
 
@@ -6269,6 +6270,9 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
     // scrollbar. These four sentences used to be four calls, which looked identical under the
     // old "one atom per wrapped line" mechanism, but each call now reserves its own rows and
     // scrollbar - splitting what should read as one block into several disjointed ones.
+    // Taller than the g_HelpTextLines default (6 vs. 3): this explanation is long enough that
+    // 3 lines would need a lot of scrolling to read in full.
+    const int RotoSliderHelpLines = 6;
     AppendHelpString(RotoGrp,
         "The RotoSlider allows rapid editing of numerical values. "
         "To modify a numerical value, click on its label or on its roto [.] "
@@ -6278,7 +6282,7 @@ void CTwMgr_UpdateHelpBar(CTwMgr *_Mgr)
         "The two grey lines depict the min and max bounds. "
         "Moving the mouse far form the circle allows precise increase or "
         "decrease, while moving near the circle allows fast increase or decrease.",
-        0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM);
+        0, _Mgr->m_HelpBar->m_VarX2-_Mgr->m_HelpBar->m_VarX0, TW_TYPE_HELP_ATOM, RotoSliderHelpLines);
 
     SynchroHierarchy(&_Mgr->m_HelpBar->m_VarRoot, &prevHierarchy);
     CTwVarGroup_Free(&prevHierarchy);
