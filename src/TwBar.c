@@ -4037,16 +4037,24 @@ static void CTwBar_MultilineOffsetScrollY(CTwBar *_Bar, int _DeltaY)
 typedef struct
 {
     const CTwVarAtom *  m_Atom;
+    sds                 m_Text;      // last-wrapped source string (owned copy - see CTwBar_MultilineWrapText)
+    int                 m_WrapWidth;
     CSdsArray           m_Lines;
 } CTwMultilineWrapCache;
 
-// _Text wrapped to _WrapWidth for _Atom, re-wrapping only when _Atom is not the one already
-// cached - keyed on the atom rather than on m_SubLine==0, so a frame where the bar's own outer
-// scroll cuts through the middle of a block still re-wraps instead of reusing another atom's
-// lines. Refreshes the atom's cached line count and re-clamps its scroll offset on each wrap.
+// _Text wrapped to _WrapWidth for _Atom, re-wrapping unless _Atom, _WrapWidth and _Text all
+// still match what's cached - keyed on the atom rather than on m_SubLine==0, so a frame where
+// the bar's own outer scroll cuts through the middle of a block still re-wraps instead of
+// reusing another atom's lines. Comparing _Text too (not just _Atom) matters for a live
+// CDSTRING value: without it, editing the value or resizing the bar's value column would
+// change nothing the atom pointer reflects, and the cache would keep showing the old wrap
+// forever. Refreshes the atom's cached line count and re-clamps its scroll offset on each wrap.
 static const CSdsArray *CTwBar_MultilineWrapText(CTwMultilineWrapCache *_Cache, CTwVarAtom *_Atom, const char *_Text, int _WrapWidth, const CTexFont *_Font)
 {
-    if( _Atom!=_Cache->m_Atom )
+    if( _Cache->m_Text==NULL )
+        _Cache->m_Text = sdsempty();
+    bool CacheHit = _Atom==_Cache->m_Atom && _WrapWidth==_Cache->m_WrapWidth && strcmp(_Text, _Cache->m_Text)==0;
+    if( !CacheHit )
     {
         for( size_t k=0; k<_Cache->m_Lines.count; ++k )
             sdsfree(_Cache->m_Lines.items[k]);
@@ -4055,6 +4063,8 @@ static const CSdsArray *CTwBar_MultilineWrapText(CTwMultilineWrapCache *_Cache, 
         _Atom->m_Val.m_Multiline.m_NbTextLines = (int)_Cache->m_Lines.count;
         CTwBar_MultilineClampFirstTextLine(&_Atom->m_Val.m_Multiline);
         _Cache->m_Atom = _Atom;
+        _Cache->m_WrapWidth = _WrapWidth;
+        _Cache->m_Text = sdscpy(_Cache->m_Text, _Text);
     }
     return &_Cache->m_Lines;
 }
