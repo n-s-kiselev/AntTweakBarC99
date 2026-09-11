@@ -845,6 +845,8 @@ static void print_dynamic_runtime_notice(void)
     nob_log(NOB_INFO, "-dynamic executables need %s to be locatable at runtime", LIB_SHARED);
     nob_log(NOB_INFO, "(e.g. via LD_LIBRARY_PATH=lib, an rpath, or installed to a standard library path).");
 #endif
+    nob_log(NOB_INFO, "See README.md's \"Running dynamically linked examples\" section for how to run them");
+    nob_log(NOB_INFO, "without copying any library files or permanently changing PATH.");
 }
 
 static bool build_examples(const char *nob_exe, bool dynamic)

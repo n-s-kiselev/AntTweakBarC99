@@ -92,7 +92,42 @@ the shared library (`lib/libAntTweakBarC99.{so,dylib,dll}`), placing executables
 `lib/AntTweakBarC99-glfw3.dll.a`/`lib/AntTweakBarC99-glad.dll.a` (the same two companion DLLs
 `libAntTweakBarC99.dll` itself imports GLFW/GLAD from - see above), so running a dynamically-linked
 example on Windows requires `lib/libAntTweakBarC99.dll`, `lib/AntTweakBarC99-glfw3.dll`, and
-`lib/AntTweakBarC99-glad.dll` to be on `PATH` or copied next to the executable.
+`lib/AntTweakBarC99-glad.dll` to be on `PATH` or copied next to the executable. See "Running
+dynamically linked examples" below for how to do that without copying any files.
+
+### Running dynamically linked examples
+
+Executables in `build/examples/shared/` are not self-contained - unlike the static build, they need
+to find their shared library dependencies (in `lib/`) at runtime. Rather than copying those library
+files next to every executable or permanently adding `lib/` to your system `PATH`, point the loader
+at `lib/` for just the current shell session or command instead:
+
+**Windows (PowerShell)**
+
+```powershell
+cd build\examples\shared
+$env:PATH = "..\..\..\lib;$env:PATH"
+.\Advanced_c99.exe
+```
+
+**Linux (bash)**
+
+```sh
+cd build/examples/shared
+LD_LIBRARY_PATH=../../../lib ./Advanced_c99
+```
+
+**macOS (bash)**
+
+```sh
+cd build/examples/shared
+DYLD_LIBRARY_PATH=../../../lib ./Advanced_c99
+```
+
+The Windows `$env:PATH` assignment only lasts for the current PowerShell session; the
+`LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` prefix form only applies to that single command. Either way,
+your system-wide `PATH`/library search path is left untouched, and no `.dll`/`.so`/`.dylib` file
+needs to be copied anywhere.
 
 You do not need to install GLFW3 in your system. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source automatically.
 
