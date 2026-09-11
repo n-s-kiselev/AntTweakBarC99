@@ -574,14 +574,18 @@ static bool build_example(const char *source, const char *nob_exe)
     }
 
     Nob_Cmd cmd = {0};
-    // Always use the C++ driver here (regardless of the example's own
-    // source extension): some kept examples (e.g. Advanced_cpp.cpp) are
-    // themselves real C++ sources, so this step needs a driver that can
-    // compile those too. lib/libAntTweakBarC99.a itself is pure C99 now
-    // (TwEventSFML.cpp, its one remaining C++ object, was deleted in
-    // Step 7 - see docs/plans/c99-rewrite.md) - only the example sources,
-    // not the library, motivate "c++" here.
-    nob_cmd_append(&cmd, "c++");
+    // Pick the driver per example source, same as compiler_for_source does
+    // for the library's own objects: Advanced_cpp.cpp is real C++ and needs
+    // "c++", but every other kept example is plain C99 and should build
+    // with "cc" - linking a C99 example through the C++ driver made every
+    // one of them silently compile as C++ instead (cc1plus, not cc1), which
+    // is a materially different, stricter language for those sources.
+    // lib/libAntTweakBarC99.a itself is pure C99 now (TwEventSFML.cpp, its
+    // one remaining C++ object, was deleted in Step 7 - see
+    // docs/plans/c99-rewrite.md), so "cc" links against it exactly as
+    // build_object() does when compiling it.
+    const char *compiler = compiler_for_source(source);
+    nob_cmd_append(&cmd, compiler);
     nob_cmd_append(&cmd, "-Wall", "-O2", "-DTW_STATIC", "-I" INCLUDE_FOLDER, "-I" GLAD_INCLUDE);
     append_glfw_flags(&cmd);
 
