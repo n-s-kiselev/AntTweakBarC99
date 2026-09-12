@@ -6604,13 +6604,49 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     }
                     // popup list
                     CEnum *e = &g_TwMgr->m_Enums.items[Var->m_Type-TW_TYPE_ENUM_BASE];
+
+                    // Width of the widest option's label, in the popup's own font, capped to the
+                    // width of 32 of that font's widest glyph - a real upper bound on what 32
+                    // characters can render as (an average would underestimate whenever the
+                    // label leans toward wider-than-average letters, clipping text that's well
+                    // under the 32-character limit). A label still wider than the cap isn't
+                    // truncated here: CTwBar_ListLabels() already ellipsis-clips every label
+                    // against the column width this produces below, same as any other atom.
+                    int MaxCharWidth = 0;
+                    for( int c=32; c<256; ++c )
+                        if( _Bar->m_Font->m_CharWidth[c]>MaxCharWidth )
+                            MaxCharWidth = _Bar->m_Font->m_CharWidth[c];
+                    int ContentWidth = 0;
+                    for( size_t k=0; k<e->m_Entries.count; ++k )
+                    {
+                        sds Label = e->m_Entries.items[k].Label;
+                        int LabelWidth = CTwBar_MultilineRowPixelX(_Bar->m_Font, Label, 0, (int)sdslen(Label));
+                        if( LabelWidth>ContentWidth )
+                            ContentWidth = LabelWidth;
+                    }
+                    if( ContentWidth>32*MaxCharWidth )
+                        ContentWidth = 32*MaxCharWidth;
+
                     g_TwMgr->m_PopupBar = TwNewBar("~ Enum Popup ~");
                     g_TwMgr->m_PopupBar->m_IsPopupList = true;
+                    // Not resizable: a popup list is sized to fit its own content right below,
+                    // so it must not be forced back up to CTwBar_Update()'s generic minimum bar
+                    // width/height (8/5 * CharHeight), which exists for user-resizable bars and
+                    // would otherwise override a deliberately narrow fit.
+                    g_TwMgr->m_PopupBar->m_Resizable = false;
                     g_TwMgr->m_PopupBar->m_Color = _Bar->m_Color;
                     g_TwMgr->m_PopupBar->m_DarkText = _Bar->m_DarkText;
                     g_TwMgr->m_PopupBar->m_PosX = CTwBar_RowWidgetX0(_Bar, &Var->m_Base, _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level) - 2;
                     g_TwMgr->m_PopupBar->m_PosY = _Bar->m_PosY + _Bar->m_VarY0 + (_Bar->m_HighlightedLine+1)*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
-                    g_TwMgr->m_PopupBar->m_Width = _Bar->m_Width - 2*_Bar->m_Font->m_CharHeight;
+                    // CTwBar_Update() gives a popup list m_VarX0=2 and clips labels to
+                    // m_VarX2-m_VarX0 = m_Width-CharHeight-Sep-4, but CTwBar_Draw() always draws
+                    // the label text itself starting at PosX+LevelSpace+6 (LevelSpace = max
+                    // (CharHeight-6,4)), not PosX+m_VarX0 - so the actual on-screen room to the
+                    // right border is m_Width-CharHeight-Sep-2-(LevelSpace+6), 4+LevelSpace less
+                    // than the clipping column width above. Pad by that much extra so the widest
+                    // label's full pixel width still lands inside the border once drawn.
+                    int LevelSpace = max(_Bar->m_Font->m_CharHeight-6, 4); // space used by DrawHierHandles
+                    g_TwMgr->m_PopupBar->m_Width = ContentWidth + _Bar->m_Font->m_CharHeight + g_TwMgr->m_PopupBar->m_Sep + LevelSpace + 8;
                     g_TwMgr->m_PopupBar->m_LineSep = g_TwMgr->m_PopupBar->m_Sep;
                     int popHeight0 = (int)e->m_Entries.count*(_Bar->m_Font->m_CharHeight+_Bar->m_Sep) + _Bar->m_Font->m_CharHeight/2+2;
                     int popHeight = popHeight0;
