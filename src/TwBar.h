@@ -343,6 +343,11 @@ typedef struct CEditInPlace
     int                 m_Width;
     int                 m_FirstChar;
     sds                 m_Clipboard;
+    // Up/Down's remembered pixel column for a multiline-configured atom, relative to its row's
+    // start rather than the screen. -1 ("derive fresh from the caret") is set by every OTHER
+    // caret-repositioning action, so consecutive Up/Down presses keep landing on the same column
+    // instead of drifting toward whatever a short row clamped it to.
+    int                 m_DesiredX;
 } CEditInPlace;
 
 typedef struct CCustomRecord
@@ -550,11 +555,10 @@ void                        CTwBar_BrowseHierarchy(CTwBar *_Bar, int *_LineNum, 
 void                        CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors, CColor32Array *_BgColors, bool *_HasBgColors, const CTexFont *_Font, int _AtomWidthMax, int _GroupWidthMax);
 void                        CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors, CColor32Array *_BgColors, const CTexFont *_Font, int _WidthMax);
 // Word-wraps _String to fit _Width pixels in _Font, honoring explicit '\n'/tabs (defined in TwMgr.c, used there by
-// AppendHelpString and here by the multiline-text widget's own wrapping). _OutStarts/_OutEnds are optional
-// (NULL-able): when given, each receives, per emitted line in _OutSplits, that line's [start,end) byte range in
-// the ORIGINAL _String - used by the edit-in-place overlay to map a flat character offset to (row, column) for a
-// multiline-configured variable. Not reconstructible from _OutSplits alone: wrap-point whitespace/newlines are
-// dropped from the emitted lines, so a line's real source range isn't just "up to the next line's start".
+// AppendHelpString and here by the multiline-text widget's own wrapping). The optional (NULL-able)
+// _OutStarts/_OutEnds receive each emitted line's [start,end) byte range in the ORIGINAL _String. Those ranges
+// are not reconstructible from _OutSplits alone - wrap-point whitespace and newlines are dropped from the
+// emitted lines, so a line's source range isn't just "up to the next line's start".
 void                        SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font, CIntArray *_OutStarts, CIntArray *_OutEnds);
 // Width of a multiline-text atom's own scrollbar. Matches the bar's own scrollbar's drawn width
 // (CTwBar_DrawHierHandle: x1-x0 with x0/x1 built from CharHeight-4) so both render at the same size.
