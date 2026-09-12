@@ -3927,6 +3927,38 @@ static inline int CTwBar_MultilineTrackHeight(const CTwBar *_Bar, int _BlockY0, 
     return (Track<4) ? 4 : Track;
 }
 
+// Recomputes one multiline-text atom's own scrollbar-thumb bounds (_ML->m_ScrollY0/Y1) from its
+// current m_NbLines/m_NbTextLines/m_FirstTextLine - the same formula CTwBar_Update applies to
+// every block each time it runs. Factored out so CTwBar_EditInPlaceDraw can also call it: typing
+// does not itself mark the bar not-up-to-date (see CTwBar_EditInPlaceKeyPressed), so without
+// this the thumb would otherwise stay pinned to whatever it was at the start of the edit session
+// while the live, in-progress text's line count changes underneath it.
+static void CTwBar_MultilineUpdateScrollThumb(const CTwBar *_Bar, struct CTwMultilineVal *_ML, int _BlockY0, int _BlockY1)
+{
+    int sw = CTwMultilineScrollbarWidth(_Bar->m_Font); // also the height of each arrow box
+    int htrack = CTwBar_MultilineTrackHeight(_Bar, _BlockY0, _BlockY1);
+
+    int hscrml = (_ML->m_NbTextLines>0) ? ((htrack*_ML->m_NbLines)/_ML->m_NbTextLines) : htrack;
+    if( hscrml<=4 )
+        hscrml = 4;
+    if( hscrml>htrack )
+        hscrml = htrack;
+    int yscrml = (_ML->m_NbTextLines>0) ? ((htrack*_ML->m_FirstTextLine)/_ML->m_NbTextLines) : 0;
+    if( yscrml<0 )
+        yscrml = 0;
+    if( yscrml>htrack-4 )
+        yscrml = htrack-4;
+    if( yscrml+hscrml>htrack )
+        hscrml = htrack-yscrml;
+    if( hscrml>htrack )
+        hscrml = htrack;
+    if( hscrml<=4 )
+        hscrml = 4;
+
+    _ML->m_ScrollY0 = _BlockY0+sw+yscrml;
+    _ML->m_ScrollY1 = _BlockY0+sw+yscrml+hscrml;
+}
+
 // Keeps a scroll offset within its text: 0 when the text fits.
 static inline void CTwBar_MultilineClampFirstTextLine(struct CTwMultilineVal *_ML)
 {
@@ -4059,6 +4091,11 @@ typedef struct
     sds                 m_Text;      // last-wrapped source string (owned copy - see CTwBar_MultilineWrapText)
     int                 m_WrapWidth;
     CSdsArray           m_Lines;
+    // Parallel to m_Lines: each line's [start,end) byte range in m_Text - only the edit-in-place
+    // overlay needs these (to map a flat CEditInPlace::m_CaretPos/m_SelectionStart offset to a
+    // row/column), so display-only callers of CTwBar_MultilineWrapText simply never read them.
+    CIntArray           m_LineStarts;
+    CIntArray           m_LineEnds;
 } CTwMultilineWrapCache;
 
 // _Text wrapped to _WrapWidth for _Atom, re-wrapping unless _Atom, _WrapWidth and _Text all
@@ -4078,7 +4115,7 @@ static const CSdsArray *CTwBar_MultilineWrapText(CTwMultilineWrapCache *_Cache, 
         for( size_t k=0; k<_Cache->m_Lines.count; ++k )
             sdsfree(_Cache->m_Lines.items[k]);
         _Cache->m_Lines.count = 0;
-        SplitString(&_Cache->m_Lines, _Text, _WrapWidth, _Font);
+        SplitString(&_Cache->m_Lines, _Text, _WrapWidth, _Font, &_Cache->m_LineStarts, &_Cache->m_LineEnds);
         _Atom->m_Val.m_Multiline.m_NbTextLines = (int)_Cache->m_Lines.count;
         CTwBar_MultilineClampFirstTextLine(&_Atom->m_Val.m_Multiline);
         _Cache->m_Atom = _Atom;
@@ -4094,6 +4131,45 @@ static sds CTwBar_MultilineLineAt(const CTwBar *_Bar, const CTwVarAtom *_Atom, c
 {
     int LineIdx = _Atom->m_Val.m_Multiline.m_FirstTextLine + _Bar->m_HierTags.items[_Line].m_SubLine;
     return (LineIdx>=0 && LineIdx<(int)_Lines->count) ? _Lines->items[LineIdx] : NULL;
+}
+
+// Row _LineIdx's [start,end) byte range in the ORIGINAL (unwrapped) source string that was
+// passed to CTwBar_MultilineWrapText - as opposed to CTwBar_MultilineLineAt's own *wrapped*
+// line, which may have dropped wrap-point whitespace or expanded tabs. Only the edit-in-place
+// overlay needs this (CTwBar_EditInPlaceDraw/MouseMove): it maps a flat character offset
+// (CEditInPlace::m_CaretPos/m_SelectionStart) to the row it falls in and back. Past the end of
+// the wrapped content (a "lines=N" block taller than what the live text currently needs), both
+// ends collapse to _SourceLen so callers see an empty, harmless range.
+static void CTwBar_MultilineSourceRangeAt(const CIntArray *_Starts, const CIntArray *_Ends, int _SourceLen, int _LineIdx, int *_Start, int *_End)
+{
+    if( _LineIdx>=0 && _LineIdx<(int)_Starts->count )
+    {
+        *_Start = _Starts->items[_LineIdx];
+        *_End = _Ends->items[_LineIdx];
+    }
+    else
+    {
+        *_Start = _SourceLen;
+        *_End = _SourceLen;
+    }
+}
+
+// The row (index into _Starts, i.e. a wrapped-line index) that source-string offset _Offset
+// falls in: the last row whose own start is still <= _Offset. _Starts is monotonically
+// increasing and only ever a handful of rows long, so a linear scan is simplest. Used both to
+// auto-scroll to the caret's row and, by simple equality against a row's own index, to decide
+// which single row draws the caret - deliberately not an "_Offset>=start && _Offset<end" range
+// test, which mishandles the caret sitting exactly at a row boundary or at the very end of text.
+static int CTwBar_MultilineRowForOffset(const CIntArray *_Starts, int _Offset)
+{
+    int Row = 0;
+    for( size_t k=1; k<_Starts->count; ++k )
+    {
+        if( _Starts->items[k]>_Offset )
+            break;
+        Row = (int)k;
+    }
+    return Row;
 }
 
 // Draws every visible multiline-text block: its continuous value background, and its own
@@ -4869,32 +4945,10 @@ void CTwBar_Update(CTwBar *_Bar)
             CTwVarAtom *MLAtom = CTwBar_MultilineAtomAtLine(_Bar, hml);
             if( MLAtom==NULL )
                 continue;
-            struct CTwMultilineVal *ML = &MLAtom->m_Val.m_Multiline;
 
             int by0, by1;
             CTwBar_MultilineBlockY(_Bar, hml, &by0, &by1);
-            int sw = CTwMultilineScrollbarWidth(_Bar->m_Font); // also the height of each arrow box
-            int htrack = CTwBar_MultilineTrackHeight(_Bar, by0, by1);
-
-            int hscrml = (ML->m_NbTextLines>0) ? ((htrack*ML->m_NbLines)/ML->m_NbTextLines) : htrack;
-            if( hscrml<=4 )
-                hscrml = 4;
-            if( hscrml>htrack )
-                hscrml = htrack;
-            int yscrml = (ML->m_NbTextLines>0) ? ((htrack*ML->m_FirstTextLine)/ML->m_NbTextLines) : 0;
-            if( yscrml<0 )
-                yscrml = 0;
-            if( yscrml>htrack-4 )
-                yscrml = htrack-4;
-            if( yscrml+hscrml>htrack )
-                hscrml = htrack-yscrml;
-            if( hscrml>htrack )
-                hscrml = htrack;
-            if( hscrml<=4 )
-                hscrml = 4;
-
-            ML->m_ScrollY0 = by0+sw+yscrml;
-            ML->m_ScrollY1 = by0+sw+yscrml+hscrml;
+            CTwBar_MultilineUpdateScrollThumb(_Bar, &MLAtom->m_Val.m_Multiline, by0, by1);
         }
     }
 
@@ -6581,10 +6635,13 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                         //  dw = 2*IncrBtnWidth(_Bar->m_Font->m_CharHeight);
                         if( !_Bar->m_EditInPlace.m_Active || _Bar->m_EditInPlace.m_Var!=Var )
                         {
-                            // A multiline-text atom still edits through this single-line overlay
-                            // unchanged - just pin its Y to the block's first row, since any row
-                            // of the block may be the clicked one. The identity check catches a
-                            // block whose first row is scrolled out of the bar's own window.
+                            // A multiline-text atom still edits through the same flat-offset
+                            // caret/selection model (no embedded newlines, no Up/Down row
+                            // navigation) - just pin its Y to the block's first row, since any
+                            // row of the block may be the clicked one; CTwBar_EditInPlaceDraw/
+                            // MouseMove render and hit-test it across all of the block's rows
+                            // from there. The identity check catches a block whose first row is
+                            // scrolled out of the bar's own window.
                             int EditLine = _Bar->m_HighlightedLine;
                             if( IsMultilineValueVar(&Var->m_Base) )
                             {
@@ -7824,10 +7881,120 @@ bool CTwBar_EditInPlaceIsReadOnly(CTwBar *_Bar)
         return false;
 }
 
+// Wraps the LIVE edit buffer (not the atom's last-committed value) for a multiline-configured
+// CTwBar_EditInPlace.m_Var, via the same wrap-and-cache machinery (and the atom's own
+// m_NbTextLines/m_FirstTextLine scroll state) the read-only display uses - so the widget's own
+// scrollbar stays meaningful while typing, and wrapping never disagrees with how the same text
+// will re-wrap once the edit commits. A dedicated cache (not the display path's ValueWrap/
+// FullWidthWrap/HelpWrap): those wrap the committed value, this wraps the in-progress one.
+static const CSdsArray *CTwBar_EditInPlaceMultilineWrap(CTwBar *_Bar, const CIntArray **_OutStarts, const CIntArray **_OutEnds)
+{
+    static CTwMultilineWrapCache EditWrap = {0};
+    int WrapWidth = CTwMultilineWrapWidth(_Bar->m_Font, _Bar->m_EditInPlace.m_Width);
+    const CSdsArray *Lines = CTwBar_MultilineWrapText(&EditWrap, _Bar->m_EditInPlace.m_Var, _Bar->m_EditInPlace.m_String, WrapWidth, _Bar->m_Font);
+    *_OutStarts = &EditWrap.m_LineStarts;
+    *_OutEnds = &EditWrap.m_LineEnds;
+    return Lines;
+}
+
+// CTwBar_EditInPlaceDraw's multiline branch: same idea as the single-line code below (build the
+// visible text, the selection highlight and the caret from _Bar->m_EditInPlace's flat character
+// offsets, each via a plain sum of m_Font->m_CharWidth), just repeated once per visible row
+// instead of once for the whole (horizontally-scrolled) string.
+static void CTwBar_EditInPlaceDrawMultiline(CTwBar *_Bar)
+{
+    struct CTwMultilineVal *ML = &_Bar->m_EditInPlace.m_Var->m_Val.m_Multiline;
+    const CIntArray *Starts, *Ends;
+    CTwBar_EditInPlaceMultilineWrap(_Bar, &Starts, &Ends);
+    int StringLen = (int)sdslen(_Bar->m_EditInPlace.m_String);
+    int WrapWidth = CTwMultilineWrapWidth(_Bar->m_Font, _Bar->m_EditInPlace.m_Width);
+
+    // Vertical analogue of the single-line branch's horizontal m_FirstChar auto-scroll: keep the
+    // caret's own row inside the visible window.
+    int CaretRow = CTwBar_MultilineRowForOffset(Starts, _Bar->m_EditInPlace.m_CaretPos);
+    if( CaretRow<ML->m_FirstTextLine )
+        ML->m_FirstTextLine = CaretRow;
+    else if( CaretRow>=ML->m_FirstTextLine+ML->m_NbLines )
+        ML->m_FirstTextLine = CaretRow-ML->m_NbLines+1;
+    CTwBar_MultilineClampFirstTextLine(ML);
+
+    // Typing doesn't call CTwBar_NotUpToDate, so nothing else refreshes this block's scrollbar
+    // thumb while the live line count changes underneath it - keep it live here instead.
+    int BlockY0, BlockY1;
+    if( CTwBar_MultilineBlockYForAtom(_Bar, _Bar->m_EditInPlace.m_Var, &BlockY0, &BlockY1) )
+        CTwBar_MultilineUpdateScrollThumb(_Bar, ML, BlockY0, BlockY1);
+
+    int SelMin = min(_Bar->m_EditInPlace.m_CaretPos, _Bar->m_EditInPlace.m_SelectionStart);
+    int SelMax = max(_Bar->m_EditInPlace.m_CaretPos, _Bar->m_EditInPlace.m_SelectionStart);
+    color32 ColText = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValTextRO : _Bar->m_ColEditText;
+    color32 ColBg = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValBg : _Bar->m_ColEditBg;
+    color32 ColSelBg = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValTextRO : _Bar->m_ColEditSelBg;
+    int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
+    int RowX = _Bar->m_PosX+_Bar->m_EditInPlace.m_X;
+
+    for( int r=0; r<ML->m_NbLines; ++r )
+    {
+        int LineIdx = ML->m_FirstTextLine+r;
+        int RowStart, RowEnd;
+        CTwBar_MultilineSourceRangeAt(Starts, Ends, StringLen, LineIdx, &RowStart, &RowEnd);
+        int RowY = _Bar->m_PosY+_Bar->m_EditInPlace.m_Y+r*RowH;
+
+        // Row text. BuildText's width param is WrapWidth (not the raw, gutter-including
+        // m_EditInPlace.m_Width): CTwBar_EditInPlaceDraw runs after CTwBar_DrawMultilineWidgets
+        // already drew this block's own scrollbar, so painting each row's opaque background
+        // any wider would cover it every frame for as long as editing is active. WrapWidth still
+        // fully occludes the last-committed value's stale text on this row, which never
+        // rendered past WrapWidth either.
+        sds RowStr = sdsnewlen(_Bar->m_EditInPlace.m_String+RowStart, RowEnd-RowStart);
+        const char *RowStrC = RowStr;
+        g_TwMgr->m_Graph->BuildText(g_TwMgr->m_Graph, _Bar->m_EditInPlace.m_EditTextObj, &RowStrC, NULL, NULL, 1, _Bar->m_Font, 0, WrapWidth);
+        g_TwMgr->m_Graph->DrawText(g_TwMgr->m_Graph, _Bar->m_EditInPlace.m_EditTextObj, RowX, RowY, ColText, ColBg);
+        sdsfree(RowStr);
+
+        // Selection highlight: this row's own slice of [SelMin,SelMax), if any.
+        int Lo = max(SelMin, RowStart), Hi = min(SelMax, RowEnd);
+        if( Hi>Lo )
+        {
+            int PreWidth = 0;
+            for( int k=RowStart; k<Lo; ++k )
+                PreWidth += _Bar->m_Font->m_CharWidth[(unsigned char)_Bar->m_EditInPlace.m_String[k]];
+            sds SelStr = sdsnewlen(_Bar->m_EditInPlace.m_String+Lo, Hi-Lo);
+            int SelWidth = 0;
+            for( int k=0; k<(int)sdslen(SelStr); ++k )
+                SelWidth += _Bar->m_Font->m_CharWidth[(unsigned char)SelStr[k]];
+            if( SelWidth>0 )
+            {
+                const char *SelStrC = SelStr;
+                g_TwMgr->m_Graph->BuildText(g_TwMgr->m_Graph, _Bar->m_EditInPlace.m_EditSelTextObj, &SelStrC, NULL, NULL, 1, _Bar->m_Font, 0, SelWidth);
+                g_TwMgr->m_Graph->DrawText(g_TwMgr->m_Graph, _Bar->m_EditInPlace.m_EditSelTextObj, RowX+PreWidth, RowY, _Bar->m_ColEditSelText, ColSelBg);
+            }
+            sdsfree(SelStr);
+        }
+
+        // Caret: drawn once, on its own row only. min(...,RowEnd) pins it to the visual end of
+        // the row if it has stepped (via arrow keys) onto whitespace/a '\n' dropped at a wrap
+        // seam - those bytes are still in the flat string but render on neither row.
+        if( LineIdx==CaretRow )
+        {
+            int CaretEnd = min(_Bar->m_EditInPlace.m_CaretPos, RowEnd);
+            int CaretX = RowX;
+            for( int k=RowStart; k<CaretEnd; ++k )
+                CaretX += _Bar->m_Font->m_CharWidth[(unsigned char)_Bar->m_EditInPlace.m_String[k]];
+            g_TwMgr->m_Graph->DrawLine(g_TwMgr->m_Graph, CaretX, RowY+1, CaretX, RowY+_Bar->m_Font->m_CharHeight, _Bar->m_ColEditText, _Bar->m_ColEditText, false);
+        }
+    }
+}
+
 void CTwBar_EditInPlaceDraw(CTwBar *_Bar)
 {
     if( !_Bar->m_EditInPlace.m_Active || _Bar->m_EditInPlace.m_Var==NULL || _Bar->m_EditInPlace.m_Width<=0 )
         return;
+
+    if( IsMultilineTextVar(&_Bar->m_EditInPlace.m_Var->m_Base) )
+    {
+        CTwBar_EditInPlaceDrawMultiline(_Bar);
+        return;
+    }
 
     // adjust m_FirstChar to see the caret, and extract the visible sub-string
     int i, StringLen = (int)sdslen(_Bar->m_EditInPlace.m_String);
@@ -8180,7 +8347,51 @@ bool CTwBar_EditInPlaceEraseSelect(CTwBar *_Bar)
 
 bool CTwBar_EditInPlaceMouseMove(CTwBar *_Bar, int _X, int _Y, bool _Select)
 {
-    if ( !_Bar->m_EditInPlace.m_Active || _Y<_Bar->m_PosY+_Bar->m_EditInPlace.m_Y || _Y>_Bar->m_PosY+_Bar->m_EditInPlace.m_Y+_Bar->m_Font->m_CharHeight )
+    if( !_Bar->m_EditInPlace.m_Active )
+        return false;
+
+    if( IsMultilineTextVar(&_Bar->m_EditInPlace.m_Var->m_Base) )
+    {
+        // Unlike the single-line case below, the block spans several rows, so the Y gate
+        // covers the whole block instead of just one CharHeight-tall band.
+        struct CTwMultilineVal *ML = &_Bar->m_EditInPlace.m_Var->m_Val.m_Multiline;
+        int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
+        int BlockY0 = _Bar->m_PosY+_Bar->m_EditInPlace.m_Y;
+        int BlockY1 = BlockY0+ML->m_NbLines*RowH;
+        if( _Y<BlockY0 || _Y>=BlockY1 )
+            return false;
+
+        const CIntArray *Starts, *Ends;
+        CTwBar_EditInPlaceMultilineWrap(_Bar, &Starts, &Ends);
+        int StringLen = (int)sdslen(_Bar->m_EditInPlace.m_String);
+        int LineIdx = ML->m_FirstTextLine + (_Y-BlockY0)/RowH;
+        int RowStart, RowEnd;
+        CTwBar_MultilineSourceRangeAt(Starts, Ends, StringLen, LineIdx, &RowStart, &RowEnd);
+        int WrapWidth = CTwMultilineWrapWidth(_Bar->m_Font, _Bar->m_EditInPlace.m_Width);
+        int RowX = _Bar->m_PosX+_Bar->m_EditInPlace.m_X;
+
+        // Same per-character X-scan as the single-line case below, just scoped to this row's
+        // own [RowStart,RowEnd) instead of the whole flat string - the found index is already
+        // a flat offset (a real index into m_String), so no translation back is needed.
+        int i, CaretX = RowX;
+        for( i=RowStart; i<RowEnd && CaretX<RowX+WrapWidth; ++i )
+        {
+            unsigned char u = _Bar->m_EditInPlace.m_String[i];
+            int CharWidth = _Bar->m_Font->m_CharWidth[u];
+            if( _X < CaretX + CharWidth / 2 )
+                break;
+            CaretX += CharWidth;
+        }
+        if( CaretX>=RowX+WrapWidth )
+            i = max(RowStart, i-1);
+
+        _Bar->m_EditInPlace.m_CaretPos = i;
+        if( !_Select )
+            _Bar->m_EditInPlace.m_SelectionStart = _Bar->m_EditInPlace.m_CaretPos;
+        return true;
+    }
+
+    if ( _Y<_Bar->m_PosY+_Bar->m_EditInPlace.m_Y || _Y>_Bar->m_PosY+_Bar->m_EditInPlace.m_Y+_Bar->m_Font->m_CharHeight )
         return false;
 
     int i, CaretX = _Bar->m_PosX+_Bar->m_EditInPlace.m_X;

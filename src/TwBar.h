@@ -68,6 +68,7 @@ struct CDoubleArray { double *items; size_t count; size_t capacity; }; // typede
 typedef struct { sds    *items; size_t count; size_t capacity; } CSdsArray;
 typedef struct { color32 *items; size_t count; size_t capacity; } CColor32Array;
 typedef struct { char   *items; size_t count; size_t capacity; } CCharArray;
+// CIntArray is defined in TwMgr.h (included before this file everywhere it matters), not here.
 
 // Ordered removal (shifts every following element down by one) - unlike
 // nob_da_remove_unordered, this preserves display/hierarchy order, which
@@ -549,8 +550,12 @@ void                        CTwBar_BrowseHierarchy(CTwBar *_Bar, int *_LineNum, 
 void                        CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors, CColor32Array *_BgColors, bool *_HasBgColors, const CTexFont *_Font, int _AtomWidthMax, int _GroupWidthMax);
 void                        CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors, CColor32Array *_BgColors, const CTexFont *_Font, int _WidthMax);
 // Word-wraps _String to fit _Width pixels in _Font, honoring explicit '\n'/tabs (defined in TwMgr.c, used there by
-// AppendHelpString and here by the multiline-text widget's own wrapping).
-void                        SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font);
+// AppendHelpString and here by the multiline-text widget's own wrapping). _OutStarts/_OutEnds are optional
+// (NULL-able): when given, each receives, per emitted line in _OutSplits, that line's [start,end) byte range in
+// the ORIGINAL _String - used by the edit-in-place overlay to map a flat character offset to (row, column) for a
+// multiline-configured variable. Not reconstructible from _OutSplits alone: wrap-point whitespace/newlines are
+// dropped from the emitted lines, so a line's real source range isn't just "up to the next line's start".
+void                        SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font, CIntArray *_OutStarts, CIntArray *_OutEnds);
 // Width of a multiline-text atom's own scrollbar. Matches the bar's own scrollbar's drawn width
 // (CTwBar_DrawHierHandle: x1-x0 with x0/x1 built from CharHeight-4) so both render at the same size.
 static inline int CTwMultilineScrollbarWidth(const CTexFont *_Font) { return _Font->m_CharHeight-4; }

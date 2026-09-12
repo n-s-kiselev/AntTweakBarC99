@@ -5822,10 +5822,14 @@ static void InsertUsedStructs(StructSet *_Set, const CTwVarGroup *_Grp)
         }
 }
 
-void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font)
+void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const CTexFont *_Font, CIntArray *_OutStarts, CIntArray *_OutEnds)
 {
     assert( _Font!=NULL && _String!=NULL );
     _OutSplits->count = 0;
+    if( _OutStarts!=NULL )
+        _OutStarts->count = 0;
+    if( _OutEnds!=NULL )
+        _OutEnds->count = 0;
     int l = (int)strlen(_String);
     if( l==0 )
     {
@@ -5880,6 +5884,10 @@ void SplitString(CSdsArray *_OutSplits, const char *_String, int _Width, const C
                 else
                     Split = sdscpylen(Split, _String+First, (size_t)(Last-First+(CR?0:1)));
                 tw_da_append(_OutSplits, sdsdup(Split));
+                if( _OutStarts!=NULL )
+                    tw_da_append(_OutStarts, First);
+                if( _OutEnds!=NULL )
+                    tw_da_append(_OutEnds, Last+(CR?0:1));
                 First = Last+1;
                 if( !CR )
                     while( First<l && (_String[First]==' ' || _String[First]=='\t') )   // skip blanks
@@ -5932,7 +5940,7 @@ static int AppendHelpString(CTwVarGroup *_Grp, const char *_String, int _Level, 
     // Wrapped once here only to learn whether the text needs the widget at all; the lines
     // themselves are re-wrapped, from WrapWidth, at render time.
     CSdsArray Split = {0};
-    SplitString(&Split, _String, WrapWidth, Font);
+    SplitString(&Split, _String, WrapWidth, Font, NULL, NULL);
     int NbWrappedLines = (int)Split.count;
     for( size_t i=0; i<Split.count; ++i )
         sdsfree(Split.items[i]);
