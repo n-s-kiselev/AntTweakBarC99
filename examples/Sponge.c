@@ -512,6 +512,26 @@ void TW_CALL GetSpongeAOCB(void *value, void *clientData)
     *(int *)value = g_SpongeAO;
 }
 
+// full_width=true demo: a multiline text widget spanning the whole row, and a button
+// below it that cycles the text widget's "lines=" value 2->3->4->5->6->2->..., changing
+// the existing widget's attribute at runtime via TwDefine rather than recreating it.
+static char g_FullWidthDemoText[300] =
+    "This is a full-width widget. You can enter long text that spans multiple lines. "
+    "The text is automatically wrapped to fit the available width. Clicking the "
+    "full-width button below increases the number of visible lines up to 6, then "
+    "resets it back to 2.";
+
+void TW_CALL FullWidthLinesCB(void *clientData)
+{
+    TwBar *bar = (TwBar *)clientData;
+    int lines = 2;
+    TwGetParam(bar, "FullWidthDemoText", "lines", TW_PARAM_INT32, 1, &lines);
+    lines = (lines>=6) ? 2 : lines+1;
+    char def[96];
+    snprintf(def, sizeof(def), " %s/FullWidthDemoText lines=%d ", TwGetBarName(bar), lines);
+    TwDefine(def);
+}
+
 static void Render(void)
 {
     glClearColor(g_BackgroundColor[0], g_BackgroundColor[1], g_BackgroundColor[2], g_BackgroundColor[3]);
@@ -775,6 +795,14 @@ int main(void)
     TwAddVarRW(bar, "Light direction", TW_TYPE_DIR3F, &g_LightDir, "opened=true showval=false");
     TwAddVarRW(bar, "Camera distance", TW_TYPE_FLOAT, &g_CamDistance, "min=0 max=4 step=0.01 keyincr=PGUP keydecr=PGDOWN");
     TwAddVarRW(bar, "Background", TW_TYPE_COLOR4F, &g_BackgroundColor, "colormode=hls");
+
+    TwAddSeparator(bar, NULL, "");
+    TwAddButton(bar, "FullWidthDemoMoreLines", FullWidthLinesCB, bar,
+                " label='More lines' full_width=true "
+                "help='Cycles the text field below through 2, 3, 4, 5, 6 visible lines, then back to 2.' ");
+    TwAddVarRW(bar, "FullWidthDemoText", TW_TYPE_CSSTRING(sizeof(g_FullWidthDemoText)), g_FullWidthDemoText,
+               " label='Full-width text' full_width=true lines=2 "
+               "help='A full-width, wrapped multiline text field.' ");
 
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);

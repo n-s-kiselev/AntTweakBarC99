@@ -38,6 +38,7 @@
 #include <AntTweakBar.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 
 #define NUM_WINDOWS 2
@@ -51,6 +52,7 @@ typedef struct
     double      turn;         // current rotation, in turns
     int         wire;         // wireframe toggle
     float       bgColor[3];
+    char        fullWidthText[300]; // full_width=true multiline demo text - see SetupWindow()
     // GLFW always reports cursor position in window points, but
     // TwWindowSize() is now fed framebuffer pixels (see windowSizeCallback
     // below), so mouse events must be scaled by this window/framebuffer
@@ -337,6 +339,22 @@ static void error_callback(int error, const char *description)
     fflush(stderr);
 }
 
+// full_width=true demo: a multiline text widget spanning the whole row, and a button
+// below it that cycles the text widget's "lines=" value 2->3->4->5->6->2->..., changing
+// the existing widget's attribute at runtime via TwDefine rather than recreating it.
+// clientData is the specific window's own bar (see SetupWindow()), so each of the two
+// windows in this example cycles its own widget independently.
+void TW_CALL FullWidthLinesCB(void *clientData)
+{
+    TwBar *bar = (TwBar *)clientData;
+    int lines = 2;
+    TwGetParam(bar, "FullWidthDemoText", "lines", TW_PARAM_INT32, 1, &lines);
+    lines = (lines>=6) ? 2 : lines+1;
+    char def[96];
+    snprintf(def, sizeof(def), " %s/FullWidthDemoText lines=%d ", TwGetBarName(bar), lines);
+    TwDefine(def);
+}
+
 // Creates one GLFW3 window, assigns it an AntTweakBar window ID (creating
 // that manager immediately - see the file header comment above), and adds
 // its tweak bar. windowIndex 0 must be called after TwInit() (its manager
@@ -428,6 +446,19 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
                " label='Wireframe' help='Toggle wireframe display mode.' ");
     TwAddVarRW(dw->bar, "bgColor", TW_TYPE_COLOR3F, &dw->bgColor,
                " label='Background color' ");
+
+    strcpy(dw->fullWidthText,
+        "This is a full-width widget. You can enter long text that spans multiple lines. "
+        "The text is automatically wrapped to fit the available width. Clicking the "
+        "full-width button below increases the number of visible lines up to 6, then "
+        "resets it back to 2.");
+    TwAddSeparator(dw->bar, NULL, "");
+    TwAddButton(dw->bar, "FullWidthDemoMoreLines", FullWidthLinesCB, dw->bar,
+                " label='More lines' full_width=true "
+                "help='Cycles the text field below through 2, 3, 4, 5, 6 visible lines, then back to 2.' ");
+    TwAddVarRW(dw->bar, "FullWidthDemoText", TW_TYPE_CSSTRING(sizeof(dw->fullWidthText)), dw->fullWidthText,
+               " label='Full-width text' full_width=true lines=2 "
+               "help='A full-width, wrapped multiline text field.' ");
 
     glfwSetKeyCallback(dw->window, keyCallback);
     glfwSetCharCallback(dw->window, charCallback);

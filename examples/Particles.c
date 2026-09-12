@@ -298,6 +298,26 @@ void error_callback(int error, const char* description)
     fflush(stderr);
 }
 
+// full_width=true demo: a multiline text widget spanning the whole row, and a button
+// below it that cycles the text widget's "lines=" value 2->3->4->5->6->2->..., changing
+// the existing widget's attribute at runtime via TwDefine rather than recreating it.
+static char g_FullWidthDemoText[300] =
+    "This is a full-width widget. You can enter long text that spans multiple lines. "
+    "The text is automatically wrapped to fit the available width. Clicking the "
+    "full-width button below increases the number of visible lines up to 6, then "
+    "resets it back to 2.";
+
+void TW_CALL FullWidthLinesCB(void *clientData)
+{
+    TwBar *bar = (TwBar *)clientData;
+    int lines = 2;
+    TwGetParam(bar, "FullWidthDemoText", "lines", TW_PARAM_INT32, 1, &lines);
+    lines = (lines>=6) ? 2 : lines+1;
+    char def[96];
+    snprintf(def, sizeof(def), " %s/FullWidthDemoText lines=%d ", TwGetBarName(bar), lines);
+    TwDefine(def);
+}
+
 int main(void)
 {
     GLFWwindow *window;
@@ -388,6 +408,14 @@ int main(void)
     TwAddVarRW(bar, "Direction", TW_TYPE_DIR3F, &speedDir, " opened=true showval=false ");
     TwAddVarRW(bar, "Color", TW_TYPE_COLOR3F, &color, " colorMode=hls opened=true ");
     TwAddVarRW(bar, "Background color", TW_TYPE_COLOR3F, &bgColor, " colorMode=hls opened=true ");
+
+    TwAddSeparator(bar, NULL, "");
+    TwAddButton(bar, "FullWidthDemoMoreLines", FullWidthLinesCB, bar,
+                " label='More lines' full_width=true "
+                "help='Cycles the text field below through 2, 3, 4, 5, 6 visible lines, then back to 2.' ");
+    TwAddVarRW(bar, "FullWidthDemoText", TW_TYPE_CSSTRING(sizeof(g_FullWidthDemoText)), g_FullWidthDemoText,
+               " label='Full-width text' full_width=true lines=2 "
+               "help='A full-width, wrapped multiline text field.' ");
 
     glfwSetKeyCallback(window, keyCallback);
     glfwSetCharCallback(window, charCallback);
