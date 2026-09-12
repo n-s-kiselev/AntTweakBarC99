@@ -7570,9 +7570,9 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
     {
         const CPoint origin = _Bar->m_Roto.m_Origin;
 
+        DrawArc(origin.x, origin.y, 31, 0, 360, _Bar->m_ColRoto);
         DrawArc(origin.x, origin.y, 32, 0, 360, _Bar->m_ColRoto);
         DrawArc(origin.x, origin.y, 33, 0, 360, _Bar->m_ColRoto);
-        DrawArc(origin.x, origin.y, 31, 0, 360, _Bar->m_ColRoto);
 
         if( _Bar->m_Roto.m_HasPrevious )
         {
@@ -7605,9 +7605,10 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
             static const struct { float ArcOffset; int Radius; } tailDots[] = {
                 { 36.0f, 8 },
                 { 17.0f, 7 },
-                { 0.0f, 6 },
+                { 00.0f, 6 },
                 { -16.0f, 5 },
-                { -30.0f, 4 }
+                { -30.0f, 4 },
+                { -43.0f, 3 }
             };
             const CPoint cursor = _Bar->m_Roto.m_Current;
             RotoDrawThickLine(Gr, origin.x, origin.y, cursor.x, cursor.y, _Bar->m_ColRotoVal);
@@ -7615,20 +7616,13 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
             for( size_t i=0; i<sizeof(tailDots)/sizeof(tailDots[0]); ++i )
             {
                 CPoint dot = RotoPointOnCircle(origin, radius, cursorAngle, tailDots[i].ArcOffset);
+                DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius+1, COLOR32_WHITE, true);
                 DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius, _Bar->m_ColRotoVal, true);
-                DrawArc(dot.x, dot.y, tailDots[i].Radius, 0, 360, COLOR32_WHITE);
+                // NSK commented:
+                // DrawArc(dot.x, dot.y, tailDots[i].Radius, 0, 360, COLOR32_WHITE);
             }
 
-            // Short arc tick further behind the tail. DrawArc takes degrees.
             const float radToDeg = 180.0f/(float)M_PI;
-            const int   tickR     = (int)(radius + 0.5f);
-            const float tickStart = (cursorAngle - 38.0f/radius)*radToDeg;
-            const float tickEnd   = (cursorAngle - 48.0f/radius)*radToDeg;
-            // Thickened radially: the same arc at three radii a pixel apart, so
-            // the tick reads as a solid white mark rather than a hairline.
-            DrawArc(origin.x, origin.y,   tickR, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x, origin.y,   tickR+1, tickStart, tickEnd, COLOR32_WHITE);
-            DrawArc(origin.x, origin.y,   tickR-1, tickStart, tickEnd, COLOR32_WHITE);
 
             // Sweep arc showing how far the value has turned from the anchor
             // angle (m_Angle0) set when this drag last crossed
