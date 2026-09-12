@@ -109,7 +109,6 @@ CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeig
             ++hh;
 
     // find width and position of each character
-    int w = 0;
     int x0[224], y0[224], x1[224], y1[224];
     int ch = 32;
     int start;
@@ -127,7 +126,6 @@ CTexFont *TwGenerateFont(const unsigned char *_Bitmap, int _BmWidth, int _BmHeig
                     x1[ch-32] = x;
                     y0[ch-32] = r*(h+1);
                     y1[ch-32] = r*(h+1)+h-1;
-                    w += x-start+1;
                     start = x+1;
                 }
                 ++ch;
