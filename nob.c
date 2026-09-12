@@ -136,9 +136,26 @@ static void collect_sources(Nob_File_Paths *sources)
     }
 }
 
+// Unlike nob_file_exists() (POSIX access(), which follows symlinks), this reports true for a
+// symlink whose target is missing too - access() alone can't see it, which left a dangling
+// symlink undeletable and silently blocking its parent directory's removal (see
+// delete_if_exists below - this repo hit exactly that with a Linux-only build symlink synced in
+// via Dropbox, dangling on a macOS build). Deliberately not nob_get_file_type(): that logs an
+// [ERROR] on a genuinely-missing path, which delete_if_exists is routinely called against as an
+// expected, silent no-op.
+static bool path_exists_or_dangling_symlink(const char *path)
+{
+#if defined(_WIN32)
+    return nob_file_exists(path); // this codebase never creates such symlinks on Windows
+#else
+    struct stat st;
+    return lstat(path, &st) == 0;
+#endif
+}
+
 static bool delete_if_exists(const char *path)
 {
-    if (nob_file_exists(path)) return nob_delete_file(path);
+    if (path_exists_or_dangling_symlink(path)) return nob_delete_file(path);
     return true;
 }
 
@@ -439,7 +456,13 @@ static bool build_all(const char *nob_exe)
     // `./nob` re-run once this cleanup runs.
     if (!delete_objects(&static_objects)) return false;
     if (!delete_objects(&shared_objects)) return false;
+    // clear_directory() first, not just the delete_objects() above: sweeps up anything else
+    // that ended up in these folders (a stray .DS_Store, an orphaned .o left over from a
+    // since-renamed/removed source) so it doesn't silently block removing the folder itself -
+    // the same reason clean() below already clears every folder it removes.
+    if (!clear_directory(BUILD_STATIC_FOLDER)) return false;
     if (!delete_if_exists(BUILD_STATIC_FOLDER)) return false;
+    if (!clear_directory(BUILD_SHARED_FOLDER)) return false;
     if (!delete_if_exists(BUILD_SHARED_FOLDER)) return false;
 
     // Copy (not move - include/AntTweakBar.h stays the real, git-tracked
