@@ -292,6 +292,15 @@ void TW_CALL GetTextLineCB(void *value, void *clientData)
     TwCopyCDStringToLibrary(destPtr, src);
 }
 
+// Callback for the "WideButton" full_width=true demo below - just prints to stdout, so
+// the demo has an actual clickable, visibly-drawn button (a callback-less button draws no
+// rectangle at all, only its label, which full_width intentionally suppresses).
+void TW_CALL WideButtonCB(void *clientData)
+{
+    (void)clientData;
+    printf("WideButton clicked (full_width=true button).\n");
+}
+
 
 // ---------------------------------------------------------------------------
 // 2) Callback functions for C-Static sized string variables
@@ -452,8 +461,34 @@ int main(void)
         "several lines and will not fit in the four lines configured "
         "below, so the widget's own scrollbar should appear on the right "
         "to reach the rest of the text.");
+
+    TwAddSeparator(bar, NULL, "group=CDString");
     TwAddVarRW(bar, "Multiline", TW_TYPE_CDSTRING, &multilineText,
                " label='Multiline text' group=CDString lines=4 help='Demonstrates the new lines= param (a multiline text widget with its own scrollbar).' ");
+
+    TwAddSeparator(bar, NULL, "group=CDString");
+
+    // Same "lines=N" multiline widget, but with "full_width=true": no separate label, and
+    // the wrapped-text box itself spans the entire row width (label column included)
+    // instead of just the narrower value column - compare against "Multiline text" above.
+    char *wideMultilineText = NULL;
+    CopyCDStringToClient(&wideMultilineText,
+        "This text field occupies the entire width of the bar. This text is long enough "
+        "that it needs to wrap across several lines and will not fit in the four lines "
+        "configured here, so a scrollbar should appear on the right to reach the rest of "
+        "the text.");
+    TwAddVarRW(bar, "WideMultiline", TW_TYPE_CDSTRING, &wideMultilineText,
+               " label='Wide multiline text' group=CDString lines=4 full_width=true help='Demonstrates full_width=true: no label, the widget spans the full row width.' ");
+
+    TwAddSeparator(bar, NULL, "group=CDString");
+
+    // "full_width" also works on a plain button: no separate label, the button's own
+    // clickable rect spans the full row width instead of just the value column. Given a
+    // real callback (rather than left as an info line) so there is an actual widened
+    // rectangle to see and click - an info button draws no rect at all, only its label,
+    // which full_width intentionally suppresses.
+    TwAddButton(bar, "WideButton", WideButtonCB, NULL,
+                " label='Wide button' group=CDString full_width=true help='Demonstrates full_width=true on a TW_TYPE_BUTTON: no label, the clickable rect spans the full row width.' ");
 
     // Set the group label & separator
     TwDefine(" Main/CDString label='Echo some text' help='This example demonstates different use of C-Dynamic string variables.' ");
