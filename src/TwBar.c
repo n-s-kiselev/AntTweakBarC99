@@ -7622,30 +7622,29 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
                 // DrawArc(dot.x, dot.y, tailDots[i].Radius, 0, 360, COLOR32_WHITE);
             }
 
-            const float radToDeg = 180.0f/(float)M_PI;
-
             // Sweep arc showing how far the value has turned from the anchor
             // angle (m_Angle0) set when this drag last crossed
-            // m_RotoMinRadius. Its near end is where the line above crosses
-            // the base circle, i.e. the live raw cursor angle: it doesn't use
-            // the incrementally accumulated m_AngleDT, since dt is
-            // integrated via acos() only when the stepped value updates, so
-            // over many small updates it can drift away from the true angle.
+            // m_RotoMinRadius. Its far end is a0+m_AngleDT: m_AngleDT is the
+            // directed, unwrapped sum of every incremental angle crossed
+            // since then (see CTwBar_RotoSliderOnMouseMove), so the arc keeps
+            // growing past +-180 degrees in the direction the user is
+            // actually turning instead of snapping to the shortest way back
+            // to the live cursor angle.
             if( _Bar->m_Roto.m_HasPrevious )
             {
                 float a0 = (float)_Bar->m_Roto.m_Angle0;
-                float a1deg = cursorAngle*radToDeg;
-                float diff = fmodf(a1deg-a0, 360.0f);
-                if( diff>180.0f )
-                    diff -= 360.0f;
-                else if( diff<-180.0f )
-                    diff += 360.0f;
+                float diff = (float)_Bar->m_Roto.m_AngleDT;
                 if( fabsf(diff)>=1.0f )
                 {
+                    // Same sign as the value change since the anchor (see
+                    // preciseInc above): counterclockwise/increasing draws in
+                    // the upper-limit color, clockwise/decreasing in the
+                    // lower-limit color.
                     float a1 = a0+diff;
-                    DrawArc(origin.x,   origin.y,   32, a0, a1, _Bar->m_ColRotoVal);
-                    DrawArc(origin.x+1, origin.y,   32, a0, a1, _Bar->m_ColRotoVal);
-                    DrawArc(origin.x,   origin.y+1, 32, a0, a1, _Bar->m_ColRotoVal);
+                    color32 col = (diff>=0) ? _Bar->m_ColRotoMax : _Bar->m_ColRotoMin;
+                    DrawArc(origin.x, origin.y, 31, a0, a1, col);
+                    DrawArc(origin.x, origin.y, 32, a0, a1, col);
+                    DrawArc(origin.x, origin.y, 33, a0, a1, col);
                 }
             }
         }
