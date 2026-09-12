@@ -1001,6 +1001,31 @@ int CTwVar_HasAttribBase(const char *_Attrib, bool *_HasValue)
     return 0; // not found
 }
 
+static int SetBoolAttrib(bool *_Field, const char *_Value, TwBar *_Bar)
+{
+    bool NewValue;
+    if( _Value==NULL || strlen(_Value)==0 )
+    {
+        CTwMgr_SetLastError(g_TwMgr, g_ErrNoValue);
+        return 0;
+    }
+    if( _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
+        NewValue = true;
+    else if( _stricmp(_Value, "false")==0 || _stricmp(_Value, "0")==0 )
+        NewValue = false;
+    else
+    {
+        CTwMgr_SetLastError(g_TwMgr, g_ErrBadValue);
+        return 0;
+    }
+    if( *_Field!=NewValue )
+    {
+        *_Field = NewValue;
+        CTwBar_NotUpToDate(_Bar);
+    }
+    return 1;
+}
+
 int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex)
 {
     switch( _AttribID )
@@ -1128,37 +1153,7 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
         // todo: general 'order' command (no else)
         return 0;
     case V_VISIBLE:
-        if( _Value!=NULL && strlen(_Value)>0 )
-        {
-            if( _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
-            {
-                if( !_Var->m_Visible )
-                {
-                    _Var->m_Visible = true;
-                    CTwBar_NotUpToDate(_Bar);
-                }
-                return 1;
-            }
-            else if( _stricmp(_Value, "false")==0 || _stricmp(_Value, "0")==0 )
-            {
-                if( _Var->m_Visible )
-                {
-                    _Var->m_Visible = false;
-                    CTwBar_NotUpToDate(_Bar);
-                }
-                return 1;
-            }
-            else
-            {
-                CTwMgr_SetLastError(g_TwMgr, g_ErrBadValue);
-                return 0;
-            }
-        }
-        else
-        {
-            CTwMgr_SetLastError(g_TwMgr, g_ErrNoValue);
-            return 0;
-        }
+        return SetBoolAttrib(&_Var->m_Visible, _Value, _Bar);
     case V_READONLY:
         if( _Value==NULL || strlen(_Value)==0 // no value is acceptable (for backward compatibility)
             || _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
@@ -1185,40 +1180,7 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
             return 0;
         }
     case V_FULL_WIDTH:
-        // Common to every var kind (atom or group): no label, widget spans the full
-        // label+value width instead - see CTwBar_RowWidgetX0/IsMultilineTextVar's
-        // label-column-swap in TwBar.c for how this is actually rendered.
-        if( _Value!=NULL && strlen(_Value)>0 )
-        {
-            if( _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
-            {
-                if( !_Var->m_FullWidth )
-                {
-                    _Var->m_FullWidth = true;
-                    CTwBar_NotUpToDate(_Bar);
-                }
-                return 1;
-            }
-            else if( _stricmp(_Value, "false")==0 || _stricmp(_Value, "0")==0 )
-            {
-                if( _Var->m_FullWidth )
-                {
-                    _Var->m_FullWidth = false;
-                    CTwBar_NotUpToDate(_Bar);
-                }
-                return 1;
-            }
-            else
-            {
-                CTwMgr_SetLastError(g_TwMgr, g_ErrBadValue);
-                return 0;
-            }
-        }
-        else
-        {
-            CTwMgr_SetLastError(g_TwMgr, g_ErrNoValue);
-            return 0;
-        }
+        return SetBoolAttrib(&_Var->m_FullWidth, _Value, _Bar);
     default:
         CTwMgr_SetLastError(g_TwMgr, g_ErrUnknownAttrib);
         return 0;
@@ -3859,19 +3821,16 @@ CTwVarGroup *CTwVarGroup_New(void)
 
 //  ---------------------------------------------------------------------------
 
-static inline int IncrBtnWidth(int _CharHeight)
-{
-    return ((2*_CharHeight)/3+2)&0xfffe; // force even value
+static inline int IncrBtnWidth(int _CharHeight) 
+{ 
+    return ((2*_CharHeight)/3+2)&0xfffe; // force even value 
 }
 
 //  ---------------------------------------------------------------------------
 
-// The "full_width" param (any CTwVar, any kind - see V_FULL_WIDTH in CTwVar_SetAttribBase):
-// no label, the row's own widget spans the full label+value width instead, its left edge
-// respecting the row's own group nesting - the same indent formula CTwBar_Draw's custom-type
-// rendering and row-highlight rect already use (m_VarX0 + Level*LevelSpace), generalized into
-// one helper. Returns the value-column-equivalent left edge for row _Level of _Var: unchanged
-// (m_VarX1) unless _Var->m_FullWidth, in which case the wider, indent-aware X0.
+// Left edge of the widget drawn on row _Level of _Var: the value column as always, or - for
+// a "full_width" var - the label column too, indented by the row's own nesting level with
+// the same formula CTwBar_Draw's custom-type rendering and row-highlight rect use.
 static inline int CTwBar_RowWidgetX0(const CTwBar *_Bar, const CTwVar *_Var, int _Level)
 {
     if( _Var->m_FullWidth )
@@ -4164,9 +4123,7 @@ static void CTwBar_DrawMultilineWidgets(CTwBar *_Bar)
         // between distinct variables, but a stray line splitting one wrapped paragraph.
         // Value-column atoms only: help text has no background of its own and spans the full
         // row through the label column, so this rect would use the wrong X range for it and
-        // wrongly darken it to look like an interactive variable's row. A "full_width" value
-        // atom's own text also renders through the label column (CTwBar_ListLabels), so this
-        // rect's left edge widens the same way via CTwBar_RowWidgetX0 instead of being skipped.
+        // wrongly darken it to look like an interactive variable's row.
         if( IsMultilineValueVar(&MLAtom->m_Base) )
             Gr->DrawRect(Gr, CTwBar_RowWidgetX0(_Bar, &MLAtom->m_Base, _Bar->m_HierTags.items[h].m_Level), y0, _Bar->m_PosX+_Bar->m_VarX2, y1-1, _Bar->m_ColValBg, _Bar->m_ColValBg, _Bar->m_ColValBg, _Bar->m_ColValBg);
 
@@ -4308,10 +4265,9 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             Len = (int)sdslen(DecaledLine);
         }
         // Rows 1..K-1 of a multiline-text atom's block (m_SubLine>0) are continuation
-        // rows of the same variable - only the first row (m_SubLine==0) shows its label,
-        // UNLESS the atom is "full_width": there, every row of the block shows its own
-        // wrapped-line content instead (handled below, since the label column IS the
-        // widget's own text there, not a one-time label).
+        // rows of the same variable - only the first row (m_SubLine==0) shows its label.
+        // A "full_width" atom is exempt: its own wrapped text, not a one-time label, is
+        // what the label column carries, so every row of its block has content to show.
         else if( _Bar->m_HierTags.items[h].m_SubLine>0 && !_Bar->m_HierTags.items[h].m_Var->m_FullWidth )
         {
             Text = NULL;
@@ -4319,48 +4275,38 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
         }
         else if( _Bar->m_HierTags.items[h].m_Var->m_FullWidth )
         {
-            // "full_width" var (any kind, generic - see V_FULL_WIDTH): no separate label.
-            // An atom shows its own value text here instead - CTwVarAtom_ValueToString works
-            // uniformly for every type (formatted number, bool glyph, enum option text, the
-            // CDSTRING/CSSTRING string; empty for buttons/custom types, which correctly end up
-            // blank here). A group (e.g. a full_width color group) has no textual value of its
-            // own, so its row is simply blank - widening whatever it DOES draw (a color swatch)
-            // is handled separately in CTwBar_Draw via CTwBar_RowWidgetX0.
-            if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) )
+            // "full_width": no separate label - an atom shows its own value text through the
+            // label column instead (empty for buttons and custom types, which correctly leaves
+            // their row blank). A group has no textual value of its own, so its row stays
+            // blank too; whatever it does draw (a color swatch) is widened in CTwBar_Draw.
+            CTwVar *FWVar = _Bar->m_HierTags.items[h].m_Var;
+            Text = NULL;
+            Len = 0;
+            if( !CTwVar_IsGroup(FWVar) )
             {
-                Text = NULL;
-                Len = 0;
-            }
-            else
-            {
-                CTwVarAtom *FWAtom = (CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
-                if( IsMultilineTextVar(&FWAtom->m_Base) )
+                static sds FullWidthValStr = NULL;
+                if( FullWidthValStr==NULL )
+                    FullWidthValStr = sdsempty();
+                CTwVarAtom *FWAtom = (CTwVarAtom *)FWVar;
+                CTwVarAtom_ValueToString(FWAtom, &FullWidthValStr);
+                if( IsMultilineTextVar(FWVar) )
                 {
-                    // "lines=N" also set (CDSTRING/CSSTRING only): reuse the same lazy-wrap
-                    // machinery as the help bar's own text, but re-wrapped fresh every call
-                    // from the atom's LIVE value and this row's own indent-aware width - unlike
-                    // help text, this value can change and the bar/group can be resized, so
-                    // there is no one-time width to cache.
+                    // Unlike the help bar's text, this value and the bar width can both change
+                    // between frames, so there is no one-time wrap width to cache against.
                     static CTwMultilineWrapCache FullWidthWrap = {0};
-                    static sds FullWidthValStr = NULL;
-                    if( FullWidthValStr==NULL )
-                        FullWidthValStr = sdsempty();
-                    CTwVarAtom_ValueToString(FWAtom, &FullWidthValStr);
-                    int RowIndent = _Bar->m_HierTags.items[h].m_Level*LevelSpace;
-                    int WrapWidth = CTwMultilineWrapWidth(_Font, _GroupWidthMax-RowIndent);
+                    int WrapWidth = CTwMultilineWrapWidth(_Font, _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*LevelSpace);
                     const CSdsArray *Lines = CTwBar_MultilineWrapText(&FullWidthWrap, FWAtom, FullWidthValStr, WrapWidth, _Font);
                     sds WrappedLine = CTwBar_MultilineLineAt(_Bar, FWAtom, Lines, h);
-                    Text = (const unsigned char *)(WrappedLine!=NULL ? WrappedLine : "");
-                    Len = (WrappedLine!=NULL) ? (int)sdslen(WrappedLine) : 0;
+                    if( WrappedLine!=NULL )
+                    {
+                        Text = (const unsigned char *)WrappedLine;
+                        Len = (int)sdslen(WrappedLine);
+                    }
                 }
                 else
                 {
-                    static sds FullWidthSingleLine = NULL;
-                    if( FullWidthSingleLine==NULL )
-                        FullWidthSingleLine = sdsempty();
-                    CTwVarAtom_ValueToString(FWAtom, &FullWidthSingleLine);
-                    Text = (const unsigned char *)FullWidthSingleLine;
-                    Len = (int)sdslen(FullWidthSingleLine);
+                    Text = (const unsigned char *)FullWidthValStr;
+                    Len = (int)sdslen(FullWidthValStr);
                 }
             }
         }
@@ -4390,11 +4336,9 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
         if( !IsCustom )
         {
             sds *CurrentLabel = &_Labels->items[_Labels->count-1];
-            int RowIndent = _Bar->m_HierTags.items[h].m_Level*LevelSpace;
             if( _Bar->m_HierTags.items[h].m_Var->m_FullWidth )
-                // "full_width": this row's own value text (assigned above) spans the full
-                // label+value width, minus the indent spaces about to be prepended below.
-                WidthMax = _GroupWidthMax - RowIndent;
+                // Full row width, minus the indent spaces prepended below.
+                WidthMax = _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*LevelSpace;
             else if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarGroup *)_Bar->m_HierTags.items[h].m_Var)->m_SummaryCallback==NULL )
                 WidthMax = _GroupWidthMax;
             else if( !CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_BUTTON )
@@ -4418,12 +4362,10 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     *CurrentLabel = sdscatlen(*CurrentLabel, &sp, 1);
                     x += Space;
                 }
-            // A "full_width" atom that ALSO has "lines=N" set arrives here already wrapped to
-            // fit (CTwMultilineWrapWidth, above) - bypass the clip check the same way help
-            // text does (m_DontClip), rather than re-truncating an already-correctly-wrapped
-            // line against the ellipsis-margin threshold below. A single-line full_width value
-            // (no "lines=N") has no such pre-wrap to protect, so it still clips normally,
-            // just against the wider WidthMax set above.
+            // A "full_width" atom with "lines=N" arrives already wrapped to fit, so clipping it
+            // again against the ellipsis margin would truncate a correct line; bypass that the
+            // same way help text does. Single-line full_width values have no such pre-wrap and
+            // still clip normally, just against the wider WidthMax set above.
             bool ClipBypass = _Bar->m_HierTags.items[h].m_Var->m_DontClip
                             || (_Bar->m_HierTags.items[h].m_Var->m_FullWidth && IsMultilineTextVar(_Bar->m_HierTags.items[h].m_Var));
             if( x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']<WidthMax || ClipBypass)
@@ -4440,7 +4382,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     }
                     else if( i<Len-2 && x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']>=WidthMax && !ClipBypass)
                         Etc = 1;
-                }
+                }       
         }
     }
 }
@@ -4487,9 +4429,9 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
                 // value string with just this row's wrapped line. All K rows of one atom's
                 // block appear as consecutive HierTag entries (see CTwBar_BrowseHierarchy),
                 // so the wrap itself is computed once per block and cached. Skipped for a
-                // "full_width" atom: CTwBar_ListLabels does that atom's wrapping instead (at
-                // the wider label-column width), and running both here AND there would fight
-                // over the same cached m_NbTextLines/m_FirstTextLine fields on the atom.
+                // "full_width" atom: CTwBar_ListLabels wraps it instead, at the wider
+                // label-column width, and wrapping it twice would fight over the same cached
+                // m_NbTextLines/m_FirstTextLine fields on the atom.
                 if( IsMultilineValueVar(_Bar->m_HierTags.items[h].m_Var) && !Atom->m_Base.m_FullWidth )
                 {
                     static CTwMultilineWrapCache ValueWrap = {0}; // persistent scratch, like Summary above
@@ -4566,7 +4508,7 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
             else if( IsMultilineValueVar(_Bar->m_HierTags.items[h].m_Var) )
                 tw_da_append(_BgColors, (color32)0x00000000); // drawn as one continuous rect in CTwBar_Draw instead - avoids an m_LineSep-tall gap splitting the wrapped paragraph
             else if( _Bar->m_HierTags.items[h].m_Var->m_FullWidth )
-                tw_da_append(_BgColors, (color32)0x00000000); // value text (now blank, shown via the label column instead) has no background of its own at the old, narrower value-column position
+                tw_da_append(_BgColors, (color32)0x00000000); // no background at the narrow value-column position the now-blank value text no longer occupies
             else if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) )
             {
                 const CTwVarGroup *Grp = (const CTwVarGroup *)_Bar->m_HierTags.items[h].m_Var;
@@ -4669,11 +4611,10 @@ int CTwBar_ComputeValuesWidth(CTwBar *_Bar, const CTexFont *_Font)
         if( !CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) )
         {
             Atom = (const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
-            // A "full_width" atom's value never renders in the value column (it's shown via
-            // the label column instead, see CTwBar_ListLabels) - skip it so it doesn't inflate
-            // this auto-fit width. (A bar left with only full_width atoms lands at
-            // ValuesWidth==0, which is the ideal outcome here: it hands ~all horizontal space
-            // to the label column, maximizing their own wrap width - not a bug to "fix" later.)
+            // A "full_width" atom's value renders through the label column, never here, so it
+            // must not inflate this auto-fit width. A bar holding only full_width atoms lands
+            // at ValuesWidth==0 by design: all horizontal space goes to the label column,
+            // maximizing their own wrap width.
             if( Atom->m_Base.m_FullWidth )
                 continue;
             CTwVarAtom_ValueToString(Atom, &ValStr);
@@ -5428,10 +5369,8 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
             int bw = IncrBtnWidth(_Bar->m_Font->m_CharHeight);
             for( h=0; h<nh; ++h )
             {
-                // "full_width" widens this row's own left edge from the normal value-column
-                // start (m_VarX1) to an indent-aware one spanning the label column too - see
-                // CTwBar_RowWidgetX0. Every X below that would otherwise read m_VarX1 directly
-                // uses vx0 instead, so this one flag affects every widget kind uniformly.
+                // Every widget X below reads vx0 rather than m_VarX1 directly, so "full_width"
+                // widens each widget kind uniformly - see CTwBar_RowWidgetX0.
                 int vx0 = CTwBar_RowWidgetX0(_Bar, _Bar->m_HierTags.items[h].m_Var, _Bar->m_HierTags.items[h].m_Level);
                 if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) )
                 {
@@ -5472,8 +5411,12 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     }
                     else if( _Bar->m_ButtonAlign == BUTTON_ALIGN_CENTER )
                     {
-                        cbx0 = (vx0+_Bar->m_PosX+_Bar->m_VarX2)/2-bw/2+1;
-                        cbx1 = (vx0+_Bar->m_PosX+_Bar->m_VarX2)/2+bw/2-1;
+                        // Halve the width, not the sum of the two absolute edges: only the
+                        // former truncates the same way the old m_PosX+(m_VarX1+m_VarX2)/2 did
+                        // once m_PosX goes negative (bar dragged off the left of the window).
+                        int cbmid = vx0+(_Bar->m_PosX+_Bar->m_VarX2-vx0)/2;
+                        cbx0 = cbmid-bw/2+1;
+                        cbx1 = cbmid+bw/2-1;
                     }
                     else
                     {
@@ -6649,9 +6592,9 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                                 if( First>=0 && _Bar->m_HierTags.items[First].m_Var==(CTwVar *)Var )
                                     EditLine = First;
                             }
-                            // CTwBar_RowWidgetX0 returns an absolute screen X; CTwBar_EditInPlaceStart's
-                            // _X is bar-relative (like m_VarX1 itself), so subtract m_PosX back out -
-                            // for a non-"full_width" var this is exactly m_VarX1, unchanged from before.
+                            // CTwBar_RowWidgetX0 returns an absolute screen X, but
+                            // CTwBar_EditInPlaceStart's _X is bar-relative like m_VarX1, so m_PosX
+                            // has to come back out.
                             int EditX0 = CTwBar_RowWidgetX0(_Bar, &Var->m_Base, _Bar->m_HierTags.items[EditLine].m_Level) - _Bar->m_PosX;
                             CTwBar_EditInPlaceStart(_Bar, Var, EditX0, _Bar->m_VarY0+EditLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep), _Bar->m_VarX2-EditX0-dw-1);
                             if( CTwBar_EditInPlaceIsReadOnly(_Bar) )

@@ -292,9 +292,8 @@ void TW_CALL GetTextLineCB(void *value, void *clientData)
     TwCopyCDStringToLibrary(destPtr, src);
 }
 
-// Callback for the "WideButton" full_width=true demo below - just prints to stdout, so
-// the demo has an actual clickable, visibly-drawn button (a callback-less button draws no
-// rectangle at all, only its label, which full_width intentionally suppresses).
+// Gives the "WideButton" demo below a real callback, so it draws an actual clickable
+// rectangle: a callback-less button draws only its label, which full_width suppresses.
 void TW_CALL WideButtonCB(void *clientData)
 {
     (void)clientData;
@@ -468,9 +467,8 @@ int main(void)
 
     TwAddSeparator(bar, NULL, "group=CDString");
 
-    // Same "lines=N" multiline widget, but with "full_width=true": no separate label, and
-    // the wrapped-text box itself spans the entire row width (label column included)
-    // instead of just the narrower value column - compare against "Multiline text" above.
+    // The same "lines=N" widget with "full_width=true" added - compare against "Multiline
+    // text" above: no label, and the text box spans the label column as well.
     char *wideMultilineText = NULL;
     CopyCDStringToClient(&wideMultilineText,
         "This text field occupies the entire width of the bar. This text is long enough "
@@ -482,11 +480,8 @@ int main(void)
 
     TwAddSeparator(bar, NULL, "group=CDString");
 
-    // "full_width" also works on a plain button: no separate label, the button's own
-    // clickable rect spans the full row width instead of just the value column. Given a
-    // real callback (rather than left as an info line) so there is an actual widened
-    // rectangle to see and click - an info button draws no rect at all, only its label,
-    // which full_width intentionally suppresses.
+    // "full_width" is generic, not multiline-specific: on a plain button it widens the
+    // clickable rect itself across the label column.
     TwAddButton(bar, "WideButton", WideButtonCB, NULL,
                 " label='Wide button' group=CDString full_width=true help='Demonstrates full_width=true on a TW_TYPE_BUTTON: no label, the clickable rect spans the full row width.' ");
 

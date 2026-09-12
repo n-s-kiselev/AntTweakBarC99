@@ -106,7 +106,7 @@ typedef struct CTwVar
     bool                    m_IsRoot;
     bool                    m_DontClip;
     bool                    m_Visible;
-    bool                    m_FullWidth;    // "full_width" param: no label, widget spans label+value width (see CTwBar_RowWidgetX0, TwBar.c)
+    bool                    m_FullWidth;    // "full_width" param: no label, widget spans label+value width (see CTwBar_RowWidgetX0 in TwBar.c)
     signed short            m_LeftMargin;
     signed short            m_TopMargin;
     const color32 *         m_ColorPtr;
