@@ -271,14 +271,14 @@ void Scene::Init(bool changeLights)
     if( changeLights )
         for(int i=0; i<maxLights; ++i)
         {
-            lights[i].Dist0     = 0.5f*(float)rand()/RAND_MAX + 0.55f;
-            lights[i].Angle0    = 2*M_PI*((float)rand()/RAND_MAX);
-            lights[i].Height0   = 2*M_PI*(float)rand()/RAND_MAX;
-            lights[i].Speed0    = 4.0f*(float)rand()/RAND_MAX - 2.0f;
+            lights[i].Dist0     = 0.5f*(float)rand()/(float)RAND_MAX + 0.55f;
+            lights[i].Angle0    = 2*M_PI*((float)rand()/(float)RAND_MAX);
+            lights[i].Height0   = 2*M_PI*(float)rand()/(float)RAND_MAX;
+            lights[i].Speed0    = 4.0f*(float)rand()/(float)RAND_MAX - 2.0f;
             lights[i].Animation = (Light::AnimMode)(Light::ANIM_BOUNCE + (rand()%3));
-            lights[i].Radius    = (float)rand()/RAND_MAX+0.05f;
-            lights[i].Color[0]  = (float)rand()/RAND_MAX;
-            lights[i].Color[1]  = (float)rand()/RAND_MAX;
+            lights[i].Radius    = (float)rand()/(float)RAND_MAX+0.05f;
+            lights[i].Color[0]  = (float)rand()/(float)RAND_MAX;
+            lights[i].Color[1]  = (float)rand()/(float)RAND_MAX;
             lights[i].Color[2]  = (lights[i].Color[0]>lights[i].Color[1]) ? 1.0f-lights[i].Color[1] : 1.0f-lights[i].Color[0];
             lights[i].Color[3]  = 1;
             lights[i].Active    = true;
