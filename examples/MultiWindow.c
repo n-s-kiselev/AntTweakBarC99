@@ -450,7 +450,7 @@ static bool SetupWindow(int windowIndex, GLFWwindow *shareWith, const char *titl
     strcpy(dw->fullWidthText,
         "This is a full-width widget. You can enter long text that spans multiple lines. "
         "The text is automatically wrapped to fit the available width. Clicking the "
-        "full-width button below increases the number of visible lines up to 6, then "
+        "full-width button above increases the number of visible lines up to 6, then "
         "resets it back to 2.");
     TwAddSeparator(dw->bar, NULL, "");
     TwAddButton(dw->bar, "FullWidthDemoMoreLines", FullWidthLinesCB, dw->bar,

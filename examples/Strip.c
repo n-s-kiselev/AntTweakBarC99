@@ -243,7 +243,7 @@ void error_callback(int error, const char* description)
 static char g_FullWidthDemoText[300] =
     "This is a full-width widget. You can enter long text that spans multiple lines. "
     "The text is automatically wrapped to fit the available width. Clicking the "
-    "full-width button below increases the number of visible lines up to 6, then "
+    "full-width button above increases the number of visible lines up to 6, then "
     "resets it back to 2.";
 
 void TW_CALL FullWidthLinesCB(void *clientData)
