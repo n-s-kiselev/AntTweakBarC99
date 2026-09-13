@@ -1,6 +1,11 @@
 # AntTweakBarC99
 
-AntTweakBarC99 is a C99 library, that adds a lightweight, cross-platform GUI to OpenGL + [GLFW3](https://www.glfw.org/) applications.
+AntTweakBarC99 is a C99 library that adds a lightweight, cross-platform GUI
+to OpenGL applications, with three selectable, fully vendored windowing/event
+backends: [GLFW3](https://www.glfw.org/), [SDL3](https://www.libsdl.org/), and
+[SFML3](https://www.sfml-dev.org/). A fresh clone needs none of the three
+installed on your system - all three are vendored and built from source
+automatically (see "How to build" below).
 
 This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar.sourceforge.io/doc) (**ATB**), the original C/C++ library and legacy [GLFW2](https://github.com/glfw/glfw-legacy), [SDL2](https://wiki.libsdl.org/SDL2/FrontPage), [SFML](https://www.sfml-dev.org/) by [Philippe Decaudin](https://phildec.users.sourceforge.net/).
 
@@ -9,11 +14,16 @@ This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar
 - **Clipboard support via a callback** — a new `TwSetClipboardCallback()`
   API (mirroring `TwSetCursorCallback()` below) lets the application route
   clipboard access through its own toolkit instead of AntTweakBar reaching
-  into the system clipboard natively; every example wires it up to GLFW3's
-  `glfwGetClipboardString`/`glfwSetClipboardString`.
-- **Custom cursors via GLFW3** — a new `TwSetCursorCallback()` API routes
-  cursor changes through `glfwSetCursor()`/`glfwCreateCursor()` instead of
-  AntTweakBar setting the system cursor natively.
+  into the system clipboard natively; every example wires it up to its own
+  backend's clipboard API (GLFW3's `glfwGetClipboardString`/
+  `glfwSetClipboardString`, SDL3's `SDL_GetClipboardText`/
+  `SDL_SetClipboardText`, or SFML3's `sf::Clipboard::getString`/`setString`).
+- **Custom cursors via a callback** — a new `TwSetCursorCallback()` API
+  routes cursor changes through the application's own toolkit
+  (`glfwSetCursor()`/`glfwCreateCursor()`, `SDL_SetCursor()`/
+  `SDL_CreateColorCursor()`, or `sf::WindowBase::setMouseCursor()`/
+  `sf::Cursor::createFromPixels()`) instead of AntTweakBar setting the
+  system cursor natively.
 - **OpenGL Core Profile renderer** (`TW_OPENGL_CORE`) — works with modern
   OpenGL 3.3/4.1 contexts, not just the legacy compatibility profile.
 - **Single cross-platform build** — one `nob.c` script that needs only a C compiler, replaces per-platform Makefiles and Visual Studio project files.
@@ -21,19 +31,6 @@ This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar
 See also this repository [AntTweakBar-Legacy](https://github.com/n-s-kiselev/AntTweakBar-Legacy) for the legacy GLFW2/FreeGLUT/OpenGL compatibility wersion of the library easy to compile and test on MacOs, Windows or Linux with [nob.h](https://github.com/tsoding/nob.h) build system which itsef depends only on your C compiler.
 
 The fork of ATB that you can use with modern version of GLFW3 can be found here, [AntTweakBarGLFW3](https://github.com/n-s-kiselev/AntTweakBarGLFW3).
-
-**The C99 rewrite of the core library is complete.** Every file `./nob`
-builds — including `src/TwBar.c`/`TwMgr.c`, by far the largest share of
-the rewrite — compiles cleanly as strict, pedantic C99
-(`-std=c99 -pedantic -Wall -Wextra`), with no C++ and no Objective-C
-anywhere in the library, on any platform. All 13 examples have been
-manually exercised on macOS (every interactive widget, including the
-color and quaternion/direction-vector visualizations) and on Linux
-(built and run interactively, all examples rendering and working
-correctly) with no problems found; Windows has not yet been
-interactively tested by a human. See
-[`docs/plans/c99-rewrite.md`](docs/plans/c99-rewrite.md) for the full
-record and remaining limitations.
 
 
 ## How to build
@@ -44,13 +41,35 @@ Bootstrap the build tool once, from the repository root:
 gcc nob.c -o nob
 ```
 
-Then:
+Then pick a backend - each builds the library and that backend's 13
+examples in one step:
 
 ```sh
-./nob                     # build the library (build/lib/libAntTweakBarC99.{a,so/dylib/dll})
-./nob -examples           # build the example programs, statically linked (requires ./nob to have run first)
-./nob -examples -dynamic  # build the example programs against the shared library instead
-./nob -help               # list all flags
+./nob -glfw   # build the library + the GLFW3 examples (examples/glfw/)
+./nob -sdl    # build the library + the SDL3 examples (examples/sdl/)
+./nob -sfml   # build the library + the SFML3 examples (examples/sfml/)
+./nob -help   # list all flags
+```
+
+All three demonstrate the same 13 demos, each adapted to that backend's own
+windowing/event API. GLFW3 and SDL3 examples are plain C99 except
+`Advanced_cpp_*.cpp`; SFML3 has no C API at all, so every SFML3 example is
+C++. Add `-dynamic` to any of the three to link the examples against the
+shared library instead of the static one, e.g. `./nob -sdl -dynamic`.
+
+To build only the library, with no examples:
+
+```sh
+./nob
+```
+
+To build only a backend's examples without rebuilding the library (it must
+already exist - run `./nob` or one of the three flags above first):
+
+```sh
+./nob -examples-glfw [-dynamic]
+./nob -examples-sdl  [-dynamic]
+./nob -examples-sfml [-dynamic]
 ```
 
 To rebuild from scratch you have to clean the folder from artifacts:
@@ -62,8 +81,8 @@ To rebuild from scratch you have to clean the folder from artifacts:
 `./nob` produces everything under `build/` - the repository root stays source-only:
 
 - `build/lib/libAntTweakBarC99.a` — static library, on every platform. This is
-  the simplest option (no extra runtime files to ship) and is what
-  `./nob -examples` links against by default.
+  the simplest option (no extra runtime files to ship) and is what the
+  examples link against by default.
 - `build/lib/libAntTweakBarC99.so` (Linux) / `build/lib/libAntTweakBarC99.dylib`
   (macOS) / `build/lib/libAntTweakBarC99.dll` (Windows/MinGW) — dynamic library,
   self-contained on every platform: the library loads its own private copy
@@ -77,50 +96,48 @@ To rebuild from scratch you have to clean the folder from artifacts:
 - `build/include/AntTweakBar.h` — a copy of [`include/AntTweakBar.h`](include/AntTweakBar.h)
   (the real, git-tracked source, unchanged) placed next to the libraries above, so `build/`
   is a self-contained `lib`+`include` pair for anything linking against it.
-
-`./nob -examples` compiles the examples. Every example is strict C99 except `Advanced_cpp.cpp`. By
-default, examples compile statically against `build/lib/libAntTweakBarC99.a` and place executables in
-`build/examples/static/`. Add `-dynamic` (`./nob -examples -dynamic`) to instead link them against
-the shared library (`build/lib/libAntTweakBarC99.{so,dylib,dll}`), placing executables in
-`build/examples/shared/`; running a dynamically-linked example only requires
-`build/lib/libAntTweakBarC99.{so,dylib,dll}` to be on `PATH` or copied next to the executable. See
-"Running dynamically linked examples" below for how to do that without copying any files.
+- `build/examples/static-glfw/`, `static-sdl/`, `static-sfml/` (statically
+  linked) and `shared-glfw/`, `shared-sdl/`, `shared-sfml/` (`-dynamic`) —
+  one folder per backend and link mode, so switching between them never
+  overwrites another combination's executables.
 
 ### Running dynamically linked examples
 
-Executables in `build/examples/shared/` are not self-contained - unlike the static build, they need
-to find their shared library dependencies (in `build/lib/`) at runtime. Rather than copying those
-library files next to every executable or permanently adding `build/lib/` to your system `PATH`,
-point the loader at `build/lib/` for just the current shell session or command instead:
+Executables in the `build/examples/shared-*/` folders are not self-contained - unlike the static
+build, they need to find their shared library dependencies (in `build/lib/`) at runtime. Rather
+than copying those library files next to every executable or permanently adding `build/lib/` to
+your system `PATH`, point the loader at `build/lib/` for just the current shell session or command
+instead (the examples below use the GLFW3 `Triangle` executable; the same pattern applies to any
+example under any backend's `shared-*` folder):
 
 **Windows (Command Prompt)**
 
 ```bat
-cd build\examples\shared
+cd build\examples\shared-glfw
 set PATH=..\..\lib;%PATH%
-Advanced_c99.exe
+Triangle_glfw.exe
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-cd build\examples\shared
+cd build\examples\shared-glfw
 $env:PATH = "..\..\lib;$env:PATH"
-.\Advanced_c99.exe
+.\Triangle_glfw.exe
 ```
 
 **Linux (bash)**
 
 ```sh
-cd build/examples/shared
-LD_LIBRARY_PATH=../../lib ./Advanced_c99
+cd build/examples/shared-glfw
+LD_LIBRARY_PATH=../../lib ./Triangle_glfw
 ```
 
 **macOS (bash)**
 
 ```sh
-cd build/examples/shared
-DYLD_LIBRARY_PATH=../../lib ./Advanced_c99
+cd build/examples/shared-glfw
+DYLD_LIBRARY_PATH=../../lib ./Triangle_glfw
 ```
 
 The `set PATH=`/`$env:PATH` assignment only lasts for the current Command Prompt/PowerShell session;
@@ -128,12 +145,17 @@ the `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` prefix form only applies to that singl
 way, your system-wide `PATH`/library search path is left untouched, and no `.dll`/`.so`/`.dylib`
 file needs to be copied anywhere.
 
-You do not need to install GLFW3 in your system. GLFW3 [vendor/glfw](vendor/glfw) and [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)) are vendored and built from source automatically.
+You do not need to install GLFW3, SDL3, or SFML3 on your system - all three are vendored
+([vendor/glfw](vendor/glfw), [vendor/sdl](vendor/sdl), [vendor/sfml](vendor/sfml)) and built from
+source automatically, alongside [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)).
 
-At the moment this library suports only GLFW3 event backend — the original
-GLUT/SDL/SFML/X11 event-translation sources have been removed for simplicity of C++ to C99 migration. DirectX9/10/11 remain out of scope for this fork.
+GLFW3 is supported on Linux, macOS, and Windows (MinGW). SDL3 and SFML3 are currently validated on
+macOS only - Linux and Windows support for those two backends is planned but not yet built or
+tested. Legacy GLUT/X11-event-loop/SDL2/SFML2 event-translation sources from the original ATB have
+been removed rather than ported forward; DirectX9/10/11 remain out of scope for this fork.
 
-**Supported platforms:** Linux, macOS, and Windows (MinGW).
+**Supported platforms:** Linux, macOS, and Windows (MinGW) for the GLFW3 backend; macOS only, so
+far, for the SDL3 and SFML3 backends.
 
 
 **License**
