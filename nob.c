@@ -30,6 +30,8 @@
 #endif
 
 #define EXAMPLES_FOLDER       "examples/"
+#define EXAMPLES_GLFW_FOLDER  EXAMPLES_FOLDER "glfw/"
+#define EXAMPLES_SDL_FOLDER   EXAMPLES_FOLDER "sdl/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
 // Split by link mode, not just a shared EXAMPLES_BUILD_FOLDER, so switching
 // between `./nob -examples` and `./nob -examples -dynamic` always rebuilds:
@@ -88,19 +90,19 @@
 // only), and DirectX/SDL/SFML are out of scope for this GLFW3/Core-Profile-
 // focused project (see docs/plans/nob-build-system.md).
 static const char *examples[] = {
-    EXAMPLES_FOLDER "SimpleGL21.c",
-    EXAMPLES_FOLDER "SimpleGL33.c",
-    EXAMPLES_FOLDER "SimpleGL41.c",
-    EXAMPLES_FOLDER "Shapes.c",
-    EXAMPLES_FOLDER "MultiCubes.c",
-    EXAMPLES_FOLDER "Particles.c",
-    EXAMPLES_FOLDER "Strip.c",
-    EXAMPLES_FOLDER "Triangle.c",
-    EXAMPLES_FOLDER "Sponge.c",
-    EXAMPLES_FOLDER "String.c",
-    EXAMPLES_FOLDER "MultiWindow.c",
-    EXAMPLES_FOLDER "Advanced_c99.c",
-    EXAMPLES_FOLDER "Advanced_cpp.cpp",
+    EXAMPLES_GLFW_FOLDER "SimpleGL21.c",
+    EXAMPLES_GLFW_FOLDER "SimpleGL33.c",
+    EXAMPLES_GLFW_FOLDER "SimpleGL41.c",
+    EXAMPLES_GLFW_FOLDER "Shapes.c",
+    EXAMPLES_GLFW_FOLDER "MultiCubes.c",
+    EXAMPLES_GLFW_FOLDER "Particles.c",
+    EXAMPLES_GLFW_FOLDER "Strip.c",
+    EXAMPLES_GLFW_FOLDER "Triangle.c",
+    EXAMPLES_GLFW_FOLDER "Sponge.c",
+    EXAMPLES_GLFW_FOLDER "String.c",
+    EXAMPLES_GLFW_FOLDER "MultiWindow.c",
+    EXAMPLES_GLFW_FOLDER "Advanced_c99.c",
+    EXAMPLES_GLFW_FOLDER "Advanced_cpp.cpp",
 };
 
 // Sources common to every platform, matching src/Makefile's SRC_COMMON.
