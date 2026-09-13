@@ -1,13 +1,10 @@
 //  ---------------------------------------------------------------------------
 //
-//  @file       Triangle_sfml.cpp
-//  @brief      A simple example that uses AntTweakBar with SFML3 and OpenGL.
-//              Draws a triangle and allows the user to tweak its vertex
-//              positions and colors, using a custom TwDefineStruct'd 2D point.
-//              SFML3 port of examples/glfw/Triangle_glfw.c - see
+//  @file       SimpleGL33_sfml.cpp
+//  @brief      A simple example that uses AntTweakBar with SFML3 and OpenGL
+//              3.3 Core Profile (a textured/lit spinning cube via shaders).
+//              SFML3 port of examples/glfw/SimpleGL33_glfw.c - see
 //              docs/plans/sfml3-backend.md for the backend adapter notes.
-//              SFML has no C API at all, so - unlike the SDL3 port, mostly
-//              plain C99 - this is real C++.
 //
 //              AntTweakBar: http://anttweakbar.sourceforge.net/doc
 //              OpenGL:      http://www.opengl.org
@@ -18,34 +15,21 @@
 #include <glad/glad.h>
 #include <SFML/Window.hpp>
 #include <AntTweakBar.h>
-#include <cstddef>
 #include <cstdio>
 #include <cmath>
 #include <optional>
 #include <string>
 
-#define NB_VERTS 3
-
-typedef struct { float X, Y; } Point;
-
-static int g_Angle = 0;
-static float g_Scale = 1;
-static Point g_Positions[NB_VERTS] = { {0.0f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5f} };
-static float g_Colors[NB_VERTS][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1} };
-static int g_Width = 640, g_Height = 480;
-
 // Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
 // (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no equivalent of the other two backends'
-// examples/*/Triangle_*.c fontscaling adjustment here: AntTweakBar draws
-// at its default fixed pixel size on every display, including Retina/HiDPI
-// ones, unlike its GLFW3/SDL3 counterparts.
+// method exists), so there is no fontscaling adjustment here: AntTweakBar
+// draws at its default fixed pixel size on every display, including
+// Retina/HiDPI ones, unlike its GLFW3/SDL3 counterparts.
 
-// SFML cursors are process-global (sf::WindowBase::setMouseCursor() takes
-// the cursor as a value tied to no particular window ownership model - no
-// per-window cursor-ownership fight to route around here, similar to the
-// SDL3 port's own finding). sf::Cursor has no copy constructor (move-only),
-// so the cache holds std::optional<sf::Cursor> populated via std::move.
+// SFML cursors are process-global-ish (sf::WindowBase::setMouseCursor()
+// ties the cursor to no particular ownership model). sf::Cursor has no
+// copy constructor (move-only), so the cache holds std::optional<sf::Cursor>
+// populated via std::move.
 static std::optional<sf::Cursor> g_StandardCursors[TW_CURSOR_CUSTOM];
 static std::optional<sf::Cursor> g_LastCustomCursor;
 static bool g_CursorHidden = false;
@@ -67,12 +51,6 @@ static sf::Cursor::Type SFMLStandardCursorShape(ETwCursor _Cursor)
     }
 }
 
-// sf::Clipboard::getString() returns an sf::String by value (not an owning
-// pointer AntTweakBar can hold onto) - convert to a static std::string so
-// the returned const char* stays valid for however long AntTweakBar needs
-// it after this call returns, same ownership pattern as the SDL3 port's
-// own g_ClipboardText (there, freeing an SDL-allocated buffer; here, just
-// overwriting a std::string that owns its own storage).
 static std::string g_ClipboardText;
 
 static const char * TW_CALL ClipboardGetSFML(void *_ClientData)
@@ -91,9 +69,6 @@ static void TW_CALL ClipboardSetSFML(const char *_Text, void *_ClientData)
 static void TW_CALL SFMLCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
 {
     sf::WindowBase *window = static_cast<sf::WindowBase *>(_ClientData);
-    // TW_CURSOR_HIDDEN is an input mode, not a cursor shape: the roto slider
-    // hides the pointer while it is dragged. g_CursorHidden remembers that so
-    // the mode is restored once, on the next request for a visible cursor.
     if (_Cursor == TW_CURSOR_HIDDEN) {
         window->setMouseCursorVisible(false);
         g_CursorHidden = true;
@@ -107,9 +82,6 @@ static void TW_CALL SFMLCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32
         auto cursor = sf::Cursor::createFromPixels(_RGBA32x32, sf::Vector2u(32, 32),
                                                     sf::Vector2u((unsigned)_HotX, (unsigned)_HotY));
         if (cursor.has_value()) {
-            // Set the new cursor before letting the old one's optional be
-            // replaced (and destroyed): matches the same precaution as the
-            // GLFW3/SDL3 examples' own cursor callbacks.
             window->setMouseCursor(*cursor);
             g_LastCustomCursor = std::move(cursor);
         }
@@ -121,13 +93,13 @@ static void TW_CALL SFMLCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32
         window->setMouseCursor(*g_StandardCursors[_Cursor]);
 }
 
-static void handleKeyPressed(const sf::Event::KeyPressed *_Event, bool *_Running)
+// This example maps Escape to TW_KEY_ESCAPE like any other key (matching
+// the GLFW original's keyCallback) - quitting is driven instead by a
+// per-frame sf::Keyboard::isKeyPressed(Escape) poll in the main loop,
+// mirroring the GLFW original's own per-frame glfwGetKey(GLFW_KEY_ESCAPE)
+// check (see main()).
+static void handleKeyPressed(const sf::Event::KeyPressed *_Event)
 {
-    if (_Event->code == sf::Keyboard::Key::Escape) {
-        *_Running = false;
-        return;
-    }
-
     int twMod = 0;
     if (_Event->shift) twMod |= TW_KMOD_SHIFT;
     if (_Event->control) twMod |= TW_KMOD_CTRL;
@@ -139,6 +111,7 @@ static void handleKeyPressed(const sf::Event::KeyPressed *_Event, bool *_Running
     case sf::Keyboard::Key::Tab: twKey = TW_KEY_TAB; break;
     case sf::Keyboard::Key::Enter: twKey = TW_KEY_RETURN; break;
     case sf::Keyboard::Key::Pause: twKey = TW_KEY_PAUSE; break;
+    case sf::Keyboard::Key::Escape: twKey = TW_KEY_ESCAPE; break;
     case sf::Keyboard::Key::Space: twKey = TW_KEY_SPACE; break;
     case sf::Keyboard::Key::Delete: twKey = TW_KEY_DELETE; break;
     case sf::Keyboard::Key::Up: twKey = TW_KEY_UP; break;
@@ -187,12 +160,6 @@ static void handleKeyPressed(const sf::Event::KeyPressed *_Event, bool *_Running
 
 static void handleMouseButton(sf::Mouse::Button _Button, bool _Down)
 {
-    // Unlike SDL3 (whose TW_MOUSE_LEFT/MIDDLE/RIGHT values were
-    // deliberately numbered to match SDL_BUTTON_LEFT/MIDDLE/RIGHT), SFML's
-    // sf::Mouse::Button enum (Left=0, Right=1, Middle=2) does NOT line up
-    // with AntTweakBar.h's TW_MOUSE_LEFT=1/MIDDLE=2/RIGHT=3 - checked the
-    // vendored Mouse.hpp directly rather than assuming the SDL3 coincidence
-    // would repeat, so this needs its own explicit mapping.
     TwMouseButtonID twButton;
     switch (_Button) {
     case sf::Mouse::Button::Left:   twButton = TW_MOUSE_LEFT;   break;
@@ -203,31 +170,80 @@ static void handleMouseButton(sf::Mouse::Button _Button, bool _Down)
     TwMouseButton(_Down ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED, twButton);
 }
 
-// Called once at startup and again on every sf::Event::Resized - mirrors
-// examples/glfw/Triangle_glfw.c's windowSizeCallback/examples/sdl/
-// Triangle_sdl.c's handleWindowPixelSizeChanged, but SFML reports only one
-// size (no separate window-point-size-vs-framebuffer-pixel-size split the
-// way GLFW/SDL3 expose for HiDPI displays - see the fontscaling comment
-// above), so there is no mouse-coordinate scaling step needed here: mouse
-// event positions and window.getSize() are already in the same units.
+static int g_Width = 800, g_Height = 600;
+
+// Registered on sf::Event::Resized - mirrors the GLFW original's
+// FRAMEBUFFER-size callback; SFML has only one size concept, so no
+// mouse-coordinate scaling step is needed here.
 static void handleResized(unsigned int _Width, unsigned int _Height)
 {
     if (_Height == 0) _Height = 1;
     g_Width = (int)_Width;
     g_Height = (int)_Height;
+    float aspect = (float)_Width / (float)_Height;
+    float near = 1.0f, far = 100.0f;
+    float fov = 45.0f;
+    float top = tanf(fov * 0.01745329251f) * near;
+    float bottom = -top;
+    float right = top * aspect;
+    float left = -right;
+
     glViewport(0, 0, (GLsizei)_Width, (GLsizei)_Height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    if (_Width >= _Height) {
-        double aspect = (double)_Width / _Height;
-        glOrtho(-aspect, aspect, -1.0, 1.0, -1.0, 1.0);
-    } else {
-        double aspect = (double)_Height / _Width;
-        glOrtho(-1.0, 1.0, -aspect, aspect, -1.0, 1.0);
-    }
-    glMatrixMode(GL_MODELVIEW);
+    glFrustum(left, right, bottom, top, near, far);
+
     TwWindowSize((int)_Width, (int)_Height);
 }
+
+const char* vertexShaderSource = "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec3 aColor;\n"
+    "out vec3 ourColor;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+    "   ourColor = aColor;\n"
+    "}\0";
+
+const char* fragmentShaderSource = "#version 330 core\n"
+    "in vec3 ourColor;\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(ourColor, 1.0);\n"
+    "}\n\0";
+
+float vertices[] = {
+    -0.5f,-0.5f,-0.5f, 1.0f,0.0f,0.0f,
+     0.5f,-0.5f,-0.5f, 0.0f,1.0f,0.0f,
+     0.5f, 0.5f,-0.5f, 0.0f,0.0f,1.0f,
+    -0.5f, 0.5f,-0.5f, 1.0f,1.0f,0.0f,
+
+    -0.5f,-0.5f, 0.5f, 0.0f,1.0f,1.0f,
+     0.5f,-0.5f, 0.5f, 1.0f,0.0f,1.0f,
+     0.5f, 0.5f, 0.5f, 0.5f,0.5f,0.5f,
+    -0.5f, 0.5f, 0.5f, 1.0f,1.0f,1.0f
+};
+
+unsigned int indices[] = {
+    0,1,2, 2,3,0,
+    4,5,6, 6,7,4,
+    1,5,6, 6,2,1,
+    0,4,7, 7,3,0,
+    3,2,6, 6,7,3,
+    0,1,5, 5,4,0
+};
+
+float normals [] = {
+            1,0,0,0,
+            0,1,0,0,
+            0,0,1,0,
+            0,0,0,1
+        };
 
 // full_width=true demo: a multiline text widget spanning the whole row, and a button
 // below it that cycles the text widget's "lines=" value 2->3->4->5->6->2->..., changing
@@ -251,60 +267,88 @@ void TW_CALL FullWidthLinesCB(void *clientData)
 
 int main()
 {
-    // Fixed-function GL (glBegin/glEnd below) + AntTweakBar's TW_OPENGL
-    // (compatibility, not Core Profile) renderer - request a plain 2.1
-    // compatibility context, the same profile examples/glfw/SimpleGL21_glfw.c
-    // and examples/sdl/Triangle_sdl.c target.
+    double time = 0, dt;
+    double speed = 0.3;
+    double angle = 0.0;
+
+    // OpenGL 3.3 Core Profile - AntTweakBar's Core Profile renderer
+    // (TW_OPENGL_CORE) is required to draw over a Core context.
     sf::ContextSettings settings;
-    settings.majorVersion = 2;
-    settings.minorVersion = 1;
+    settings.majorVersion = 3;
+    settings.minorVersion = 3;
+    settings.attributeFlags = sf::ContextSettings::Core;
 
     sf::Window window(sf::VideoMode(sf::Vector2u((unsigned)g_Width, (unsigned)g_Height)),
-                      "AntTweakBar + SFML3 (Triangle)", sf::Style::Default, sf::State::Windowed, settings);
+                      "AntTweakBar + SFML3 (OpenGL 3.3 Core)", sf::Style::Default, sf::State::Windowed, settings);
 
     if (!window.setActive(true)) {
-        fprintf(stderr, "Failed to set the SFML window as active\n");
-        return 1;
+        printf("Failed to set the SFML window as active\n");
+        return -1;
     }
 
     if (!gladLoadGLLoader((GLADloadproc)sf::Context::getFunction)) {
-        fprintf(stderr, "Failed to initialize GLAD\n");
-        return 1;
+        printf("Failed to initialize GLAD\n");
+        return -1;
     }
 
-    if (!TwInit(TW_OPENGL, NULL)) {
-        fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
+    printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
+
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glEnable(GL_DEPTH_TEST);
+
+    if (!TwInit(TW_OPENGL_CORE, NULL)) {
+        const char* err = TwGetLastError();
+        fprintf(stderr, "TwInit failed: %s\n", err ? err : "Unknown error");
+        fflush(stderr);
         return 1;
     }
     TwSetCursorCallback(SFMLCursorCB, &window);
     TwSetClipboardCallback(ClipboardGetSFML, ClipboardSetSFML, NULL);
-
     handleResized((unsigned)g_Width, (unsigned)g_Height);
 
     TwBar *bar = TwNewBar("TweakBar");
+    TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with SFML3 and OpenGL.' ");
     {
         int barSize[2] = { 200, 320 };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
-    TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with SFML3 and OpenGL.' ");
 
-    TwAddVarRW(bar, "Rotation", TW_TYPE_INT32, &g_Angle,
-               " KeyIncr=r KeyDecr=R Help='Rotates the triangle (angle in degree).' ");
-    TwAddVarRW(bar, "Scale", TW_TYPE_FLOAT, &g_Scale,
-               " Min=-2 Max=2 Step=0.01 KeyIncr=s KeyDecr=S Help='Scales the triangle (1=original size).' ");
-
-    TwStructMember pointMembers[] = {
-        { "X", TW_TYPE_FLOAT, offsetof(Point, X), " Min=-1 Max=1 Step=0.01 " },
-        { "Y", TW_TYPE_FLOAT, offsetof(Point, Y), " Min=-1 Max=1 Step=0.01 " }
-    };
-    TwType pointType = TwDefineStruct("POINT", pointMembers, 2, sizeof(Point), NULL, NULL);
-
-    TwAddVarRW(bar, "Color0", TW_TYPE_COLOR4F, &g_Colors[0], " Alpha HLS Group='Vertex 0' Label=Color ");
-    TwAddVarRW(bar, "Pos0", pointType, &g_Positions[0], " Group='Vertex 0' Label='Position' ");
-    TwAddVarRW(bar, "Color1", TW_TYPE_COLOR4F, &g_Colors[1], " Alpha HLS Group='Vertex 1' Label=Color ");
-    TwAddVarRW(bar, "Pos1", pointType, &g_Positions[1], " Group='Vertex 1' Label='Position' ");
-    TwAddVarRW(bar, "Color2", TW_TYPE_COLOR4F, &g_Colors[2], " Alpha HLS Group='Vertex 2' Label=Color ");
-    TwAddVarRW(bar, "Pos2", pointType, &g_Positions[2], " Group='Vertex 2' Label='Position' ");
+    TwAddVarRW(bar, "speed", TW_TYPE_DOUBLE, &speed,
+                " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ");
 
     TwAddSeparator(bar, NULL, "");
     TwAddButton(bar, "FullWidthDemoMoreLines", FullWidthLinesCB, bar,
@@ -314,14 +358,16 @@ int main()
                " label='Full-width text' full_width=true lines=2 "
                "help='A full-width, wrapped multiline text field.' ");
 
+    sf::Clock clock;
+    time = clock.getElapsedTime().asSeconds();
+
     bool running = true;
-    static double wheelPos = 0;
     while (running) {
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 running = false;
             } else if (const auto *keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                handleKeyPressed(keyPressed, &running);
+                handleKeyPressed(keyPressed);
             } else if (const auto *textEntered = event->getIf<sf::Event::TextEntered>()) {
                 TwKeyPressed((int)textEntered->unicode, 0);
             } else if (const auto *pressed = event->getIf<sf::Event::MouseButtonPressed>()) {
@@ -331,31 +377,67 @@ int main()
             } else if (const auto *moved = event->getIf<sf::Event::MouseMoved>()) {
                 TwMouseMotion(moved->position.x, moved->position.y);
             } else if (const auto *wheel = event->getIf<sf::Event::MouseWheelScrolled>()) {
-                wheelPos += wheel->delta;
-                TwMouseWheel((int)wheelPos);
+                static double pos = 0;
+                pos += wheel->delta;
+                TwMouseWheel((int)pos);
             } else if (const auto *resized = event->getIf<sf::Event::Resized>()) {
                 handleResized(resized->size.x, resized->size.y);
             }
         }
 
-        glClearColor(0.125f, 0.125f, 0.3f, 1.0f);
+        // Extra, redundant per-frame Escape check - matches the GLFW
+        // original's own glfwGetKey(GLFW_KEY_ESCAPE) poll (the key-pressed
+        // event handler above only forwards Escape to TwKeyPressed(), same
+        // as the GLFW original's keyCallback, it does not quit by itself).
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
+            running = false;
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float a = (float)g_Angle * (3.14159265358979f / 180.0f);
-        float ca = cosf(a), sa = sinf(a);
-        glBegin(GL_TRIANGLES);
-        for (int i = 0; i < NB_VERTS; ++i) {
-            float x = g_Scale * (ca * g_Positions[i].X - sa * g_Positions[i].Y);
-            float y = g_Scale * (sa * g_Positions[i].X + ca * g_Positions[i].Y);
-            glColor4fv(g_Colors[i]);
-            glVertex2f(x, y);
-        }
-        glEnd();
+        glUseProgram(shaderProgram);
+
+        double now = clock.getElapsedTime().asSeconds();
+        dt = now - time;
+        if (dt < 0) dt = 0;
+        time = now;
+        angle += speed * dt;
+
+        float model[16] = {
+            cosf((float)angle), 0.0f, sinf((float)angle), 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            -sinf((float)angle), 0.0f, cosf((float)angle), 0.0f,
+            0.0f, 0.0f, -3.0f, 1.0f
+        };
+
+        float fov = 45.0f;
+        float aspect = 800.0f / 600.0f;
+        float near = 0.1f;
+        float far = 100.0f;
+        float f = 1.0f / tanf(fov * 3.14159f / 360.0f);
+        float projection[16] = {
+            f/aspect, 0.0f, 0.0f, 0.0f,
+            0.0f, f, 0.0f, 0.0f,
+            0.0f, 0.0f, (far+near)/(near-far), -1.0f,
+            0.0f, 0.0f, (2.0f*far*near)/(near-far), 0.0f
+        };
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, model);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, normals);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, projection);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         TwDraw();
         window.display();
     }
 
     TwTerminate();
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteProgram(shaderProgram);
+
     return 0;
 }

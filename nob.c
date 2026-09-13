@@ -180,11 +180,23 @@ static const char *sdl_examples[] = {
 };
 
 // SFML3 ports of the examples above - see docs/plans/sfml3-backend.md.
-// Only Triangle_sfml.cpp is ported so far; the rest follow the same
-// pattern. All entries are .cpp: SFML has no C API at all (unlike GLFW/
-// SDL3), so every SFML example must be C++.
+// All entries are .cpp: SFML has no C API at all (unlike GLFW/SDL3), so
+// every SFML example must be C++, even the ones ported from a plain-C99
+// GLFW3/SDL3 original.
 static const char *sfml_examples[] = {
+    EXAMPLES_SFML_FOLDER "SimpleGL21_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "SimpleGL33_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "SimpleGL41_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Shapes_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "MultiCubes_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Particles_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Strip_sfml.cpp",
     EXAMPLES_SFML_FOLDER "Triangle_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Sponge_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "String_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "MultiWindow_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Advanced_c99_sfml.cpp",
+    EXAMPLES_SFML_FOLDER "Advanced_cpp_sfml.cpp",
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
