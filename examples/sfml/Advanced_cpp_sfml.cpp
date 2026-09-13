@@ -51,13 +51,14 @@ bool g_cameraDragging = false;
 int g_lastMouseX = 0;
 int g_lastMouseY = 0;
 
-// Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
-// (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no fontscaling adjustment for this backend:
-// AntTweakBar draws at its default fixed pixel size on every display,
-// including Retina/HiDPI ones. g_ContentScaleX/Y are kept (always 1.0) so
-// Scene::CreateBar()'s and main()'s bar-sizing code below stays structurally
-// identical to the GLFW original rather than hand-collapsing it to literals.
+// SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - main()
+// below sets both to the equivalent scale factor computed manually
+// instead, from the ratio between window.getSize() and the logical size
+// requested (see vendor/sfml/src/SFML/Window/macOS/SFWindowController.mm's
+// own highDpi fix, which makes getSize() report real native pixel
+// dimensions). Scene::CreateBar()'s and main()'s bar-sizing code below
+// stays structurally identical to the GLFW original either way.
 float g_ContentScaleX = 1.0f, g_ContentScaleY = 1.0f;
 
 // SFML cursors are process-global-ish (sf::WindowBase::setMouseCursor()
@@ -493,9 +494,7 @@ void Scene::CreateBar()
     TwDefine(" Lights label='Lights TweakBar' position='580 16' alpha=0 help='Use this bar to edit the lights in the scene.' ");
     // This bar has no explicit size='...' either, so - like 'Main' above -
     // its panel needs the same explicit scaling of TwBar's fixed 200x320
-    // default (see the g_ContentScaleX comment near its declaration - always
-    // 1.0 for this backend, so this is a no-op numerically, kept structurally
-    // identical to the GLFW original).
+    // default by g_ContentScaleX/Y (set in main(), see its own comment).
     {
         int lightsBarSize[2] = { (int)(200 * g_ContentScaleX + 0.5f), (int)(320 * g_ContentScaleY + 0.5f) };
         TwSetParam(lightsBar, NULL, "size", TW_PARAM_INT32, 2, lightsBarSize);
@@ -914,13 +913,20 @@ int main()
     // AntTweakBar draws every widget (buttons, sliders, panel, swatches) at a
     // fixed number of pixels with no DPI awareness; GLFW/SDL3 counterparts of
     // this example scale AntTweakBar's "fontscaling" global parameter by the
-    // window's content scale to compensate on HiDPI/Retina displays, but SFML
-    // exposes no such content-scale query at all (checked the vendored
-    // Window/WindowBase headers directly), so this backend cannot apply that
-    // adjustment - g_ContentScaleX/Y stay at their default 1.0 (see their
-    // declaration above), and the bar-sizing code below and in
-    // Scene::CreateBar() is kept structurally identical to the GLFW original
-    // rather than hand-collapsed to literals.
+    // window's content scale to compensate on HiDPI/Retina displays. SFML
+    // exposes no such content-scale query directly (checked the vendored
+    // Window/WindowBase headers), but window.getSize() now correctly reports
+    // real native pixel dimensions on HiDPI/Retina displays (see vendor/sfml/
+    // src/SFML/Window/macOS/SFWindowController.mm's own highDpi fix) - the
+    // ratio between that and the logical 800-wide size requested above IS
+    // the content scale factor, computed manually here.
+    g_ContentScaleX = g_ContentScaleY = (float)initialSize.x / 800.0f;
+    if (g_ContentScaleX <= 0.0f) g_ContentScaleX = g_ContentScaleY = 1.0f;
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)g_ContentScaleX);
+        TwDefine(fontScalingDef);
+    }
 
     // if (!TwInit(TW_OPENGL_CORE, NULL)) {
     if (!TwInit(TW_OPENGL, NULL)) {

@@ -30,9 +30,12 @@
 #include <optional>
 #include <string>
 
-// Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
-// (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no fontscaling adjustment here.
+// SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - main()
+// below derives the equivalent scale factor manually instead, from the
+// ratio between window.getSize() and the logical size requested (see
+// vendor/sfml/src/SFML/Window/macOS/SFWindowController.mm's own highDpi
+// fix, which makes getSize() report real native pixel dimensions).
 
 static std::optional<sf::Cursor> g_StandardCursors[TW_CURSOR_CUSTOM];
 static std::optional<sf::Cursor> g_LastCustomCursor;
@@ -326,6 +329,21 @@ int main()
         return -2;
     }
 
+    // SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+    // glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale), but
+    // window.getSize() now correctly reports real native pixel dimensions
+    // on HiDPI/Retina displays (see vendor/sfml/src/SFML/Window/macOS/
+    // SFWindowController.mm's own highDpi fix) - the ratio between that
+    // and the logical 640-wide size requested above IS the content scale
+    // factor, computed manually here.
+    float contentScale = (float)window.getSize().x / 640.0f;
+    if (contentScale <= 0.0f) contentScale = 1.0f;
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScale);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         const char* err = TwGetLastError();
         fprintf(stderr, "TwInit failed: %s\n", err ? err : "Unknown error");
@@ -334,7 +352,7 @@ int main()
     }
     TwSetCursorCallback(SFMLCursorCB, &window);
     TwSetClipboardCallback(ClipboardGetSFML, ClipboardSetSFML, NULL);
-    handleResized(640, 480);
+    handleResized(window.getSize().x, window.getSize().y);
 
     // Create a tweak bar
     TwBar *bar = TwNewBar("Main");
@@ -343,7 +361,7 @@ int main()
     // other, short string values with "...").
     TwDefine(" Main label='~ String variable examples ~' fontSize=3 position='180 16' valuesWidth=200 ");
     {
-        int barSize[2] = { 370, 380 };
+        int barSize[2] = { (int)(370 * contentScale + 0.5f), (int)(380 * contentScale + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
 

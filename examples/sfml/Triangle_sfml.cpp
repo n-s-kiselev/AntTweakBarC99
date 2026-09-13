@@ -34,12 +34,12 @@ static Point g_Positions[NB_VERTS] = { {0.0f, 0.5f}, {0.5f, -0.5f}, {-0.5f, -0.5
 static float g_Colors[NB_VERTS][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1} };
 static int g_Width = 640, g_Height = 480;
 
-// Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
-// (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no equivalent of the other two backends'
-// examples/*/Triangle_*.c fontscaling adjustment here: AntTweakBar draws
-// at its default fixed pixel size on every display, including Retina/HiDPI
-// ones, unlike its GLFW3/SDL3 counterparts.
+// SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - main()
+// below derives the equivalent scale factor manually instead, from the
+// ratio between window.getSize() and the logical size requested (see
+// vendor/sfml/src/SFML/Window/macOS/SFWindowController.mm's own highDpi
+// fix, which makes getSize() report real native pixel dimensions).
 
 // SFML cursors are process-global (sf::WindowBase::setMouseCursor() takes
 // the cursor as a value tied to no particular window ownership model - no
@@ -272,6 +272,24 @@ int main()
         return 1;
     }
 
+    // SFML exposes no direct content-scale/DPI query (unlike GLFW's
+    // glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale), but
+    // window.getSize() now correctly reports real native pixel dimensions
+    // on HiDPI/Retina displays (see vendor/sfml/src/SFML/Window/macOS/
+    // SFWindowController.mm's own highDpi fix) - the ratio between that
+    // and the logical size we requested IS the content scale factor,
+    // computed manually here. AntTweakBar draws every widget at a fixed
+    // pixel size with no DPI awareness of its own, so without this the
+    // panel would render at half the size of its GLFW3/SDL3 counterparts
+    // once the window's actual drawable is native resolution.
+    float contentScale = (float)window.getSize().x / (float)g_Width;
+    if (contentScale <= 0.0f) contentScale = 1.0f;
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScale);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
         return 1;
@@ -279,11 +297,11 @@ int main()
     TwSetCursorCallback(SFMLCursorCB, &window);
     TwSetClipboardCallback(ClipboardGetSFML, ClipboardSetSFML, NULL);
 
-    handleResized((unsigned)g_Width, (unsigned)g_Height);
+    handleResized(window.getSize().x, window.getSize().y);
 
     TwBar *bar = TwNewBar("TweakBar");
     {
-        int barSize[2] = { 200, 320 };
+        int barSize[2] = { (int)(200 * contentScale + 0.5f), (int)(320 * contentScale + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with SFML3 and OpenGL.' ");

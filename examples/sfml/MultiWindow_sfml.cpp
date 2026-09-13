@@ -54,10 +54,17 @@ typedef struct
 
 static DemoWindow g_Windows[NUM_WINDOWS];
 
-// Window content scale: SFML has no content-scale/DPI query at all (unlike
-// GLFW/SDL3 - checked the vendored headers directly), so unlike the GLFW
-// original there is no g_ContentScaleX/Y here and no fontscaling TwDefine()
-// call - a known, permanent, documented limitation of this backend.
+// Window content scale (see fontscaling comment in SetupWindow() below):
+// SFML exposes no direct content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - derived
+// manually instead, from the ratio between the first window's actual
+// getSize() and the logical 500x500 requested (see vendor/sfml/src/SFML/
+// Window/macOS/SFWindowController.mm's own highDpi fix, which makes
+// getSize() report real native pixel dimensions). fontscaling is a
+// GLOBAL AntTweakBar parameter shared by every window's manager, so
+// there is only ever one value to compute, same as the GLFW original's
+// own g_ContentScaleX/Y.
+static float g_ContentScale = 1.0f;
 
 // AntTweakBar's cursor callback (TwSetCursorCallback, installed once below)
 // is a single, process-wide hook - it is not aware of which of our two
@@ -321,6 +328,15 @@ static bool SetupWindow(int windowIndex, sf::Window *window, const char *title, 
             fprintf(stderr, "Failed to initialize GLAD\n");
             return false;
         }
+
+        g_ContentScale = (float)window->getSize().x / 500.0f;
+        if (g_ContentScale <= 0.0f) g_ContentScale = 1.0f;
+        {
+            char fontScalingDef[64];
+            snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)g_ContentScale);
+            TwDefine(fontScalingDef);
+        }
+
         if (!TwInit(TW_OPENGL, NULL)) {
             fprintf(stderr, "TwInit failed: %s\n", TwGetLastError());
             return false;
@@ -337,12 +353,12 @@ static bool SetupWindow(int windowIndex, sf::Window *window, const char *title, 
         }
     }
 
-    handleResized(dw, 500, 500);
+    handleResized(dw, window->getSize().x, window->getSize().y);
 
     dw->bar = TwNewBar("TweakBar");
     TwDefine(" GLOBAL help='Two independent AntTweakBar-managed SFML3 windows in one process.' ");
     {
-        int barSize[2] = { 200, 150 };
+        int barSize[2] = { (int)(200 * g_ContentScale + 0.5f), (int)(150 * g_ContentScale + 0.5f) };
         TwSetParam(dw->bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
     TwAddVarRW(dw->bar, "speed", TW_TYPE_DOUBLE, &dw->speed,

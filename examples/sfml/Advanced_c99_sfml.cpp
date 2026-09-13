@@ -64,14 +64,14 @@ bool g_cameraDragging = false;
 double g_lastMouseX = 0.0;
 double g_lastMouseY = 0.0;
 
-// Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
-// (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no fontscaling adjustment here (see main()):
-// AntTweakBar draws at its default fixed pixel size on every display,
-// including Retina/HiDPI ones, unlike its GLFW3/SDL3 counterparts. Kept as
-// 1.0f constants (rather than removed) since Scene_CreateBar() below still
-// references them by name for its own bar-size scaling, matching the
-// GLFW/SDL3 originals' structure.
+// SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - main()
+// below sets both to the equivalent scale factor computed manually
+// instead, from the ratio between window.getSize() and the logical size
+// requested (see vendor/sfml/src/SFML/Window/macOS/SFWindowController.mm's
+// own highDpi fix, which makes getSize() report real native pixel
+// dimensions). Scene_CreateBar() below references them by name for its
+// own bar-size scaling, matching the GLFW/SDL3 originals' structure.
 float g_ContentScaleX = 1.0f, g_ContentScaleY = 1.0f;
 
 // SFML cursors are process-global-ish (sf::WindowBase::setMouseCursor()
@@ -844,9 +844,17 @@ int main()
     sf::Vector2u size = window.getSize();
     handleResized(size.x, size.y);
 
-    // No SFML content-scale/DPI API exists (see g_ContentScaleX/Y comment
-    // near the top of this file) - fontscaling stays at its 1.0 default,
-    // unlike the GLFW/SDL3 originals' explicit adjustment here.
+    // The ratio between the actual (real-pixel, post-highDpi-fix) size and
+    // the logical 800-wide size requested above IS the content scale
+    // factor - see g_ContentScaleX/Y's own comment near the top of this
+    // file for why SFML needs this computed manually.
+    g_ContentScaleX = g_ContentScaleY = (float)size.x / 800.0f;
+    if (g_ContentScaleX <= 0.0f) g_ContentScaleX = g_ContentScaleY = 1.0f;
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)g_ContentScaleX);
+        TwDefine(fontScalingDef);
+    }
 
     if (!TwInit(TW_OPENGL, NULL)) {
         const char* err = TwGetLastError();

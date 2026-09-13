@@ -31,9 +31,12 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Unlike GLFW/SDL3, SFML exposes no window-content-scale/DPI query at all
-// (checked the vendored Window/WindowBase headers directly - no such
-// method exists), so there is no fontscaling adjustment here.
+// SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+// glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale) - main()
+// below derives the equivalent scale factor manually instead, from the
+// ratio between window.getSize() and the logical size requested (see
+// vendor/sfml/src/SFML/Window/macOS/SFWindowController.mm's own highDpi
+// fix, which makes getSize() report real native pixel dimensions).
 
 // SFML cursors are process-global-ish (sf::WindowBase::setMouseCursor()
 // ties the cursor to no particular ownership model). sf::Cursor has no
@@ -523,6 +526,21 @@ int main()
         return -2;
     }
 
+    // SFML exposes no direct window-content-scale/DPI query (unlike GLFW's
+    // glfwGetWindowContentScale/SDL3's SDL_GetWindowDisplayScale), but
+    // window.getSize() now correctly reports real native pixel dimensions
+    // on HiDPI/Retina displays (see vendor/sfml/src/SFML/Window/macOS/
+    // SFWindowController.mm's own highDpi fix) - the ratio between that
+    // and the logical size we requested (640, hardcoded above) IS the
+    // content scale factor, computed manually here.
+    float contentScale = (float)window.getSize().x / 640.0f;
+    if (contentScale <= 0.0f) contentScale = 1.0f;
+    {
+        char fontScalingDef[64];
+        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScale);
+        TwDefine(fontScalingDef);
+    }
+
     if (!TwInit(TW_OPENGL, NULL)) {
         const char* err = TwGetLastError();
         fprintf(stderr, "TwInit failed: %s\n", err ? err : "Unknown error");
@@ -531,7 +549,7 @@ int main()
     TwSetCursorCallback(SFMLCursorCB, &window);
     TwSetClipboardCallback(ClipboardGetSFML, ClipboardSetSFML, NULL);
 
-    handleResized(640, 480);
+    handleResized(window.getSize().x, window.getSize().y);
 
     // Create the shape display lists
     BuildShapeDisplayLists();
@@ -541,7 +559,7 @@ int main()
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with SFML3 and OpenGL.' ");
     TwDefine(" TweakBar color='96 216 224' ");
     {
-        int barSize[2] = { 200, 400 };
+        int barSize[2] = { (int)(200 * contentScale + 0.5f), (int)(400 * contentScale + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
 
