@@ -33,14 +33,17 @@
 #define EXAMPLES_GLFW_FOLDER  EXAMPLES_FOLDER "glfw/"
 #define EXAMPLES_SDL_FOLDER   EXAMPLES_FOLDER "sdl/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
-// Split by link mode, not just a shared EXAMPLES_BUILD_FOLDER, so switching
-// between `./nob -examples` and `./nob -examples -dynamic` always rebuilds:
-// build_needed() only compares mtimes against a fixed output path, so a
-// static and a dynamic build sharing one executable path could otherwise
-// look "up to date" against the wrong link mode's binary left over from a
-// previous run.
-#define EXAMPLES_STATIC_FOLDER EXAMPLES_BUILD_FOLDER "static/"
-#define EXAMPLES_SHARED_FOLDER EXAMPLES_BUILD_FOLDER "shared/"
+// Split by link mode AND backend, not just a shared EXAMPLES_BUILD_FOLDER,
+// so switching between `-examples-glfw`/`-examples-sdl` and plain/`-dynamic`
+// always rebuilds and never overwrites the other combination's binaries:
+// build_needed() only compares mtimes against a fixed output path, so any
+// two of these four combinations sharing one executable path could
+// otherwise look "up to date" against the wrong combination's binary left
+// over from a previous run - each combination now gets its own folder.
+#define EXAMPLES_STATIC_GLFW_FOLDER EXAMPLES_BUILD_FOLDER "static-glfw/"
+#define EXAMPLES_STATIC_SDL_FOLDER  EXAMPLES_BUILD_FOLDER "static-sdl/"
+#define EXAMPLES_SHARED_GLFW_FOLDER EXAMPLES_BUILD_FOLDER "shared-glfw/"
+#define EXAMPLES_SHARED_SDL_FOLDER  EXAMPLES_BUILD_FOLDER "shared-sdl/"
 
 // sds (Simple Dynamic Strings, vendored from https://github.com/antirez/sds,
 // BSD-2-Clause) replaces std::string for the library's own internal string
@@ -109,25 +112,25 @@
 // only), and DirectX/SDL/SFML are out of scope for this GLFW3/Core-Profile-
 // focused project (see docs/plans/nob-build-system.md).
 static const char *glfw_examples[] = {
-    EXAMPLES_GLFW_FOLDER "SimpleGL21.c",
-    EXAMPLES_GLFW_FOLDER "SimpleGL33.c",
-    EXAMPLES_GLFW_FOLDER "SimpleGL41.c",
-    EXAMPLES_GLFW_FOLDER "Shapes.c",
-    EXAMPLES_GLFW_FOLDER "MultiCubes.c",
-    EXAMPLES_GLFW_FOLDER "Particles.c",
-    EXAMPLES_GLFW_FOLDER "Strip.c",
-    EXAMPLES_GLFW_FOLDER "Triangle.c",
-    EXAMPLES_GLFW_FOLDER "Sponge.c",
-    EXAMPLES_GLFW_FOLDER "String.c",
-    EXAMPLES_GLFW_FOLDER "MultiWindow.c",
-    EXAMPLES_GLFW_FOLDER "Advanced_c99.c",
-    EXAMPLES_GLFW_FOLDER "Advanced_cpp.cpp",
+    EXAMPLES_GLFW_FOLDER "SimpleGL21_glfw.c",
+    EXAMPLES_GLFW_FOLDER "SimpleGL33_glfw.c",
+    EXAMPLES_GLFW_FOLDER "SimpleGL41_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Shapes_glfw.c",
+    EXAMPLES_GLFW_FOLDER "MultiCubes_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Particles_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Strip_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Triangle_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Sponge_glfw.c",
+    EXAMPLES_GLFW_FOLDER "String_glfw.c",
+    EXAMPLES_GLFW_FOLDER "MultiWindow_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Advanced_c99_glfw.c",
+    EXAMPLES_GLFW_FOLDER "Advanced_cpp_glfw.cpp",
 };
 
 // SDL3 ports of the examples above - see docs/plans/sdl3-backend.md Step 5.
-// Only Triangle.c is ported so far; the rest follow the same pattern.
+// Only Triangle_sdl.c is ported so far; the rest follow the same pattern.
 static const char *sdl_examples[] = {
-    EXAMPLES_SDL_FOLDER "Triangle.c",
+    EXAMPLES_SDL_FOLDER "Triangle_sdl.c",
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
@@ -572,13 +575,21 @@ static bool build_all(const char *nob_exe)
     return true;
 }
 
-static const char *example_executable_path(const char *source, bool dynamic)
+// One of four folders (EXAMPLES_{STATIC,SHARED}_{GLFW,SDL}_FOLDER) - see
+// their own comment above for why each link-mode/backend combination gets
+// a separate folder rather than sharing one.
+static const char *example_output_folder(bool dynamic, bool use_sdl)
+{
+    if (use_sdl) return dynamic ? EXAMPLES_SHARED_SDL_FOLDER : EXAMPLES_STATIC_SDL_FOLDER;
+    return dynamic ? EXAMPLES_SHARED_GLFW_FOLDER : EXAMPLES_STATIC_GLFW_FOLDER;
+}
+
+static const char *example_executable_path(const char *source, bool dynamic, bool use_sdl)
 {
     char *base = nob_temp_strdup(nob_path_name(source));
     char *dot = strrchr(base, '.');
     if (dot) *dot = '\0';
-    const char *folder = dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER;
-    return nob_temp_sprintf("%s%s" EXE_EXT, folder, base);
+    return nob_temp_sprintf("%s%s" EXE_EXT, example_output_folder(dynamic, use_sdl), base);
 }
 
 // Only the examples build compiles GLFW's X11 backend (vendor/glfw/
@@ -623,12 +634,12 @@ static bool check_examples_deps(bool dynamic)
 #endif
             ) {
             nob_log(NOB_ERROR, "%s does not exist yet.", LIB_SHARED);
-            nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples -dynamic`.");
+            nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw/-examples-sdl -dynamic`.");
             return false;
         }
     } else if (!nob_file_exists(LIB_STATIC)) {
         nob_log(NOB_ERROR, "%s does not exist yet.", LIB_STATIC);
-        nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples`.");
+        nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw` or `./nob -examples-sdl`.");
         return false;
     }
     return check_linux_x11_deps();
@@ -813,7 +824,7 @@ static void append_sdl_libs(Nob_Cmd *cmd)
 // and its GLFW_OBJ/SDL_LIB build dependency.
 static bool build_example(const char *source, const char *nob_exe, bool dynamic, bool use_sdl)
 {
-    const char *output = example_executable_path(source, dynamic);
+    const char *output = example_executable_path(source, dynamic, use_sdl);
 
     Nob_File_Paths inputs = {0};
     nob_da_append(&inputs, source);
@@ -886,7 +897,7 @@ static bool build_examples(const char *nob_exe, bool dynamic, bool use_sdl)
 {
     if (!check_examples_deps(dynamic)) return false;
     if (!nob_mkdir_if_not_exists(EXAMPLES_BUILD_FOLDER)) return false;
-    if (!nob_mkdir_if_not_exists(dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER)) return false;
+    if (!nob_mkdir_if_not_exists(example_output_folder(dynamic, use_sdl))) return false;
     if (!build_glad_for_examples(nob_exe)) return false;
 
     const char **backend_examples;
@@ -915,7 +926,7 @@ static bool build_examples(const char *nob_exe, bool dynamic, bool use_sdl)
 
     nob_log(NOB_INFO, "built %zu %s examples into %s (%s)", backend_examples_count,
             use_sdl ? "SDL3" : "GLFW3",
-            dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER,
+            example_output_folder(dynamic, use_sdl),
             dynamic ? "dynamically linked" : "statically linked");
     if (dynamic) print_dynamic_runtime_notice();
     return true;
@@ -941,10 +952,14 @@ static bool clean(void)
     // clear_directory() (not just the known current examples/sources) so a
     // stale binary/object left over from a since-renamed or removed
     // example/source doesn't block removing the folder itself.
-    ok = clear_directory(EXAMPLES_STATIC_FOLDER) && ok;
-    ok = delete_if_exists(EXAMPLES_STATIC_FOLDER) && ok;
-    ok = clear_directory(EXAMPLES_SHARED_FOLDER) && ok;
-    ok = delete_if_exists(EXAMPLES_SHARED_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_STATIC_GLFW_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_STATIC_GLFW_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_STATIC_SDL_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_STATIC_SDL_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_SHARED_GLFW_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_SHARED_GLFW_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_SHARED_SDL_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_SHARED_SDL_FOLDER) && ok;
     ok = clear_directory(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_LIB) && ok;
@@ -963,18 +978,19 @@ static bool clean(void)
 
 static void usage(const char *program)
 {
-    printf("usage: %s [-glfw | -sdl] [-dynamic] [-examples] [-clean] [-help]\n", program);
-    printf("  -glfw      build the library and the GLFW3 examples (examples/glfw/)\n");
-    printf("  -sdl       build the library and the SDL3 examples (examples/sdl/)\n");
-    printf("             (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
-    printf("  -examples  build the example programs against build/lib/libAntTweakBarC99.a\n");
-    printf("             without rebuilding the library first (requires the library to\n");
-    printf("             already be built with ./nob; defaults to the GLFW3 example set\n");
-    printf("             if neither -glfw nor -sdl is given, for backward compatibility)\n");
-    printf("  -dynamic   with -examples/-glfw/-sdl, link them against the shared library\n");
-    printf("             (build/lib/libAntTweakBarC99.{dll,so,dylib}) instead of the static one\n");
-    printf("  -clean     remove generated build files and exit\n");
-    printf("  -help      print this help and exit\n");
+    printf("usage: %s [-glfw | -sdl] [-examples-glfw | -examples-sdl] [-dynamic] [-clean] [-help]\n", program);
+    printf("  -glfw          build the library and the GLFW3 examples (examples/glfw/)\n");
+    printf("  -sdl           build the library and the SDL3 examples (examples/sdl/)\n");
+    printf("                 (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
+    printf("  -examples-glfw build the GLFW3 examples against build/lib/libAntTweakBarC99.a\n");
+    printf("                 without rebuilding the library first (requires the library to\n");
+    printf("                 already be built with ./nob)\n");
+    printf("  -examples-sdl  same as -examples-glfw, but for the SDL3 examples\n");
+    printf("  -dynamic       with -examples-glfw/-examples-sdl/-glfw/-sdl, link the examples\n");
+    printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
+    printf("                 instead of the static one (the default for all four)\n");
+    printf("  -clean         remove generated build files and exit\n");
+    printf("  -help          print this help and exit\n");
 }
 
 int main(int argc, char **argv)
@@ -983,7 +999,8 @@ int main(int argc, char **argv)
 
     const char *nob_exe = argv[0];
     bool clean_requested = false;
-    bool examples_requested = false;
+    bool examples_glfw_requested = false;
+    bool examples_sdl_requested = false;
     bool dynamic_requested = false;
     bool glfw_requested = false;
     bool sdl_requested = false;
@@ -991,8 +1008,10 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-clean") == 0) {
             clean_requested = true;
-        } else if (strcmp(argv[i], "-examples") == 0) {
-            examples_requested = true;
+        } else if (strcmp(argv[i], "-examples-glfw") == 0) {
+            examples_glfw_requested = true;
+        } else if (strcmp(argv[i], "-examples-sdl") == 0) {
+            examples_sdl_requested = true;
         } else if (strcmp(argv[i], "-dynamic") == 0) {
             dynamic_requested = true;
         } else if (strcmp(argv[i], "-glfw") == 0) {
@@ -1009,25 +1028,27 @@ int main(int argc, char **argv)
         }
     }
 
-    if (glfw_requested && sdl_requested) {
-        nob_log(NOB_ERROR, "-glfw and -sdl are mutually exclusive");
+    if ((glfw_requested ? 1 : 0) + (sdl_requested ? 1 : 0)
+      + (examples_glfw_requested ? 1 : 0) + (examples_sdl_requested ? 1 : 0) > 1) {
+        nob_log(NOB_ERROR, "-glfw, -sdl, -examples-glfw and -examples-sdl are mutually exclusive");
         return 1;
     }
 
-    if (dynamic_requested && !examples_requested && !glfw_requested && !sdl_requested) {
-        nob_log(NOB_WARNING, "-dynamic has no effect without -examples/-glfw/-sdl");
+    bool examples_requested = examples_glfw_requested || examples_sdl_requested || glfw_requested || sdl_requested;
+    if (dynamic_requested && !examples_requested) {
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-glfw/-sdl");
     }
 
     if (clean_requested) return clean() ? 0 : 1;
 
-    // -examples alone (no backend flag) keeps defaulting to the GLFW3
-    // example set - preserves the exact pre-SDL3 `./nob -examples` behavior.
-    bool use_sdl = sdl_requested;
+    bool use_sdl = sdl_requested || examples_sdl_requested;
 
     if (glfw_requested || sdl_requested) {
         if (!build_all(nob_exe)) return 1;
         return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
     }
-    if (examples_requested) return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
+    if (examples_glfw_requested || examples_sdl_requested) {
+        return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
+    }
     return build_all(nob_exe) ? 0 : 1;
 }
