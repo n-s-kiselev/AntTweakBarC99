@@ -156,7 +156,20 @@
         m_requester     = nil;
         m_fullscreen    = (state == sf::State::Fullscreen) ? YES : NO;
         m_restoreResize = NO;
-        m_highDpi       = NO;
+        // AntTweakBarC99 (see docs/plans/sfml3-backend.md): upstream
+        // hardcodes this to NO with no public API to override it (see
+        // SFOpenGLView.mm's own "Currently, isHighDpi is always expected
+        // to be NO" comment), which renders the OpenGL surface at 1x
+        // resolution and lets macOS upscale it 2x on Retina displays -
+        // every pixel (AntTweakBar's fixed-pixel-size widgets included)
+        // then appears twice as big and blurry compared to this project's
+        // GLFW3/SDL3 examples, which both render at native resolution.
+        // Forcing YES here (the only vendored-code edit this backend
+        // needs, mirroring vendor/sdl/'s own one required dynapi.h edit)
+        // makes setWantsBestResolutionOpenGLSurface: actually take effect
+        // for the sf::Window(VideoMode, ...) constructor path every
+        // example in this project uses.
+        m_highDpi       = YES;
 
         if (m_fullscreen)
             [self setupFullscreenViewWithMode:mode];

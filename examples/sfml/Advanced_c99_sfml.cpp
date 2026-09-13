@@ -816,6 +816,13 @@ void TW_CALL FullWidthLinesCB(void *clientData)
 int main()
 {
     sf::ContextSettings settings;
+    // sf::ContextSettings::depthBits defaults to 0 (no depth buffer) -
+    // unlike GLFW (which defaults to 24) and SDL3, so it must be requested
+    // explicitly here for glEnable(GL_DEPTH_TEST) below to have any effect;
+    // without it, depth testing is a silent no-op and overlapping geometry
+    // draws in call order instead of by distance (looks like inverted
+    // normals/backface artifacts, but isn't - the geometry/winding is fine).
+    settings.depthBits = 24;
     settings.majorVersion = 2;
     settings.minorVersion = 1;
 

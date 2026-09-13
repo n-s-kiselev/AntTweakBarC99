@@ -661,6 +661,12 @@ int main()
     // here (TW_OPENGL_CORE is a different code path), so we let SFML
     // create its default (non-core) context.
     sf::ContextSettings settings;
+    // depthBits defaults to 0 (no depth buffer) - unlike GLFW (default 24)
+    // and SDL3 - so it must be requested explicitly for GL_DEPTH_TEST
+    // below to have any effect; without it, overlapping cube faces draw
+    // in call order instead of by distance (looks like inverted normals,
+    // but isn't - the geometry/winding is fine).
+    settings.depthBits = 24;
 
     sf::Window window(sf::VideoMode(sf::Vector2u((unsigned)g_Width, (unsigned)g_Height)),
                       "AntTweakBar + SFML3: Menger sponge", sf::Style::Default, sf::State::Windowed, settings);

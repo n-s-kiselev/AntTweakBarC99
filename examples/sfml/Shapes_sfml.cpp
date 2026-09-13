@@ -501,6 +501,12 @@ int main()
     float angle = 0.8f;
 
     sf::ContextSettings settings;
+    // depthBits defaults to 0 (no depth buffer) - unlike GLFW (default 24)
+    // and SDL3 - so it must be requested explicitly for GL_DEPTH_TEST
+    // below to have any effect; without it, overlapping geometry draws in
+    // call order instead of by distance (looks like inverted normals, but
+    // isn't - the geometry/winding is fine).
+    settings.depthBits = 24;
     settings.majorVersion = 2;
     settings.minorVersion = 1;
 
