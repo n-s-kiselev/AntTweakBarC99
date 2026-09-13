@@ -67,6 +67,25 @@
 #define GLFW_SRC      "vendor/glfw/glfw_unity.c"
 #define GLFW_OBJ      EXAMPLES_BUILD_FOLDER "glfw.o"
 
+// SDL3 is vendored the same way GLFW3 is (see vendor/sdl/, examples need no
+// system SDL3 install), but built differently: SDL3's private headers are
+// not safe to concatenate into one translation unit the way GLFW's are
+// (see docs/plans/sdl3-backend.md), so instead of one glfw_unity.c-style
+// object, sdl_sources[] below lists the exact upstream files needed and
+// each is compiled to its own object (build_sdl(), mirroring build_object()/
+// build_static_archive()'s pattern from the library build above), then
+// archived into SDL_LIB. vendor/sdl/config/ holds this project's own,
+// trimmed SDL_build_config.h (video+events+GL only - audio/joystick/
+// haptic/sensor/camera/GPU/dialog/process compiled out via SDL's own
+// SDL_*_DISABLED macros) - not upstream's include/build_config/, which is
+// still vendored verbatim for provenance but otherwise unused.
+#define SDL_INCLUDE        "vendor/sdl/include/"
+#define SDL_CONFIG_INCLUDE "vendor/sdl/config/"
+#define SDL_SRC_ROOT       "vendor/sdl/src/"
+#define SDL_STUB_SRC       "vendor/sdl/sdl_stubs.c"
+#define SDL_OBJ_FOLDER     EXAMPLES_BUILD_FOLDER "sdl_obj/"
+#define SDL_LIB            EXAMPLES_BUILD_FOLDER "libsdl3_vendored.a"
+
 #if defined(_WIN32)
 #define EXE_EXT ".exe"
 #else
@@ -89,7 +108,7 @@
 // buildable source for Linux/macOS anyway (headers + prebuilt Windows DLLs
 // only), and DirectX/SDL/SFML are out of scope for this GLFW3/Core-Profile-
 // focused project (see docs/plans/nob-build-system.md).
-static const char *examples[] = {
+static const char *glfw_examples[] = {
     EXAMPLES_GLFW_FOLDER "SimpleGL21.c",
     EXAMPLES_GLFW_FOLDER "SimpleGL33.c",
     EXAMPLES_GLFW_FOLDER "SimpleGL41.c",
@@ -103,6 +122,73 @@ static const char *examples[] = {
     EXAMPLES_GLFW_FOLDER "MultiWindow.c",
     EXAMPLES_GLFW_FOLDER "Advanced_c99.c",
     EXAMPLES_GLFW_FOLDER "Advanced_cpp.cpp",
+};
+
+// SDL3 ports of the examples above - see docs/plans/sdl3-backend.md Step 5.
+// Only Triangle.c is ported so far; the rest follow the same pattern.
+static const char *sdl_examples[] = {
+    EXAMPLES_SDL_FOLDER "Triangle.c",
+};
+
+// The exact upstream vendor/sdl/src/ files needed for a working
+// Cocoa+OpenGL+events SDL3 build, validated by compiling and running a
+// real SDL_Init/CreateWindow/GL_CreateContext/PollEvent/GL_SwapWindow test
+// program (see docs/plans/sdl3-backend.md Step 1). Paths are relative to
+// SDL_SRC_ROOT. Audio/camera/joystick/haptic/sensor/GPU/dialog/process are
+// deliberately absent (disabled via vendor/sdl/config/'s SDL_*_DISABLED
+// defines) - render/opengl+render/software and tray/dummy are present even
+// though unused because SDL_internal.h/SDL_video.c hard-depend on them
+// whenever render/tray aren't fully disabled (see
+// vendor/sdl/config/SDL_build_config_macos.h's own header comment).
+static const char *sdl_sources[] = {
+    "atomic/SDL_atomic.c", "atomic/SDL_spinlock.c",
+    "cpuinfo/SDL_cpuinfo.c",
+    "dynapi/SDL_dynapi.c",
+    "events/imKStoUCS.c", "events/SDL_categories.c", "events/SDL_clipboardevents.c",
+    "events/SDL_displayevents.c", "events/SDL_dropevents.c", "events/SDL_events.c",
+    "events/SDL_eventwatch.c", "events/SDL_keyboard.c", "events/SDL_keymap.c",
+    "events/SDL_keysym_to_keycode.c", "events/SDL_keysym_to_scancode.c", "events/SDL_mouse.c",
+    "events/SDL_pen.c", "events/SDL_quit.c", "events/SDL_scancode_tables.c",
+    "events/SDL_touch.c", "events/SDL_windowevents.c",
+    "filesystem/cocoa/SDL_sysfilesystem.m", "filesystem/posix/SDL_sysfsops.c", "filesystem/SDL_filesystem.c",
+    "io/generic/SDL_asyncio_generic.c", "io/SDL_asyncio.c", "io/SDL_iostream.c",
+    "libm/e_atan2.c", "libm/e_exp.c", "libm/e_fmod.c", "libm/e_log.c", "libm/e_log10.c",
+    "libm/e_pow.c", "libm/e_rem_pio2.c", "libm/e_sqrt.c", "libm/k_cos.c", "libm/k_rem_pio2.c",
+    "libm/k_sin.c", "libm/k_tan.c", "libm/s_atan.c", "libm/s_copysign.c", "libm/s_cos.c",
+    "libm/s_fabs.c", "libm/s_floor.c", "libm/s_isinf.c", "libm/s_isinff.c", "libm/s_isnan.c",
+    "libm/s_isnanf.c", "libm/s_modf.c", "libm/s_scalbn.c", "libm/s_sin.c", "libm/s_tan.c",
+    "loadso/dlopen/SDL_sysloadso.c",
+    "locale/macos/SDL_syslocale.m", "locale/SDL_locale.c",
+    "main/SDL_main_callbacks.c",
+    "misc/macos/SDL_sysurl.m", "misc/SDL_url.c",
+    "render/opengl/SDL_render_gl.c", "render/opengl/SDL_shaders_gl.c",
+    "render/SDL_render_unsupported.c", "render/SDL_render.c", "render/SDL_yuv_sw.c",
+    "render/software/SDL_blendfillrect.c", "render/software/SDL_blendline.c",
+    "render/software/SDL_blendpoint.c", "render/software/SDL_drawline.c",
+    "render/software/SDL_drawpoint.c", "render/software/SDL_render_sw.c", "render/software/SDL_triangle.c",
+    "SDL_assert.c", "SDL_error.c", "SDL_guid.c", "SDL_hashtable.c", "SDL_hints.c",
+    "SDL_list.c", "SDL_log.c", "SDL_properties.c", "SDL_utils.c", "SDL.c",
+    "stdlib/SDL_crc16.c", "stdlib/SDL_crc32.c", "stdlib/SDL_getenv.c", "stdlib/SDL_iconv.c",
+    "stdlib/SDL_malloc.c", "stdlib/SDL_memcpy.c", "stdlib/SDL_memmove.c", "stdlib/SDL_memset.c",
+    "stdlib/SDL_murmur3.c", "stdlib/SDL_qsort.c", "stdlib/SDL_random.c", "stdlib/SDL_stdlib.c",
+    "stdlib/SDL_string.c", "stdlib/SDL_strtokr.c",
+    "thread/pthread/SDL_syscond.c", "thread/pthread/SDL_sysmutex.c", "thread/pthread/SDL_sysrwlock.c",
+    "thread/pthread/SDL_syssem.c", "thread/pthread/SDL_systhread.c", "thread/pthread/SDL_systls.c",
+    "thread/SDL_thread.c",
+    "time/SDL_time.c", "time/unix/SDL_systime.c",
+    "timer/SDL_timer.c", "timer/unix/SDL_systimer.c",
+    "tray/dummy/SDL_tray.c", "tray/SDL_tray_utils.c",
+    "video/cocoa/SDL_cocoaclipboard.m", "video/cocoa/SDL_cocoaevents.m", "video/cocoa/SDL_cocoakeyboard.m",
+    "video/cocoa/SDL_cocoamessagebox.m", "video/cocoa/SDL_cocoamodes.m", "video/cocoa/SDL_cocoamouse.m",
+    "video/cocoa/SDL_cocoaopengl.m", "video/cocoa/SDL_cocoapen.m", "video/cocoa/SDL_cocoashape.m",
+    "video/cocoa/SDL_cocoavideo.m", "video/cocoa/SDL_cocoawindow.m",
+    "video/SDL_blit_0.c", "video/SDL_blit_1.c", "video/SDL_blit_A.c", "video/SDL_blit_auto.c",
+    "video/SDL_blit_copy.c", "video/SDL_blit_N.c", "video/SDL_blit_slow.c", "video/SDL_blit.c",
+    "video/SDL_bmp.c", "video/SDL_clipboard.c", "video/SDL_egl.c", "video/SDL_fillrect.c",
+    "video/SDL_pixels.c", "video/SDL_rect.c", "video/SDL_RLEaccel.c", "video/SDL_rotate.c",
+    "video/SDL_stb.c", "video/SDL_stretch.c", "video/SDL_surface.c", "video/SDL_video.c",
+    "video/SDL_vulkan_utils.c", "video/SDL_yuv.c",
+    "video/yuv2rgb/yuv_rgb_std.c",
 };
 
 // Sources common to every platform, matching src/Makefile's SRC_COMMON.
@@ -242,6 +328,15 @@ static const char *object_path(const char *folder, const char *source)
 static bool is_cpp_source(const char *source)
 {
     return nob_sv_ends_with_cstr(nob_sv_from_cstr(source), ".cpp");
+}
+
+// Vendored SDL3's Cocoa backend files (see sdl_sources[]) are Objective-C;
+// clang infers this from the .m extension alone, but they still need ARC
+// (unlike this project's own code, which is plain C99 everywhere - see
+// docs/plans/sdl3-backend.md's compile-spike notes on why ARC was used).
+static bool is_objc_source(const char *source)
+{
+    return nob_sv_ends_with_cstr(nob_sv_from_cstr(source), ".m");
 }
 
 // sds.c (vendor/sds/, see docs/plans/sds-string-migration.md) is pure C99.
@@ -607,10 +702,116 @@ static void append_glfw_libs(Nob_Cmd *cmd)
 #endif
 }
 
+// Compiles one vendored SDL3 source file (see sdl_sources[]) to its own
+// object - unlike build_glfw() above, this can't be a single unity-build
+// translation unit (SDL3's private headers aren't multi-inclusion-safe,
+// see docs/plans/sdl3-backend.md), so this mirrors the library's own
+// per-file build_object() instead. -DANTTWEAKBARC99_SDL_VENDORED trips the
+// one deliberate edit to vendored code, in vendor/sdl/src/dynapi/
+// SDL_dynapi.h, that disables SDL's dynamic-API jump table (unavoidable:
+// upstream refuses to let anything but that file's own source turn it
+// off, and without disabling it every public SDL function needs a real
+// implementation reachable from the jump table regardless of the
+// SDL_*_DISABLED config macros - see that file's comment).
+static bool build_sdl_object(const char *source, Nob_File_Paths *common_deps)
+{
+    const char *output = object_path(SDL_OBJ_FOLDER, source);
+
+    Nob_File_Paths inputs = {0};
+    nob_da_append(&inputs, source);
+    for (size_t i = 0; i < common_deps->count; ++i) {
+        nob_da_append(&inputs, common_deps->items[i]);
+    }
+
+    if (!build_needed(output, inputs.items, inputs.count)) {
+        nob_log(NOB_INFO, "%s is up to date", output);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "cc");
+    if (is_objc_source(source)) nob_cmd_append(&cmd, "-fobjc-arc");
+    // -Wno-deprecated-declarations: some vendored libm/*.c files trip
+    // deprecated-declaration warnings against this platform's own SDK
+    // headers (see docs/plans/sdl3-backend.md) - harmless, and not
+    // something to fix by patching vendored, unmodified upstream code.
+    nob_cmd_append(&cmd, "-O2", "-Wno-deprecated-declarations", "-DANTTWEAKBARC99_SDL_VENDORED",
+                        "-I" SDL_CONFIG_INCLUDE, "-I" SDL_INCLUDE, "-I" SDL_SRC_ROOT);
+    nob_cmd_append(&cmd, "-c", source, "-o", output);
+    return nob_cmd_run(&cmd);
+}
+
+// Builds every file in sdl_sources[] (plus the small ATB-authored
+// SDL_GetGamepadTypeFromVIDPID stub - see vendor/sdl/sdl_stubs.c) and
+// archives them into SDL_LIB, so examples link against one file the same
+// way they link against GLFW_OBJ. Deliberately not deleted after use the
+// way GLAD_OBJ/GLFW_OBJ are (see build_examples()): recompiling ~140 SDL3
+// files on every `-sdl` invocation would make incremental builds far
+// slower than GLFW's single-object case, so the object folder and archive
+// are left in place for build_needed() to skip on the next run; `./nob
+// -clean` still removes them.
+static bool build_sdl(const char *nob_exe)
+{
+#if !defined(__APPLE__)
+    nob_log(NOB_ERROR, "-sdl is only validated on macOS so far.");
+    nob_log(NOB_ERROR, "See docs/plans/sdl3-backend.md Step 4 for Linux/Windows status.");
+    return false;
+#endif
+
+    if (!nob_mkdir_if_not_exists(SDL_OBJ_FOLDER)) return false;
+
+    Nob_File_Paths common_deps = {0};
+    if (!collect_tree_files(&common_deps, SDL_CONFIG_INCLUDE)) return false;
+    add_common_build_deps(&common_deps, nob_exe);
+
+    Nob_File_Paths objects = {0};
+    for (size_t i = 0; i < NOB_ARRAY_LEN(sdl_sources); ++i) {
+        const char *source = nob_temp_sprintf("%s%s", SDL_SRC_ROOT, sdl_sources[i]);
+        if (!build_sdl_object(source, &common_deps)) return false;
+        nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, source));
+    }
+    if (!build_sdl_object(SDL_STUB_SRC, &common_deps)) return false;
+    nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, SDL_STUB_SRC));
+
+    Nob_File_Paths archive_inputs = {0};
+    for (size_t i = 0; i < objects.count; ++i) nob_da_append(&archive_inputs, objects.items[i]);
+    add_common_build_deps(&archive_inputs, nob_exe);
+
+    if (!build_needed(SDL_LIB, archive_inputs.items, archive_inputs.count)) {
+        nob_log(NOB_INFO, "%s is up to date", SDL_LIB);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "ar", "rcs", SDL_LIB);
+    for (size_t i = 0; i < objects.count; ++i) nob_cmd_append(&cmd, objects.items[i]);
+    return nob_cmd_run(&cmd);
+}
+
+static void append_sdl_flags(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, "-I" SDL_INCLUDE);
+}
+
+static void append_sdl_libs(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, SDL_LIB);
+#if defined(_WIN32)
+    // Not yet validated - see docs/plans/sdl3-backend.md Step 4.
+#elif defined(__APPLE__)
+    nob_cmd_append(cmd, "-framework", "Cocoa", "-framework", "IOKit", "-framework", "CoreVideo",
+                        "-framework", "Carbon", "-framework", "OpenGL", "-framework", "CoreFoundation",
+                        "-framework", "UniformTypeIdentifiers");
+#else
+    // Not yet validated - see docs/plans/sdl3-backend.md Step 4.
+#endif
+}
+
 // dynamic links the example against the shared library (LIB_SHARED, plus
 // LIB_IMPORT on Windows) instead of LIB_STATIC; the caller is otherwise
-// identical either way.
-static bool build_example(const char *source, const char *nob_exe, bool dynamic)
+// identical either way. use_sdl picks the backend's own compile/link flags
+// and its GLFW_OBJ/SDL_LIB build dependency.
+static bool build_example(const char *source, const char *nob_exe, bool dynamic, bool use_sdl)
 {
     const char *output = example_executable_path(source, dynamic);
 
@@ -621,7 +822,7 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic)
     if (dynamic) nob_da_append(&inputs, LIB_IMPORT);
 #endif
     nob_da_append(&inputs, GLAD_OBJ);
-    nob_da_append(&inputs, GLFW_OBJ);
+    nob_da_append(&inputs, use_sdl ? SDL_LIB : GLFW_OBJ);
     add_common_build_deps(&inputs, nob_exe);
 
     if (!build_needed(output, inputs.items, inputs.count)) {
@@ -647,7 +848,7 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic)
     // its default (TW_IMPORT_API, __declspec(dllimport) on Windows) - the
     // correct declaration for calling into libAntTweakBarC99.dll/.so/.dylib.
     if (!dynamic) nob_cmd_append(&cmd, "-DTW_STATIC");
-    append_glfw_flags(&cmd);
+    if (use_sdl) append_sdl_flags(&cmd); else append_glfw_flags(&cmd);
 
     nob_cmd_append(&cmd, source, GLAD_OBJ);
 #if defined(_WIN32)
@@ -656,7 +857,7 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic)
     nob_cmd_append(&cmd, dynamic ? LIB_SHARED : LIB_STATIC);
 #endif
     nob_cmd_append(&cmd, "-o", output);
-    append_glfw_libs(&cmd);
+    if (use_sdl) append_sdl_libs(&cmd); else append_glfw_libs(&cmd);
 
     return nob_cmd_run(&cmd);
 }
@@ -681,26 +882,39 @@ static void print_dynamic_runtime_notice(void)
     nob_log(NOB_INFO, "without copying any library files or permanently changing PATH.");
 }
 
-static bool build_examples(const char *nob_exe, bool dynamic)
+static bool build_examples(const char *nob_exe, bool dynamic, bool use_sdl)
 {
     if (!check_examples_deps(dynamic)) return false;
     if (!nob_mkdir_if_not_exists(EXAMPLES_BUILD_FOLDER)) return false;
     if (!nob_mkdir_if_not_exists(dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER)) return false;
     if (!build_glad_for_examples(nob_exe)) return false;
-    if (!build_glfw(nob_exe)) return false;
 
-    for (size_t i = 0; i < NOB_ARRAY_LEN(examples); ++i) {
-        if (!build_example(examples[i], nob_exe, dynamic)) return false;
+    const char **backend_examples;
+    size_t backend_examples_count;
+    if (use_sdl) {
+        if (!build_sdl(nob_exe)) return false;
+        backend_examples = sdl_examples;
+        backend_examples_count = NOB_ARRAY_LEN(sdl_examples);
+    } else {
+        if (!build_glfw(nob_exe)) return false;
+        backend_examples = glfw_examples;
+        backend_examples_count = NOB_ARRAY_LEN(glfw_examples);
+    }
+
+    for (size_t i = 0; i < backend_examples_count; ++i) {
+        if (!build_example(backend_examples[i], nob_exe, dynamic, use_sdl)) return false;
     }
 
     // GLAD_OBJ/GLFW_OBJ are only needed while linking the examples above -
     // remove them afterward rather than leave them as stale leftovers (same
     // trade-off as build_all()'s matching cleanup: the next `./nob
-    // -examples` always recompiles GLAD/GLFW from scratch too).
+    // -examples` always recompiles GLAD/GLFW from scratch too). SDL_LIB is
+    // deliberately NOT deleted here - see build_sdl()'s own comment.
     if (!delete_if_exists(GLAD_OBJ)) return false;
-    if (!delete_if_exists(GLFW_OBJ)) return false;
+    if (!use_sdl && !delete_if_exists(GLFW_OBJ)) return false;
 
-    nob_log(NOB_INFO, "built %zu examples into %s (%s)", NOB_ARRAY_LEN(examples),
+    nob_log(NOB_INFO, "built %zu %s examples into %s (%s)", backend_examples_count,
+            use_sdl ? "SDL3" : "GLFW3",
             dynamic ? EXAMPLES_SHARED_FOLDER : EXAMPLES_STATIC_FOLDER,
             dynamic ? "dynamically linked" : "statically linked");
     if (dynamic) print_dynamic_runtime_notice();
@@ -731,6 +945,9 @@ static bool clean(void)
     ok = delete_if_exists(EXAMPLES_STATIC_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_SHARED_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_SHARED_FOLDER) && ok;
+    ok = clear_directory(SDL_OBJ_FOLDER) && ok;
+    ok = delete_if_exists(SDL_OBJ_FOLDER) && ok;
+    ok = delete_if_exists(SDL_LIB) && ok;
     ok = clear_directory(EXAMPLES_BUILD_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_BUILD_FOLDER) && ok;
 
@@ -746,12 +963,17 @@ static bool clean(void)
 
 static void usage(const char *program)
 {
-    printf("usage: %s [-clean] [-examples [-dynamic]] [-help]\n", program);
-    printf("  -clean     remove generated build files and exit\n");
+    printf("usage: %s [-glfw | -sdl] [-dynamic] [-examples] [-clean] [-help]\n", program);
+    printf("  -glfw      build the library and the GLFW3 examples (examples/glfw/)\n");
+    printf("  -sdl       build the library and the SDL3 examples (examples/sdl/)\n");
+    printf("             (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
     printf("  -examples  build the example programs against build/lib/libAntTweakBarC99.a\n");
-    printf("             (requires the library to already be built with ./nob)\n");
-    printf("  -dynamic   with -examples, link them against the shared library\n");
+    printf("             without rebuilding the library first (requires the library to\n");
+    printf("             already be built with ./nob; defaults to the GLFW3 example set\n");
+    printf("             if neither -glfw nor -sdl is given, for backward compatibility)\n");
+    printf("  -dynamic   with -examples/-glfw/-sdl, link them against the shared library\n");
     printf("             (build/lib/libAntTweakBarC99.{dll,so,dylib}) instead of the static one\n");
+    printf("  -clean     remove generated build files and exit\n");
     printf("  -help      print this help and exit\n");
 }
 
@@ -763,6 +985,8 @@ int main(int argc, char **argv)
     bool clean_requested = false;
     bool examples_requested = false;
     bool dynamic_requested = false;
+    bool glfw_requested = false;
+    bool sdl_requested = false;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-clean") == 0) {
@@ -771,6 +995,10 @@ int main(int argc, char **argv)
             examples_requested = true;
         } else if (strcmp(argv[i], "-dynamic") == 0) {
             dynamic_requested = true;
+        } else if (strcmp(argv[i], "-glfw") == 0) {
+            glfw_requested = true;
+        } else if (strcmp(argv[i], "-sdl") == 0) {
+            sdl_requested = true;
         } else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
             return 0;
@@ -781,11 +1009,25 @@ int main(int argc, char **argv)
         }
     }
 
-    if (dynamic_requested && !examples_requested) {
-        nob_log(NOB_WARNING, "-dynamic has no effect without -examples");
+    if (glfw_requested && sdl_requested) {
+        nob_log(NOB_ERROR, "-glfw and -sdl are mutually exclusive");
+        return 1;
+    }
+
+    if (dynamic_requested && !examples_requested && !glfw_requested && !sdl_requested) {
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples/-glfw/-sdl");
     }
 
     if (clean_requested) return clean() ? 0 : 1;
-    if (examples_requested) return build_examples(nob_exe, dynamic_requested) ? 0 : 1;
+
+    // -examples alone (no backend flag) keeps defaulting to the GLFW3
+    // example set - preserves the exact pre-SDL3 `./nob -examples` behavior.
+    bool use_sdl = sdl_requested;
+
+    if (glfw_requested || sdl_requested) {
+        if (!build_all(nob_exe)) return 1;
+        return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
+    }
+    if (examples_requested) return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
     return build_all(nob_exe) ? 0 : 1;
 }

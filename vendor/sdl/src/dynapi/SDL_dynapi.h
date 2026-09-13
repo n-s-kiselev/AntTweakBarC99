@@ -43,7 +43,17 @@
 #include "TargetConditionals.h"
 #endif
 
-#if defined(SDL_PLATFORM_PRIVATE) // probably not useful on private platforms.
+// AntTweakBarC99 vendoring (see docs/plans/sdl3-backend.md): this project
+// statically links a single, self-vendored copy of SDL3, so the dynamic
+// jump-table indirection this whole file exists for is never needed -
+// forcing it off from the command line isn't possible (see the #error
+// above), and it's the one edit to vendored SDL3 code this project's build
+// requires. Gated on our own build-only macro (passed via -D, never
+// defined by anything upstream) so it can never collide with a real
+// platform branch below.
+#if defined(ANTTWEAKBARC99_SDL_VENDORED)
+#define SDL_DYNAMIC_API 0
+#elif defined(SDL_PLATFORM_PRIVATE) // probably not useful on private platforms.
 #define SDL_DYNAMIC_API 0
 #elif defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE // probably not useful on iOS.
 #define SDL_DYNAMIC_API 0
