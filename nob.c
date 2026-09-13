@@ -29,21 +29,45 @@
 #define LIB_SHARED_SONAME_NAME "libAntTweakBarC99.so.1"
 #endif
 
+// Which windowing/event backend an example is built against - threaded
+// through example_output_folder()/example_executable_path()/build_example()/
+// build_examples() below instead of a per-call bool now that there are
+// three (see docs/plans/sfml3-backend.md).
+typedef enum {
+    BACKEND_GLFW,
+    BACKEND_SDL,
+    BACKEND_SFML,
+} Backend;
+
+static const char *backend_name(Backend backend)
+{
+    switch (backend) {
+    case BACKEND_GLFW: return "GLFW3";
+    case BACKEND_SDL:  return "SDL3";
+    case BACKEND_SFML: return "SFML3";
+    }
+    return "";
+}
+
 #define EXAMPLES_FOLDER       "examples/"
 #define EXAMPLES_GLFW_FOLDER  EXAMPLES_FOLDER "glfw/"
 #define EXAMPLES_SDL_FOLDER   EXAMPLES_FOLDER "sdl/"
+#define EXAMPLES_SFML_FOLDER  EXAMPLES_FOLDER "sfml/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
 // Split by link mode AND backend, not just a shared EXAMPLES_BUILD_FOLDER,
-// so switching between `-examples-glfw`/`-examples-sdl` and plain/`-dynamic`
-// always rebuilds and never overwrites the other combination's binaries:
-// build_needed() only compares mtimes against a fixed output path, so any
-// two of these four combinations sharing one executable path could
-// otherwise look "up to date" against the wrong combination's binary left
-// over from a previous run - each combination now gets its own folder.
+// so switching between `-examples-glfw`/`-examples-sdl`/`-examples-sfml` and
+// plain/`-dynamic` always rebuilds and never overwrites another
+// combination's binaries: build_needed() only compares mtimes against a
+// fixed output path, so any two of these six combinations sharing one
+// executable path could otherwise look "up to date" against the wrong
+// combination's binary left over from a previous run - each combination
+// now gets its own folder.
 #define EXAMPLES_STATIC_GLFW_FOLDER EXAMPLES_BUILD_FOLDER "static-glfw/"
 #define EXAMPLES_STATIC_SDL_FOLDER  EXAMPLES_BUILD_FOLDER "static-sdl/"
+#define EXAMPLES_STATIC_SFML_FOLDER EXAMPLES_BUILD_FOLDER "static-sfml/"
 #define EXAMPLES_SHARED_GLFW_FOLDER EXAMPLES_BUILD_FOLDER "shared-glfw/"
 #define EXAMPLES_SHARED_SDL_FOLDER  EXAMPLES_BUILD_FOLDER "shared-sdl/"
+#define EXAMPLES_SHARED_SFML_FOLDER EXAMPLES_BUILD_FOLDER "shared-sfml/"
 
 // sds (Simple Dynamic Strings, vendored from https://github.com/antirez/sds,
 // BSD-2-Clause) replaces std::string for the library's own internal string
@@ -88,6 +112,17 @@
 #define SDL_STUB_SRC       "vendor/sdl/sdl_stubs.c"
 #define SDL_OBJ_FOLDER     EXAMPLES_BUILD_FOLDER "sdl_obj/"
 #define SDL_LIB            EXAMPLES_BUILD_FOLDER "libsdl3_vendored.a"
+
+// SFML3 is vendored too (vendor/sfml/, System+Window modules only - no
+// Graphics/Audio/Network, see docs/plans/sfml3-backend.md), and - unlike
+// SDL3 - a compile spike found its sources ARE unity-build-safe, so this
+// is a single glfw_unity.c-style object again, not an archive. Unlike
+// both GLFW and SDL3, SFML needs no platform -D flags or project-authored
+// config header at all: include/SFML/Config.hpp detects the platform from
+// compiler-predefined macros on its own.
+#define SFML_INCLUDE  "vendor/sfml/include/"
+#define SFML_SRC      "vendor/sfml/sfml_unity.mm"
+#define SFML_OBJ      EXAMPLES_BUILD_FOLDER "sfml.o"
 
 #if defined(_WIN32)
 #define EXE_EXT ".exe"
@@ -142,6 +177,14 @@ static const char *sdl_examples[] = {
     EXAMPLES_SDL_FOLDER "MultiWindow_sdl.c",
     EXAMPLES_SDL_FOLDER "Advanced_c99_sdl.c",
     EXAMPLES_SDL_FOLDER "Advanced_cpp_sdl.cpp",
+};
+
+// SFML3 ports of the examples above - see docs/plans/sfml3-backend.md.
+// Only Triangle_sfml.cpp is ported so far; the rest follow the same
+// pattern. All entries are .cpp: SFML has no C API at all (unlike GLFW/
+// SDL3), so every SFML example must be C++.
+static const char *sfml_examples[] = {
+    EXAMPLES_SFML_FOLDER "Triangle_sfml.cpp",
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
@@ -586,21 +629,25 @@ static bool build_all(const char *nob_exe)
     return true;
 }
 
-// One of four folders (EXAMPLES_{STATIC,SHARED}_{GLFW,SDL}_FOLDER) - see
-// their own comment above for why each link-mode/backend combination gets
-// a separate folder rather than sharing one.
-static const char *example_output_folder(bool dynamic, bool use_sdl)
+// One of six folders (EXAMPLES_{STATIC,SHARED}_{GLFW,SDL,SFML}_FOLDER) -
+// see their own comment above for why each link-mode/backend combination
+// gets a separate folder rather than sharing one.
+static const char *example_output_folder(bool dynamic, Backend backend)
 {
-    if (use_sdl) return dynamic ? EXAMPLES_SHARED_SDL_FOLDER : EXAMPLES_STATIC_SDL_FOLDER;
-    return dynamic ? EXAMPLES_SHARED_GLFW_FOLDER : EXAMPLES_STATIC_GLFW_FOLDER;
+    switch (backend) {
+    case BACKEND_SDL:  return dynamic ? EXAMPLES_SHARED_SDL_FOLDER  : EXAMPLES_STATIC_SDL_FOLDER;
+    case BACKEND_SFML: return dynamic ? EXAMPLES_SHARED_SFML_FOLDER : EXAMPLES_STATIC_SFML_FOLDER;
+    case BACKEND_GLFW: default:
+        return dynamic ? EXAMPLES_SHARED_GLFW_FOLDER : EXAMPLES_STATIC_GLFW_FOLDER;
+    }
 }
 
-static const char *example_executable_path(const char *source, bool dynamic, bool use_sdl)
+static const char *example_executable_path(const char *source, bool dynamic, Backend backend)
 {
     char *base = nob_temp_strdup(nob_path_name(source));
     char *dot = strrchr(base, '.');
     if (dot) *dot = '\0';
-    return nob_temp_sprintf("%s%s" EXE_EXT, example_output_folder(dynamic, use_sdl), base);
+    return nob_temp_sprintf("%s%s" EXE_EXT, example_output_folder(dynamic, backend), base);
 }
 
 // Only the examples build compiles GLFW's X11 backend (vendor/glfw/
@@ -645,12 +692,12 @@ static bool check_examples_deps(bool dynamic)
 #endif
             ) {
             nob_log(NOB_ERROR, "%s does not exist yet.", LIB_SHARED);
-            nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw/-examples-sdl -dynamic`.");
+            nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw/-examples-sdl/-examples-sfml -dynamic`.");
             return false;
         }
     } else if (!nob_file_exists(LIB_STATIC)) {
         nob_log(NOB_ERROR, "%s does not exist yet.", LIB_STATIC);
-        nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw` or `./nob -examples-sdl`.");
+        nob_log(NOB_ERROR, "Run `./nob` first to build the library, then `./nob -examples-glfw`, `-examples-sdl`, or `-examples-sfml`.");
         return false;
     }
     return check_linux_x11_deps();
@@ -829,13 +876,68 @@ static void append_sdl_libs(Nob_Cmd *cmd)
 #endif
 }
 
+// Compiles the vendored SFML3 unity build (vendor/sfml/sfml_unity.mm) into
+// a single object, same shape as build_glfw() above - a compile spike
+// confirmed SFML's own sources ARE safe to concatenate into one
+// translation unit (unlike SDL3), so no per-file archive is needed here
+// (see docs/plans/sfml3-backend.md). No -fobjc-arc: SFML's macOS backend
+// files use manual retain/release, not ARC - confirmed by the same spike
+// and the opposite of vendor/sdl/'s Cocoa files.
+static bool build_sfml(const char *nob_exe)
+{
+#if !defined(__APPLE__)
+    nob_log(NOB_ERROR, "-sfml is only validated on macOS so far.");
+    nob_log(NOB_ERROR, "See docs/plans/sfml3-backend.md for Linux/Windows status.");
+    return false;
+#endif
+
+    const char *inputs[] = { SFML_SRC, "nob.c", nob_exe, NOB_HEADER };
+    if (!build_needed(SFML_OBJ, inputs, NOB_ARRAY_LEN(inputs))) {
+        nob_log(NOB_INFO, "%s is up to date", SFML_OBJ);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    // SFML requires C++17 (target_compile_features(... cxx_std_17) in its
+    // own CMakeLists.txt); -DSFML_STATIC matches how it's actually linked
+    // here (a no-op on macOS - both its import/export macros already
+    // resolve to the same visibility attribute there - but real on
+    // Windows, avoiding a dllimport/dllexport mismatch once that platform
+    // is validated).
+    nob_cmd_append(&cmd, "c++", "-std=c++17", "-DSFML_STATIC",
+                        "-I" SFML_INCLUDE, "-Ivendor/sfml/src",
+                        "-Ivendor/sfml/extlibs/headers/cpp-unicodelib",
+                        "-Ivendor/sfml/extlibs/headers/glad/include",
+                        "-Ivendor/sfml/extlibs/headers/vulkan");
+    nob_cmd_append(&cmd, "-c", SFML_SRC, "-o", SFML_OBJ);
+    return nob_cmd_run(&cmd);
+}
+
+static void append_sfml_flags(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, "-std=c++17", "-I" SFML_INCLUDE);
+}
+
+static void append_sfml_libs(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, SFML_OBJ);
+#if defined(_WIN32)
+    // Not yet validated - see docs/plans/sfml3-backend.md.
+#elif defined(__APPLE__)
+    nob_cmd_append(cmd, "-framework", "Foundation", "-framework", "AppKit",
+                        "-framework", "IOKit", "-framework", "Carbon", "-framework", "OpenGL");
+#else
+    // Not yet validated - see docs/plans/sfml3-backend.md.
+#endif
+}
+
 // dynamic links the example against the shared library (LIB_SHARED, plus
 // LIB_IMPORT on Windows) instead of LIB_STATIC; the caller is otherwise
-// identical either way. use_sdl picks the backend's own compile/link flags
-// and its GLFW_OBJ/SDL_LIB build dependency.
-static bool build_example(const char *source, const char *nob_exe, bool dynamic, bool use_sdl)
+// identical either way. backend picks the compile/link flags and the
+// GLFW_OBJ/SDL_LIB/SFML_OBJ build dependency to link against.
+static bool build_example(const char *source, const char *nob_exe, bool dynamic, Backend backend)
 {
-    const char *output = example_executable_path(source, dynamic, use_sdl);
+    const char *output = example_executable_path(source, dynamic, backend);
 
     Nob_File_Paths inputs = {0};
     nob_da_append(&inputs, source);
@@ -844,7 +946,11 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
     if (dynamic) nob_da_append(&inputs, LIB_IMPORT);
 #endif
     nob_da_append(&inputs, GLAD_OBJ);
-    nob_da_append(&inputs, use_sdl ? SDL_LIB : GLFW_OBJ);
+    switch (backend) {
+    case BACKEND_SDL:  nob_da_append(&inputs, SDL_LIB);  break;
+    case BACKEND_SFML: nob_da_append(&inputs, SFML_OBJ); break;
+    case BACKEND_GLFW: default: nob_da_append(&inputs, GLFW_OBJ); break;
+    }
     add_common_build_deps(&inputs, nob_exe);
 
     if (!build_needed(output, inputs.items, inputs.count)) {
@@ -870,7 +976,11 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
     // its default (TW_IMPORT_API, __declspec(dllimport) on Windows) - the
     // correct declaration for calling into libAntTweakBarC99.dll/.so/.dylib.
     if (!dynamic) nob_cmd_append(&cmd, "-DTW_STATIC");
-    if (use_sdl) append_sdl_flags(&cmd); else append_glfw_flags(&cmd);
+    switch (backend) {
+    case BACKEND_SDL:  append_sdl_flags(&cmd);  break;
+    case BACKEND_SFML: append_sfml_flags(&cmd); break;
+    case BACKEND_GLFW: default: append_glfw_flags(&cmd); break;
+    }
 
     nob_cmd_append(&cmd, source, GLAD_OBJ);
 #if defined(_WIN32)
@@ -879,7 +989,11 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
     nob_cmd_append(&cmd, dynamic ? LIB_SHARED : LIB_STATIC);
 #endif
     nob_cmd_append(&cmd, "-o", output);
-    if (use_sdl) append_sdl_libs(&cmd); else append_glfw_libs(&cmd);
+    switch (backend) {
+    case BACKEND_SDL:  append_sdl_libs(&cmd);  break;
+    case BACKEND_SFML: append_sfml_libs(&cmd); break;
+    case BACKEND_GLFW: default: append_glfw_libs(&cmd); break;
+    }
 
     return nob_cmd_run(&cmd);
 }
@@ -904,40 +1018,52 @@ static void print_dynamic_runtime_notice(void)
     nob_log(NOB_INFO, "without copying any library files or permanently changing PATH.");
 }
 
-static bool build_examples(const char *nob_exe, bool dynamic, bool use_sdl)
+static bool build_examples(const char *nob_exe, bool dynamic, Backend backend)
 {
     if (!check_examples_deps(dynamic)) return false;
     if (!nob_mkdir_if_not_exists(EXAMPLES_BUILD_FOLDER)) return false;
-    if (!nob_mkdir_if_not_exists(example_output_folder(dynamic, use_sdl))) return false;
+    if (!nob_mkdir_if_not_exists(example_output_folder(dynamic, backend))) return false;
     if (!build_glad_for_examples(nob_exe)) return false;
 
     const char **backend_examples;
     size_t backend_examples_count;
-    if (use_sdl) {
+    switch (backend) {
+    case BACKEND_SDL:
         if (!build_sdl(nob_exe)) return false;
         backend_examples = sdl_examples;
         backend_examples_count = NOB_ARRAY_LEN(sdl_examples);
-    } else {
+        break;
+    case BACKEND_SFML:
+        if (!build_sfml(nob_exe)) return false;
+        backend_examples = sfml_examples;
+        backend_examples_count = NOB_ARRAY_LEN(sfml_examples);
+        break;
+    case BACKEND_GLFW:
+    default:
         if (!build_glfw(nob_exe)) return false;
         backend_examples = glfw_examples;
         backend_examples_count = NOB_ARRAY_LEN(glfw_examples);
+        break;
     }
 
     for (size_t i = 0; i < backend_examples_count; ++i) {
-        if (!build_example(backend_examples[i], nob_exe, dynamic, use_sdl)) return false;
+        if (!build_example(backend_examples[i], nob_exe, dynamic, backend)) return false;
     }
 
-    // GLAD_OBJ/GLFW_OBJ are only needed while linking the examples above -
-    // remove them afterward rather than leave them as stale leftovers (same
-    // trade-off as build_all()'s matching cleanup: the next `./nob
-    // -examples` always recompiles GLAD/GLFW from scratch too). SDL_LIB is
-    // deliberately NOT deleted here - see build_sdl()'s own comment.
+    // GLAD_OBJ/GLFW_OBJ/SFML_OBJ are only needed while linking the examples
+    // above - remove them afterward rather than leave them as stale
+    // leftovers (same trade-off as build_all()'s matching cleanup: the next
+    // build always recompiles GLAD/GLFW/SFML from scratch too). SDL_LIB is
+    // deliberately NOT deleted here - see build_sdl()'s own comment (SDL3's
+    // ~140-file archive is too slow to rebuild every time; GLFW's and
+    // SFML's single unity objects are cheap enough not to bother keeping).
     if (!delete_if_exists(GLAD_OBJ)) return false;
-    if (!use_sdl && !delete_if_exists(GLFW_OBJ)) return false;
+    if (backend == BACKEND_GLFW && !delete_if_exists(GLFW_OBJ)) return false;
+    if (backend == BACKEND_SFML && !delete_if_exists(SFML_OBJ)) return false;
 
     nob_log(NOB_INFO, "built %zu %s examples into %s (%s)", backend_examples_count,
-            use_sdl ? "SDL3" : "GLFW3",
-            example_output_folder(dynamic, use_sdl),
+            backend_name(backend),
+            example_output_folder(dynamic, backend),
             dynamic ? "dynamically linked" : "statically linked");
     if (dynamic) print_dynamic_runtime_notice();
     return true;
@@ -967,13 +1093,18 @@ static bool clean(void)
     ok = delete_if_exists(EXAMPLES_STATIC_GLFW_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_STATIC_SDL_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_STATIC_SDL_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_STATIC_SFML_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_STATIC_SFML_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_SHARED_GLFW_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_SHARED_GLFW_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_SHARED_SDL_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_SHARED_SDL_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_SHARED_SFML_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_SHARED_SFML_FOLDER) && ok;
     ok = clear_directory(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_LIB) && ok;
+    ok = delete_if_exists(SFML_OBJ) && ok;
     ok = clear_directory(EXAMPLES_BUILD_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_BUILD_FOLDER) && ok;
 
@@ -989,17 +1120,21 @@ static bool clean(void)
 
 static void usage(const char *program)
 {
-    printf("usage: %s [-glfw | -sdl] [-examples-glfw | -examples-sdl] [-dynamic] [-clean] [-help]\n", program);
+    printf("usage: %s [-glfw | -sdl | -sfml] [-examples-glfw | -examples-sdl | -examples-sfml]\n", program);
+    printf("           [-dynamic] [-clean] [-help]\n");
     printf("  -glfw          build the library and the GLFW3 examples (examples/glfw/)\n");
     printf("  -sdl           build the library and the SDL3 examples (examples/sdl/)\n");
     printf("                 (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
+    printf("  -sfml          build the library and the SFML3 examples (examples/sfml/)\n");
+    printf("                 (SFML3 backend: macOS only so far, see docs/plans/sfml3-backend.md)\n");
     printf("  -examples-glfw build the GLFW3 examples against build/lib/libAntTweakBarC99.a\n");
     printf("                 without rebuilding the library first (requires the library to\n");
     printf("                 already be built with ./nob)\n");
     printf("  -examples-sdl  same as -examples-glfw, but for the SDL3 examples\n");
-    printf("  -dynamic       with -examples-glfw/-examples-sdl/-glfw/-sdl, link the examples\n");
-    printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
-    printf("                 instead of the static one (the default for all four)\n");
+    printf("  -examples-sfml same as -examples-glfw, but for the SFML3 examples\n");
+    printf("  -dynamic       with any of the six flags above, link the examples against the\n");
+    printf("                 shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
+    printf("                 instead of the static one (the default for all six)\n");
     printf("  -clean         remove generated build files and exit\n");
     printf("  -help          print this help and exit\n");
 }
@@ -1012,9 +1147,11 @@ int main(int argc, char **argv)
     bool clean_requested = false;
     bool examples_glfw_requested = false;
     bool examples_sdl_requested = false;
+    bool examples_sfml_requested = false;
     bool dynamic_requested = false;
     bool glfw_requested = false;
     bool sdl_requested = false;
+    bool sfml_requested = false;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-clean") == 0) {
@@ -1023,12 +1160,16 @@ int main(int argc, char **argv)
             examples_glfw_requested = true;
         } else if (strcmp(argv[i], "-examples-sdl") == 0) {
             examples_sdl_requested = true;
+        } else if (strcmp(argv[i], "-examples-sfml") == 0) {
+            examples_sfml_requested = true;
         } else if (strcmp(argv[i], "-dynamic") == 0) {
             dynamic_requested = true;
         } else if (strcmp(argv[i], "-glfw") == 0) {
             glfw_requested = true;
         } else if (strcmp(argv[i], "-sdl") == 0) {
             sdl_requested = true;
+        } else if (strcmp(argv[i], "-sfml") == 0) {
+            sfml_requested = true;
         } else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
             usage(argv[0]);
             return 0;
@@ -1039,27 +1180,30 @@ int main(int argc, char **argv)
         }
     }
 
-    if ((glfw_requested ? 1 : 0) + (sdl_requested ? 1 : 0)
-      + (examples_glfw_requested ? 1 : 0) + (examples_sdl_requested ? 1 : 0) > 1) {
-        nob_log(NOB_ERROR, "-glfw, -sdl, -examples-glfw and -examples-sdl are mutually exclusive");
+    if ((glfw_requested ? 1 : 0) + (sdl_requested ? 1 : 0) + (sfml_requested ? 1 : 0)
+      + (examples_glfw_requested ? 1 : 0) + (examples_sdl_requested ? 1 : 0) + (examples_sfml_requested ? 1 : 0) > 1) {
+        nob_log(NOB_ERROR, "-glfw, -sdl, -sfml, -examples-glfw, -examples-sdl and -examples-sfml are mutually exclusive");
         return 1;
     }
 
-    bool examples_requested = examples_glfw_requested || examples_sdl_requested || glfw_requested || sdl_requested;
+    bool examples_requested = examples_glfw_requested || examples_sdl_requested || examples_sfml_requested
+                             || glfw_requested || sdl_requested || sfml_requested;
     if (dynamic_requested && !examples_requested) {
-        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-glfw/-sdl");
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml/-glfw/-sdl/-sfml");
     }
 
     if (clean_requested) return clean() ? 0 : 1;
 
-    bool use_sdl = sdl_requested || examples_sdl_requested;
+    Backend backend = BACKEND_GLFW;
+    if (sdl_requested || examples_sdl_requested) backend = BACKEND_SDL;
+    if (sfml_requested || examples_sfml_requested) backend = BACKEND_SFML;
 
-    if (glfw_requested || sdl_requested) {
+    if (glfw_requested || sdl_requested || sfml_requested) {
         if (!build_all(nob_exe)) return 1;
-        return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
+        return build_examples(nob_exe, dynamic_requested, backend) ? 0 : 1;
     }
-    if (examples_glfw_requested || examples_sdl_requested) {
-        return build_examples(nob_exe, dynamic_requested, use_sdl) ? 0 : 1;
+    if (examples_glfw_requested || examples_sdl_requested || examples_sfml_requested) {
+        return build_examples(nob_exe, dynamic_requested, backend) ? 0 : 1;
     }
     return build_all(nob_exe) ? 0 : 1;
 }
