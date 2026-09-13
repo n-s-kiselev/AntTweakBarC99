@@ -19,6 +19,7 @@
 *.back8
 *.back9
 .vscode/
+.DS_Store
 /src/debug32
 /src/debug64
 /src/release32
