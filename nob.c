@@ -128,9 +128,20 @@ static const char *glfw_examples[] = {
 };
 
 // SDL3 ports of the examples above - see docs/plans/sdl3-backend.md Step 5.
-// Only Triangle_sdl.c is ported so far; the rest follow the same pattern.
 static const char *sdl_examples[] = {
+    EXAMPLES_SDL_FOLDER "SimpleGL21_sdl.c",
+    EXAMPLES_SDL_FOLDER "SimpleGL33_sdl.c",
+    EXAMPLES_SDL_FOLDER "SimpleGL41_sdl.c",
+    EXAMPLES_SDL_FOLDER "Shapes_sdl.c",
+    EXAMPLES_SDL_FOLDER "MultiCubes_sdl.c",
+    EXAMPLES_SDL_FOLDER "Particles_sdl.c",
+    EXAMPLES_SDL_FOLDER "Strip_sdl.c",
     EXAMPLES_SDL_FOLDER "Triangle_sdl.c",
+    EXAMPLES_SDL_FOLDER "Sponge_sdl.c",
+    EXAMPLES_SDL_FOLDER "String_sdl.c",
+    EXAMPLES_SDL_FOLDER "MultiWindow_sdl.c",
+    EXAMPLES_SDL_FOLDER "Advanced_c99_sdl.c",
+    EXAMPLES_SDL_FOLDER "Advanced_cpp_sdl.cpp",
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
