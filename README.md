@@ -26,23 +26,26 @@ This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar
   system cursor natively.
 - **OpenGL Core Profile renderer** (`TW_OPENGL_CORE`) — works with modern
   OpenGL 3.3/4.1 contexts, not just the legacy compatibility profile.
-- **New widget layout parameters** — `full_width` (a widget spans the whole
-  label+value width, with no separate label column - useful for buttons,
-  separators, and wrapped multiline text) and `align_right`/`align_left`
-  (right- or left-align a widget's own label within the label column;
-  mutually exclusive, left-aligned by default, and each truncates an
-  oversized label with an ellipsis on the side away from the kept text).
-  All three are set the usual way, via `TwDefine`/`TwAddVar*`'s definition
-  string (e.g. `" align_right=true "`). See `examples/glfw/Advanced_c99_glfw.c`'s
-  `Background` group for a demo: `Red`, `Green`, `Blue`, and `Mode` are
-  right-aligned (`Mode`'s label is deliberately long, to show the ellipsis
-  truncation), while `Rot speed` and `Wireframe` keep the default left
-  alignment.
+- **New widget layout parameters** — all set the usual way, via
+  `TwDefine`/`TwAddVar*`'s definition string (e.g. `" align_right=true "`):
+  - `align_left`/`align_right` — left- or right-align a widget's own label
+    within the label column; mutually exclusive, left-aligned by default,
+    and each truncates an oversized label with an ellipsis on the side away
+    from the kept text.
+  - `full_width` — a widget spans the whole label+value width, with no
+    separate label column; useful for buttons, separators, and wrapped
+    multiline text.
+- **Reworked RotoSlider visualization** — the drag feedback now draws
+  around a hidden cursor, with white contrast rings and a comet-tail sweep
+  arc that correctly tracks direction past 180 degrees.
 - **Single cross-platform build** — one `nob.c` script that needs only a C compiler, replaces per-platform Makefiles and Visual Studio project files.
 
 See also this repository [AntTweakBar-Legacy](https://github.com/n-s-kiselev/AntTweakBar-Legacy) for the legacy GLFW2/FreeGLUT/OpenGL compatibility wersion of the library easy to compile and test on MacOs, Windows or Linux with [nob.h](https://github.com/tsoding/nob.h) build system which itsef depends only on your C compiler.
 
-The fork of ATB that you can use with modern version of GLFW3 can be found here, [AntTweakBarGLFW3](https://github.com/n-s-kiselev/AntTweakBarGLFW3).
+[AntTweakBarGLFW3](https://github.com/n-s-kiselev/AntTweakBarGLFW3) is a
+sibling fork that keeps ATB's original C++ implementation, adapted only to
+build and run against the modern GLFW3 API - unlike this repository, which
+is a full C99 rewrite.
 
 
 ## How to build
@@ -53,14 +56,11 @@ Bootstrap the build tool once, from the repository root:
 gcc nob.c -o nob
 ```
 
-Build the library (backend-independent - the same static/shared library is
-produced no matter which backend's examples you plan to build against it):
+Build the library - it links against none of GLFW3/SDL3/SFML3, so this one
+static/shared library works with any backend's examples:
 
 ```sh
 ./nob         # build the library only
-./nob -glfw   # same as above - an explicit spelling for the GLFW3 workflow below
-./nob -sdl    # same as above - an explicit spelling for the SDL3 workflow below
-./nob -sfml   # same as above - an explicit spelling for the SFML3 workflow below
 ./nob -help   # list all flags
 ```
 
@@ -78,7 +78,7 @@ windowing/event API. GLFW3 and SDL3 examples are plain C99 except
 C++. Add `-dynamic` to any of the three to link the examples against the
 shared library instead of the static one, e.g. `./nob -examples-sdl -dynamic`.
 `./nob -examples-glfw`/`-examples-sdl`/`-examples-sfml` require the library
-to already be built (`./nob`, or one of `-glfw`/`-sdl`/`-sfml` above).
+to already be built by a plain `./nob`.
 
 To rebuild from scratch you have to clean the folder from artifacts:
 
