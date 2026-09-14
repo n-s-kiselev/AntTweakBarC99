@@ -1008,47 +1008,28 @@ int CTwVar_HasAttribBase(const char *_Attrib, bool *_HasValue)
     return 0; // not found
 }
 
-static int ParseBoolValue(const char *_Value, bool *_OutValue)
+// _Invert stores the logical negation of the parsed value, for an attribute
+// defined as the inverse of the field it shares ("align_left" is stored as
+// !m_AlignRight, see CTwVar in TwBar.h).
+static int SetBoolAttrib(bool *_Field, const char *_Value, TwBar *_Bar, bool _Invert)
 {
+    bool NewValue;
     if( _Value==NULL || strlen(_Value)==0 )
     {
         CTwMgr_SetLastError(g_TwMgr, g_ErrNoValue);
         return 0;
     }
     if( _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
-        *_OutValue = true;
+        NewValue = true;
     else if( _stricmp(_Value, "false")==0 || _stricmp(_Value, "0")==0 )
-        *_OutValue = false;
+        NewValue = false;
     else
     {
         CTwMgr_SetLastError(g_TwMgr, g_ErrBadValue);
         return 0;
     }
-    return 1;
-}
-
-static int SetBoolAttrib(bool *_Field, const char *_Value, TwBar *_Bar)
-{
-    bool NewValue;
-    if( !ParseBoolValue(_Value, &NewValue) )
-        return 0;
-    if( *_Field!=NewValue )
-    {
-        *_Field = NewValue;
-        CTwBar_NotUpToDate(_Bar);
-    }
-    return 1;
-}
-
-// Same as SetBoolAttrib, but stores the logical negation of the parsed value -
-// used for attributes defined as the inverse of another stored field (e.g.
-// "align_left" is stored as !m_AlignRight, see CTwVar struct in TwBar.h).
-static int SetBoolAttribInverted(bool *_Field, const char *_Value, TwBar *_Bar)
-{
-    bool NewValue;
-    if( !ParseBoolValue(_Value, &NewValue) )
-        return 0;
-    NewValue = !NewValue;
+    if( _Invert )
+        NewValue = !NewValue;
     if( *_Field!=NewValue )
     {
         *_Field = NewValue;
@@ -1184,7 +1165,7 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
         // todo: general 'order' command (no else)
         return 0;
     case V_VISIBLE:
-        return SetBoolAttrib(&_Var->m_Visible, _Value, _Bar);
+        return SetBoolAttrib(&_Var->m_Visible, _Value, _Bar, false);
     case V_READONLY:
         if( _Value==NULL || strlen(_Value)==0 // no value is acceptable (for backward compatibility)
             || _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
@@ -1211,11 +1192,11 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
             return 0;
         }
     case V_FULL_WIDTH:
-        return SetBoolAttrib(&_Var->m_FullWidth, _Value, _Bar);
+        return SetBoolAttrib(&_Var->m_FullWidth, _Value, _Bar, false);
     case V_ALIGN_RIGHT:
-        return SetBoolAttrib(&_Var->m_AlignRight, _Value, _Bar);
+        return SetBoolAttrib(&_Var->m_AlignRight, _Value, _Bar, false);
     case V_ALIGN_LEFT:
-        return SetBoolAttribInverted(&_Var->m_AlignRight, _Value, _Bar);
+        return SetBoolAttrib(&_Var->m_AlignRight, _Value, _Bar, true);
     default:
         CTwMgr_SetLastError(g_TwMgr, g_ErrUnknownAttrib);
         return 0;
@@ -4365,7 +4346,6 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     const unsigned char *Text;
     unsigned char ch;
     int WidthMax;
-    bool AlignRight;
     
     int Space = _Font->m_CharWidth[(int)' '];
     int LevelSpace = max(_Font->m_CharHeight-6, 4); // space used by DrawHierHandles
@@ -4373,7 +4353,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     int nh = (int)_Bar->m_HierTags.count;
     for( int h=0; h<nh; ++h )
     {
-        AlignRight = false; // only the plain-label case below (align_right/align_left) sets this
+        bool AlignRight = false; // only the plain-label case below (align_right/align_left) sets this
         if( IsMultilineHelpVar(_Bar->m_HierTags.items[h].m_Var) )
         {
             // Help-bar text block (TW_TYPE_HELP_ATOM/HELP_GRP, one atom per help string -
@@ -4506,61 +4486,48 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                             || (_Bar->m_HierTags.items[h].m_Var->m_FullWidth && IsMultilineTextVar(_Bar->m_HierTags.items[h].m_Var));
             if( AlignRight )
             {
-                // "align_right": the label column's right edge is the same WidthMax the
-                // left-aligned path clips against (requirement: same available width for
-                // both). Build the (possibly truncated) text first, then left-pad it with
-                // spaces - reusing the indentation idiom above - so its right edge lands on
-                // that boundary, since every row is drawn through one fixed-position DrawText
-                // call and per-row alignment can only be expressed via the string content.
-                // Left-aligned labels never reach WidthMax themselves - CTwBar_ComputeLabelsWidth
-                // sizes the auto-fit column to the longest label's content plus a 3-space margin,
-                // which is what visually separates the label column from the value column that
-                // starts right at WidthMax. Reserve that same margin here, or a right-aligned
-                // label would butt up against (or overlap) the value text.
-                int dotw = _Font->m_CharWidth[(int)'.'];
-                int GapMargin = 3*Space;
-                int Avail = WidthMax-GapMargin-x;
+                // "align_right": every row is drawn through one fixed-position DrawText call,
+                // so per-row alignment can only be expressed through the string content - the
+                // label is left-padded with spaces (the indentation idiom above) until its
+                // right edge lands on the label column's right boundary. That boundary is the
+                // same WidthMax the left-aligned path clips against, minus the 3-space gap
+                // CTwBar_ComputeLabelsWidth adds past the longest label when auto-fitting the
+                // column: left-aligned labels never reach WidthMax themselves, so reserving
+                // that gap here too is what keeps a right-aligned label from butting up
+                // against (or overlapping) the value column that starts right at WidthMax.
+                int DotWidth = _Font->m_CharWidth[(int)'.'];
+                int Avail = WidthMax-3*Space-x;
                 if( Avail<0 )
                     Avail = 0;
-                int TotalWidth = 0;
+                int ContentWidth = 0;
                 for( i=0; i<Len; ++i )
-                    TotalWidth += _Font->m_CharWidth[(int)Text[i]];
-                sds Content = sdsempty();
-                int ContentWidth;
-                if( TotalWidth<=Avail || ClipBypass )
+                    ContentWidth += _Font->m_CharWidth[(int)Text[i]];
+                // Mirror image of the forward scan below: keep the trailing characters that
+                // still fit alongside the ellipsis dots, and emit the dots first so an
+                // oversized label reads "..end of label" instead of "start of label..".
+                int FirstKept = 0;
+                bool Truncated = ( ContentWidth>Avail && !ClipBypass );
+                if( Truncated )
                 {
-                    // Fits (or clipping is disabled): use the label verbatim, no ellipsis.
-                    Content = sdscatlen(Content, (const char *)Text, Len);
-                    ContentWidth = TotalWidth;
-                }
-                else
-                {
-                    // Doesn't fit: mirror image of the forward scan below - scan from the end
-                    // of the label, keep the trailing characters that still fit alongside the
-                    // ellipsis dots, and put the dots first so it reads "..end of label".
-                    int KeptWidth = 0, FirstKept = Len;
+                    int KeptWidth = 0;
+                    FirstKept = Len;
                     for( i=Len-1; i>=0; --i )
                     {
                         int cw = _Font->m_CharWidth[(int)Text[i]];
-                        if( KeptWidth+cw+NbEtc*dotw>Avail )
+                        if( KeptWidth+cw+NbEtc*DotWidth>Avail )
                             break;
                         KeptWidth += cw;
                         FirstKept = i;
                     }
-                    for( int d=0; d<NbEtc; ++d )
-                        Content = sdscatlen(Content, ".", 1);
-                    Content = sdscatlen(Content, (const char *)Text+FirstKept, Len-FirstKept);
-                    ContentWidth = NbEtc*dotw+KeptWidth;
+                    ContentWidth = NbEtc*DotWidth+KeptWidth;
                 }
-                int PadWidth = Avail-ContentWidth;
-                if( PadWidth>0 && Space>0 )
-                    for( s=0; s<PadWidth; s+=Space )
-                    {
-                        char sp = ' ';
-                        *CurrentLabel = sdscatlen(*CurrentLabel, &sp, 1);
-                    }
-                *CurrentLabel = sdscatsds(*CurrentLabel, Content);
-                sdsfree(Content);
+                if( Space>0 )
+                    for( s=0; s<Avail-ContentWidth; s+=Space )
+                        *CurrentLabel = sdscatlen(*CurrentLabel, " ", 1);
+                if( Truncated )
+                    for( int d=0; d<NbEtc; ++d )
+                        *CurrentLabel = sdscatlen(*CurrentLabel, ".", 1);
+                *CurrentLabel = sdscatlen(*CurrentLabel, (const char *)Text+FirstKept, Len-FirstKept);
             }
             else if( x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']<WidthMax || ClipBypass)
                 for( i=0; i<Len; ++i )
