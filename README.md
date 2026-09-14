@@ -26,6 +26,18 @@ This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar
   system cursor natively.
 - **OpenGL Core Profile renderer** (`TW_OPENGL_CORE`) — works with modern
   OpenGL 3.3/4.1 contexts, not just the legacy compatibility profile.
+- **New widget layout parameters** — `full_width` (a widget spans the whole
+  label+value width, with no separate label column - useful for buttons,
+  separators, and wrapped multiline text) and `align_right`/`align_left`
+  (right- or left-align a widget's own label within the label column;
+  mutually exclusive, left-aligned by default, and each truncates an
+  oversized label with an ellipsis on the side away from the kept text).
+  All three are set the usual way, via `TwDefine`/`TwAddVar*`'s definition
+  string (e.g. `" align_right=true "`). See `examples/glfw/Advanced_c99_glfw.c`'s
+  `Background` group for a demo: `Red`, `Green`, `Blue`, and `Mode` are
+  right-aligned (`Mode`'s label is deliberately long, to show the ellipsis
+  truncation), while `Rot speed` and `Wireframe` keep the default left
+  alignment.
 - **Single cross-platform build** — one `nob.c` script that needs only a C compiler, replaces per-platform Makefiles and Visual Studio project files.
 
 See also this repository [AntTweakBar-Legacy](https://github.com/n-s-kiselev/AntTweakBar-Legacy) for the legacy GLFW2/FreeGLUT/OpenGL compatibility wersion of the library easy to compile and test on MacOs, Windows or Linux with [nob.h](https://github.com/tsoding/nob.h) build system which itsef depends only on your C compiler.
@@ -41,36 +53,32 @@ Bootstrap the build tool once, from the repository root:
 gcc nob.c -o nob
 ```
 
-Then pick a backend - each builds the library and that backend's 13
-examples in one step:
+Build the library (backend-independent - the same static/shared library is
+produced no matter which backend's examples you plan to build against it):
 
 ```sh
-./nob -glfw   # build the library + the GLFW3 examples (examples/glfw/)
-./nob -sdl    # build the library + the SDL3 examples (examples/sdl/)
-./nob -sfml   # build the library + the SFML3 examples (examples/sfml/)
+./nob         # build the library only
+./nob -glfw   # same as above - an explicit spelling for the GLFW3 workflow below
+./nob -sdl    # same as above - an explicit spelling for the SDL3 workflow below
+./nob -sfml   # same as above - an explicit spelling for the SFML3 workflow below
 ./nob -help   # list all flags
+```
+
+Then build a backend's 13 examples against that library:
+
+```sh
+./nob -examples-glfw [-dynamic]   # build the GLFW3 examples (examples/glfw/)
+./nob -examples-sdl  [-dynamic]   # build the SDL3 examples (examples/sdl/)
+./nob -examples-sfml [-dynamic]   # build the SFML3 examples (examples/sfml/)
 ```
 
 All three demonstrate the same 13 demos, each adapted to that backend's own
 windowing/event API. GLFW3 and SDL3 examples are plain C99 except
 `Advanced_cpp_*.cpp`; SFML3 has no C API at all, so every SFML3 example is
 C++. Add `-dynamic` to any of the three to link the examples against the
-shared library instead of the static one, e.g. `./nob -sdl -dynamic`.
-
-To build only the library, with no examples:
-
-```sh
-./nob
-```
-
-To build only a backend's examples without rebuilding the library (it must
-already exist - run `./nob` or one of the three flags above first):
-
-```sh
-./nob -examples-glfw [-dynamic]
-./nob -examples-sdl  [-dynamic]
-./nob -examples-sfml [-dynamic]
-```
+shared library instead of the static one, e.g. `./nob -examples-sdl -dynamic`.
+`./nob -examples-glfw`/`-examples-sdl`/`-examples-sfml` require the library
+to already be built (`./nob`, or one of `-glfw`/`-sdl`/`-sfml` above).
 
 To rebuild from scratch you have to clean the folder from artifacts:
 

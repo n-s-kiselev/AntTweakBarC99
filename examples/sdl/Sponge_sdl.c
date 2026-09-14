@@ -806,10 +806,10 @@ int main(void)
     }
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with SDL3 and OpenGL, drawing a recursively-generated Menger sponge.' ");
 
-    TwAddVarCB(bar, "Level", TW_TYPE_INT32, SetSpongeLevelCB, GetSpongeLevelCB, NULL, "min=0 max=3 group=Sponge keyincr=l keydecr=L");
+    TwAddVarCB(bar, "Level", TW_TYPE_INT32, SetSpongeLevelCB, GetSpongeLevelCB, NULL, "min=0 max=3 group=Sponge keyincr=l keydecr=L align_right=true");
     TwAddVarCB(bar, "Ambient Occlusion", TW_TYPE_BOOL32, SetSpongeAOCB, GetSpongeAOCB, NULL, "group=Sponge key=o");
-    TwAddVarRW(bar, "Rotation", TW_TYPE_QUAT4F, &g_SpongeRotation, "opened=true axisz=-z group=Sponge");
-    TwAddVarRW(bar, "Animation", TW_TYPE_BOOL32, &g_Animate, "group=Sponge key=a");
+    TwAddVarRW(bar, "Rotation", TW_TYPE_QUAT4F, &g_SpongeRotation, "opened=true axisz=-z group=Sponge align_right=true");
+    TwAddVarRW(bar, "Animation", TW_TYPE_BOOL32, &g_Animate, "group=Sponge key=a align_right=true");
     TwAddVarRW(bar, "Animation speed", TW_TYPE_FLOAT, &g_AnimationSpeed, "min=-10 max=10 step=0.1 group=Sponge keyincr=+ keydecr=-");
     // No axisz=-z here (unlike "Rotation" above): g_LightDir is fed straight
     // to glLightfv with no negation (see Render()), so leaving this widget's

@@ -1134,19 +1134,23 @@ static void usage(const char *program)
 {
     printf("usage: %s [-glfw | -sdl | -sfml] [-examples-glfw | -examples-sdl | -examples-sfml]\n", program);
     printf("           [-dynamic] [-clean] [-help]\n");
-    printf("  -glfw          build the library and the GLFW3 examples (examples/glfw/)\n");
-    printf("  -sdl           build the library and the SDL3 examples (examples/sdl/)\n");
+    printf("  -glfw          build the library only (same as running with no flags at all;\n");
+    printf("                 an explicit spelling for when you intend to build the GLFW3\n");
+    printf("                 examples next with -examples-glfw)\n");
+    printf("  -sdl           build the library only (same as -glfw; for when you intend to\n");
+    printf("                 build the SDL3 examples next with -examples-sdl)\n");
     printf("                 (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
-    printf("  -sfml          build the library and the SFML3 examples (examples/sfml/)\n");
+    printf("  -sfml          build the library only (same as -glfw; for when you intend to\n");
+    printf("                 build the SFML3 examples next with -examples-sfml)\n");
     printf("                 (SFML3 backend: macOS only so far, see docs/plans/sfml3-backend.md)\n");
     printf("  -examples-glfw build the GLFW3 examples against build/lib/libAntTweakBarC99.a\n");
     printf("                 without rebuilding the library first (requires the library to\n");
     printf("                 already be built with ./nob)\n");
     printf("  -examples-sdl  same as -examples-glfw, but for the SDL3 examples\n");
     printf("  -examples-sfml same as -examples-glfw, but for the SFML3 examples\n");
-    printf("  -dynamic       with any of the six flags above, link the examples against the\n");
-    printf("                 shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
-    printf("                 instead of the static one (the default for all six)\n");
+    printf("  -dynamic       with any of the -examples-* flags above, link the examples\n");
+    printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
+    printf("                 instead of the static one (the default)\n");
     printf("  -clean         remove generated build files and exit\n");
     printf("  -help          print this help and exit\n");
 }
@@ -1198,23 +1202,26 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    bool examples_requested = examples_glfw_requested || examples_sdl_requested || examples_sfml_requested
-                             || glfw_requested || sdl_requested || sfml_requested;
+    bool examples_requested = examples_glfw_requested || examples_sdl_requested || examples_sfml_requested;
     if (dynamic_requested && !examples_requested) {
-        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml/-glfw/-sdl/-sfml");
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml");
     }
 
     if (clean_requested) return clean() ? 0 : 1;
 
-    Backend backend = BACKEND_GLFW;
-    if (sdl_requested || examples_sdl_requested) backend = BACKEND_SDL;
-    if (sfml_requested || examples_sfml_requested) backend = BACKEND_SFML;
-
+    // -glfw/-sdl/-sfml build the library only, exactly like plain `./nob` -
+    // the library itself is backend-independent (build_all() takes no
+    // Backend argument), so there is nothing backend-specific to build here.
+    // They exist as explicit, self-documenting spellings of the same
+    // library-only build for whichever backend's examples you intend to
+    // build next with -examples-glfw/-examples-sdl/-examples-sfml.
     if (glfw_requested || sdl_requested || sfml_requested) {
-        if (!build_all(nob_exe)) return 1;
-        return build_examples(nob_exe, dynamic_requested, backend) ? 0 : 1;
+        return build_all(nob_exe) ? 0 : 1;
     }
     if (examples_glfw_requested || examples_sdl_requested || examples_sfml_requested) {
+        Backend backend = BACKEND_GLFW;
+        if (examples_sdl_requested) backend = BACKEND_SDL;
+        if (examples_sfml_requested) backend = BACKEND_SFML;
         return build_examples(nob_exe, dynamic_requested, backend) ? 0 : 1;
     }
     return build_all(nob_exe) ? 0 : 1;

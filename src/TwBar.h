@@ -108,6 +108,7 @@ typedef struct CTwVar
     bool                    m_DontClip;
     bool                    m_Visible;
     bool                    m_FullWidth;    // "full_width" param: no label, widget spans label+value width (see CTwBar_RowWidgetX0 in TwBar.c)
+    bool                    m_AlignRight;   // "align_right"/"align_left" params: label alignment within the label column (see CTwBar_ListLabels in TwBar.c); align_left is stored as !m_AlignRight, so the two are always mutually exclusive by construction
     signed short            m_LeftMargin;
     signed short            m_TopMargin;
     const color32 *         m_ColorPtr;

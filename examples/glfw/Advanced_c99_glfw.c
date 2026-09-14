@@ -199,6 +199,11 @@ typedef struct Light
 // hoisted to file scope for the same reason as LightAnimMode above.
 typedef enum { ROT_OFF, ROT_CW, ROT_CCW } SceneRotMode;
 
+// Background color space mode - a small demo-only enum (not part of the
+// original Advanced example) used below to exercise the align_right/
+// align_left label parameters on an enum widget alongside plain floats.
+typedef enum { COLORSPACE_LINEAR, COLORSPACE_SRGB } SceneColorSpace;
+
 // Structure that describes the scene. A plain C struct: the original C++
 // `class Scene` had no invariant that required hiding its fields, so every
 // field is public here too - only its methods became free functions
@@ -213,7 +218,9 @@ typedef struct Scene
     float   Ambient;    // scene ambient factor
     float   Reflection; // ground plane reflection factor (0=no reflection, 1=full reflection)
     double  RotYAngle;  // rotation angle of the scene around its Y axis (in degree)
+    float   RotSpeed;   // rotation speed, in degree/second (demo-only: exercises default/left alignment)
     SceneRotMode Rotation; // scene rotation mode (off, clockwise, counter-clockwise)
+    SceneColorSpace ColorSpace; // demo-only: exercises align_right on an enum widget
 
     GLuint  objList, groundList, haloList;  // OpenGL display list IDs
     int     maxLights;                      // maximum number of dynamic lights allowed by the graphic card
@@ -257,7 +264,9 @@ static void Scene_Construct(Scene *scene)
     scene->Ambient = 0.2f;
     scene->Reflection = 0.5f;
     scene->RotYAngle = 0;
+    scene->RotSpeed = 5.0f;
     scene->Rotation = ROT_CCW;
+    scene->ColorSpace = COLORSPACE_LINEAR;
     scene->objList = 0;
     scene->groundList = 0;
     scene->haloList = 0;
@@ -1016,6 +1025,25 @@ int main(void)
                " group='Background' help='Change the top background color.' ");  // 'BgTop' and 'BgBottom' are put in the group 'Background' (which is then created)
     TwAddVarRW(mainBar, "BgBottom", TW_TYPE_COLOR3F, &scene.BgColor0,
                " group='Background' help='Change the bottom background color.' ");
+    // align_right/align_left demo: Red/Green/Blue (plain floats, sharing the
+    // storage of 'BgTop' above) and Mode (an enum) are right-aligned, so
+    // their labels hug the right edge of the label column instead of the
+    // default left edge - unlike every other widget in this bar, which is
+    // left-aligned either implicitly (default) or explicitly (Mode's label
+    // below is long on purpose, to exercise the "..." truncation path that
+    // preserves the end of a right-aligned label instead of its start).
+    TwAddVarRW(mainBar, "Red", TW_TYPE_FLOAT, &scene.BgColor1[0],
+               " group='Background' align_right=true min=0 max=1 step=0.01 help='Top background color, red channel (right-aligned label demo).' ");
+    TwAddVarRW(mainBar, "Green", TW_TYPE_FLOAT, &scene.BgColor1[1],
+               " group='Background' align_right=true min=0 max=1 step=0.01 help='Top background color, green channel (right-aligned label demo).' ");
+    TwAddVarRW(mainBar, "Blue", TW_TYPE_FLOAT, &scene.BgColor1[2],
+               " group='Background' align_right=true min=0 max=1 step=0.01 help='Top background color, blue channel (right-aligned label demo).' ");
+    TwEnumVal colorSpaceEV[] = { { COLORSPACE_LINEAR, "Linear"}, { COLORSPACE_SRGB, "sRGB" } };
+    TwType colorSpaceType = TwDefineEnum("Color Space", colorSpaceEV, 2);
+    TwAddVarRW(mainBar, "Mode", colorSpaceType, &scene.ColorSpace,
+               " group='Background' align_right=true "
+               " label='Background Color Space Rendering Mode' "
+               " help='Background color space (right-aligned, deliberately long label to test left-side ellipsis truncation).' ");
     TwDefine(" Main/Background group='Display' ");  // The group 'Background' of bar 'Main' is put in the group 'Display'
     TwAddVarCB(mainBar, "Subdiv", TW_TYPE_INT32, SetSubdivCB, GetSubdivCB, &scene,
                " group='Scene' label='Meshes subdivision' min=1 max=50 keyincr=s keyDecr=S help='Subdivide the meshes more or less (switch to wireframe to see the effect).' ");
@@ -1031,6 +1059,10 @@ int main(void)
     TwType rotationType = TwDefineEnum( "Rotation Mode", rotationEV, 3 );
     TwAddVarRW(mainBar, "Rotation", rotationType, &scene.Rotation,
                " group='Scene' keyIncr=Backspace keyDecr=SHIFT+Backspace help='Stop or change the rotation mode.' ");
+    // Default (left) alignment demo: no align_right/align_left set, so this
+    // keeps the library's unchanged default label alignment.
+    TwAddVarRW(mainBar, "RotSpeed", TW_TYPE_FLOAT, &scene.RotSpeed,
+               " label='Rot speed' group='Scene' min=0 max=90 step=1 help='Scene rotation speed, in degree/second.' ");
 
     // Add a read-only float variable; its precision is 0 which means that the fractionnal part of the float value will not be displayed
     TwAddVarRO(mainBar, "RotYAngle", TW_TYPE_DOUBLE, &scene.RotYAngle,
@@ -1064,9 +1096,9 @@ int main(void)
 
         // Rotate scene
         if (scene.Rotation==ROT_CW)
-            scene.RotYAngle -= 5.0*dt;
+            scene.RotYAngle -= scene.RotSpeed*dt;
         else if (scene.Rotation==ROT_CCW)
-            scene.RotYAngle += 5.0*dt;
+            scene.RotYAngle += scene.RotSpeed*dt;
 
         // Move lights
         Scene_Update(&scene, time);
