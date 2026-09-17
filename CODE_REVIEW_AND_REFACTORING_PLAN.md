@@ -438,6 +438,14 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - No public symbols or definition strings changed. `./nob -test` passes with
   the unchanged drawing fixture.
 
+### 2026-09-17: Stage 1, measured local names
+
+- Renamed internal `Space` locals to `space_glyph_width_px` and `RowH` locals
+  to `row_height_px` in label/value, multiline editing and hit-test helpers.
+  These names distinguish font metrics from generic spacing and identify pixel
+  units directly.
+- No public symbols or behavior changed. `./nob -test` passes.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,

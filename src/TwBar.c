@@ -4357,7 +4357,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     unsigned char ch;
     int WidthMax;
     
-    int Space = _Font->m_CharWidth[(int)' '];
+    int space_glyph_width_px = _Font->m_CharWidth[(int)' '];
     int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
 
     int nh = (int)_Bar->m_HierTags.count;
@@ -4375,13 +4375,13 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             CTwVarAtom *HAtom = (CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
             const CSdsArray *Lines = CTwBar_MultilineWrapText(&help_wrap_cache, HAtom, HAtom->m_Base.m_Name, HAtom->m_Val.m_Multiline.m_WrapWidth, _Font);
             // Reconstructs AppendHelpString's original per-line decal (_Level literal leading
-            // spaces) from m_LeftMargin=(_Level+1)*Space, so every wrapped line is indented
+            // spaces) from m_LeftMargin=(_Level+1)*space_glyph_width_px, so every wrapped line is indented
             // as much as each of its former per-line atoms was, not just the block's first.
             static sds DecaledLine = NULL;
             if( DecaledLine==NULL )
                 DecaledLine = sdsempty();
             sdsclear(DecaledLine);
-            for( int sp=0; sp<HAtom->m_Base.m_LeftMargin/Space-1; ++sp )
+            for( int sp=0; sp<HAtom->m_Base.m_LeftMargin/space_glyph_width_px-1; ++sp )
                 DecaledLine = sdscatlen(DecaledLine, " ", 1);
             sds WrappedLine = CTwBar_MultilineLineAt(_Bar, HAtom, Lines, h);
             if( WrappedLine!=NULL )
@@ -4481,12 +4481,12 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             //  WidthMax = _AtomWidthMax - IncrBtnWidth(_Bar->m_Font->m_CharHeight);
             else
                 WidthMax = _AtomWidthMax;
-            if( Space>0 )
-                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=Space )
+            if( space_glyph_width_px>0 )
+                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=space_glyph_width_px )
                 {
                     char sp = ' ';
                     *CurrentLabel = sdscatlen(*CurrentLabel, &sp, 1);
-                    x += Space;
+                    x += space_glyph_width_px;
                 }
             // A "full_width" atom with "lines=N" arrives already wrapped to fit, so clipping it
             // again against the ellipsis margin would truncate a correct line; bypass that the
@@ -4506,7 +4506,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                 // that gap here too is what keeps a right-aligned label from butting up
                 // against (or overlapping) the value column that starts right at WidthMax.
                 int DotWidth = _Font->m_CharWidth[(int)'.'];
-                int Avail = WidthMax-3*Space-x;
+                int Avail = WidthMax-3*space_glyph_width_px-x;
                 if( Avail<0 )
                     Avail = 0;
                 int ContentWidth = 0;
@@ -4531,8 +4531,8 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     }
                     ContentWidth = NbEtc*DotWidth+KeptWidth;
                 }
-                if( Space>0 )
-                    for( s=0; s<Avail-ContentWidth; s+=Space )
+                if( space_glyph_width_px>0 )
+                    for( s=0; s<Avail-ContentWidth; s+=space_glyph_width_px )
                         *CurrentLabel = sdscatlen(*CurrentLabel, " ", 1);
                 if( Truncated )
                     for( int d=0; d<NbEtc; ++d )
@@ -4734,7 +4734,7 @@ int CTwBar_ComputeLabelsWidth(CTwBar *_Bar, const CTexFont *_Font)
     int Len, i, x, s;
     const unsigned char *Text;
     int LabelsWidth = 0;    
-    int Space = _Font->m_CharWidth[(int)' '];
+    int space_glyph_width_px = _Font->m_CharWidth[(int)' '];
     int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
 
     int nh = (int)_Bar->m_HierTags.count;
@@ -4752,12 +4752,12 @@ int CTwBar_ComputeLabelsWidth(CTwBar *_Bar, const CTexFont *_Font)
         bool IsCustom = CTwVar_IsCustom(_Bar->m_HierTags.items[h].m_Var);
         if( !IsCustom )
         {
-            if( Space>0 )
-                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=Space )
-                    x += Space;
+            if( space_glyph_width_px>0 )
+                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=space_glyph_width_px )
+                    x += space_glyph_width_px;
             for( i=0; i<Len; ++i )
                 x += _Font->m_CharWidth[(int)Text[i]];
-            x += 3*Space; // add little margin
+            x += 3*space_glyph_width_px; // add little margin
         }
         if (x > LabelsWidth)
             LabelsWidth = x;
@@ -4773,7 +4773,7 @@ int CTwBar_ComputeValuesWidth(CTwBar *_Bar, const CTexFont *_Font)
     const CTwVarAtom *Atom = NULL;
     sds ValStr = sdsempty();
     int Len, i, x;
-    int Space = _Font->m_CharWidth[(int)' '];
+    int space_glyph_width_px = _Font->m_CharWidth[(int)' '];
     const unsigned char *Text;
     int ValuesWidth = 0;
 
@@ -4795,7 +4795,7 @@ int CTwBar_ComputeValuesWidth(CTwBar *_Bar, const CTexFont *_Font)
             x = 0;
             for( i=0; i<Len; ++i )
                 x += _Font->m_CharWidth[(int)Text[i]];
-            x += 2*Space; // add little margin
+            x += 2*space_glyph_width_px; // add little margin
             if (x > ValuesWidth)
                 ValuesWidth = x;
         }
@@ -8058,7 +8058,7 @@ static void CTwBar_EditInPlaceDrawMultiline(CTwBar *_Bar)
     color32 ColText = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValTextRO : _Bar->m_ColEditText;
     color32 ColBg = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValBg : _Bar->m_ColEditBg;
     color32 ColSelBg = CTwBar_EditInPlaceIsReadOnly(_Bar) ? _Bar->m_ColValTextRO : _Bar->m_ColEditSelBg;
-    int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
+    int row_height_px = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
     int RowX = _Bar->m_PosX+_Bar->m_EditInPlace.m_X;
 
     for( int r=0; r<ML->m_NbLines; ++r )
@@ -8066,7 +8066,7 @@ static void CTwBar_EditInPlaceDrawMultiline(CTwBar *_Bar)
         int LineIdx = ML->m_FirstTextLine+r;
         int RowStart, RowEnd;
         CTwBar_MultilineSourceRangeAt(Starts, Ends, StringLen, LineIdx, &RowStart, &RowEnd);
-        int RowY = _Bar->m_PosY+_Bar->m_EditInPlace.m_Y+r*RowH;
+        int RowY = _Bar->m_PosY+_Bar->m_EditInPlace.m_Y+r*row_height_px;
 
         // BuildText's width is WrapWidth, not the raw gutter-including m_EditInPlace.m_Width:
         // this runs after CTwBar_DrawMultilineWidgets drew the block's own scrollbar, so a wider
@@ -8557,16 +8557,16 @@ bool CTwBar_EditInPlaceMouseMove(CTwBar *_Bar, int _X, int _Y, bool _Select)
         // The block spans several rows, so the Y gate covers all of them rather than the single
         // CharHeight-tall band the single-line case below tests.
         struct CTwMultilineVal *ML = &_Bar->m_EditInPlace.m_Var->m_Val.m_Multiline;
-        int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
+        int row_height_px = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
         int BlockY0 = _Bar->m_PosY+_Bar->m_EditInPlace.m_Y;
-        int BlockY1 = BlockY0+ML->m_NbLines*RowH;
+        int BlockY1 = BlockY0+ML->m_NbLines*row_height_px;
         if( _Y<BlockY0 || _Y>=BlockY1 )
             return false;
 
         const CIntArray *Starts, *Ends;
         CTwBar_EditInPlaceMultilineWrap(_Bar, &Starts, &Ends);
         int StringLen = (int)sdslen(_Bar->m_EditInPlace.m_String);
-        int LineIdx = ML->m_FirstTextLine + (_Y-BlockY0)/RowH;
+        int LineIdx = ML->m_FirstTextLine + (_Y-BlockY0)/row_height_px;
         int RowStart, RowEnd;
         CTwBar_MultilineSourceRangeAt(Starts, Ends, StringLen, LineIdx, &RowStart, &RowEnd);
         int RowX = _Bar->m_PosX+_Bar->m_EditInPlace.m_X;
