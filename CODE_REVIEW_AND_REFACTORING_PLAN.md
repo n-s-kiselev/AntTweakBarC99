@@ -460,6 +460,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   capacity from the line index being revealed.
 - `./nob -test` passes; no public names or behavior changed.
 
+### 2026-09-17: Stage 1, label width names
+
+- Renamed the label-listing locals `WidthMax` and `Avail` to
+  `label_width_limit_px` and `available_text_width_px`. The names distinguish
+  the column constraint from the remaining text space and state their units.
+- `./nob -test` passes with the unchanged fixture.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,

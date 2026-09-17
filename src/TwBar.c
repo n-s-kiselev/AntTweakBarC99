@@ -4355,7 +4355,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     int Len, i, x, Etc, s;
     const unsigned char *Text;
     unsigned char ch;
-    int WidthMax;
+    int label_width_limit_px;
     
     int space_glyph_width_px = _Font->m_CharWidth[(int)' '];
     int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
@@ -4464,23 +4464,23 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             sds *CurrentLabel = &_Labels->items[_Labels->count-1];
             if( _Bar->m_HierTags.items[h].m_Var->m_FullWidth )
                 // Full row width, minus the indent spaces prepended below.
-                WidthMax = _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*group_indent_px;
+                label_width_limit_px = _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*group_indent_px;
             else if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarGroup *)_Bar->m_HierTags.items[h].m_Var)->m_SummaryCallback==NULL )
-                WidthMax = _GroupWidthMax;
+                label_width_limit_px = _GroupWidthMax;
             else if( !CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_BUTTON )
             {
                 if( ((const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Val.m_Button.m_Callback==NULL )
-                    WidthMax = _GroupWidthMax; // separator/info line: label may use the full row width
+                    label_width_limit_px = _GroupWidthMax; // separator/info line: label may use the full row width
                 else
                     // Interactive button: label is clipped to the normal atom label
                     // column, like every other variable type, since the button itself
                     // now fills the value column instead of squeezing next to the label.
-                    WidthMax = _AtomWidthMax;
+                    label_width_limit_px = _AtomWidthMax;
             }
             //else if( _Bar->m_HighlightedLine==h && _Bar->m_DrawRotoBtn )
-            //  WidthMax = _AtomWidthMax - IncrBtnWidth(_Bar->m_Font->m_CharHeight);
+            //  label_width_limit_px = _AtomWidthMax - IncrBtnWidth(_Bar->m_Font->m_CharHeight);
             else
-                WidthMax = _AtomWidthMax;
+                label_width_limit_px = _AtomWidthMax;
             if( space_glyph_width_px>0 )
                 for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=space_glyph_width_px )
                 {
@@ -4491,7 +4491,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             // A "full_width" atom with "lines=N" arrives already wrapped to fit, so clipping it
             // again against the ellipsis margin would truncate a correct line; bypass that the
             // same way help text does. Single-line full_width values have no such pre-wrap and
-            // still clip normally, just against the wider WidthMax set above.
+            // still clip normally, just against the wider label_width_limit_px set above.
             bool ClipBypass = _Bar->m_HierTags.items[h].m_Var->m_DontClip
                             || (_Bar->m_HierTags.items[h].m_Var->m_FullWidth && IsMultilineTextVar(_Bar->m_HierTags.items[h].m_Var));
             if( AlignRight )
@@ -4500,15 +4500,15 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                 // so per-row alignment can only be expressed through the string content - the
                 // label is left-padded with spaces (the indentation idiom above) until its
                 // right edge lands on the label column's right boundary. That boundary is the
-                // same WidthMax the left-aligned path clips against, minus the 3-space gap
+                // same label_width_limit_px the left-aligned path clips against, minus the 3-space gap
                 // CTwBar_ComputeLabelsWidth adds past the longest label when auto-fitting the
-                // column: left-aligned labels never reach WidthMax themselves, so reserving
+                // column: left-aligned labels never reach label_width_limit_px themselves, so reserving
                 // that gap here too is what keeps a right-aligned label from butting up
-                // against (or overlapping) the value column that starts right at WidthMax.
+                // against (or overlapping) the value column that starts right at label_width_limit_px.
                 int DotWidth = _Font->m_CharWidth[(int)'.'];
-                int Avail = WidthMax-3*space_glyph_width_px-x;
-                if( Avail<0 )
-                    Avail = 0;
+                int available_text_width_px = label_width_limit_px-3*space_glyph_width_px-x;
+                if( available_text_width_px<0 )
+                    available_text_width_px = 0;
                 int ContentWidth = 0;
                 for( i=0; i<Len; ++i )
                     ContentWidth += _Font->m_CharWidth[(int)Text[i]];
@@ -4516,7 +4516,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                 // still fit alongside the ellipsis dots, and emit the dots first so an
                 // oversized label reads "..end of label" instead of "start of label..".
                 int FirstKept = 0;
-                bool Truncated = ( ContentWidth>Avail && !ClipBypass );
+                bool Truncated = ( ContentWidth>available_text_width_px && !ClipBypass );
                 if( Truncated )
                 {
                     int KeptWidth = 0;
@@ -4524,7 +4524,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     for( i=Len-1; i>=0; --i )
                     {
                         int cw = _Font->m_CharWidth[(int)Text[i]];
-                        if( KeptWidth+cw+NbEtc*DotWidth>Avail )
+                        if( KeptWidth+cw+NbEtc*DotWidth>available_text_width_px )
                             break;
                         KeptWidth += cw;
                         FirstKept = i;
@@ -4532,14 +4532,14 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     ContentWidth = NbEtc*DotWidth+KeptWidth;
                 }
                 if( space_glyph_width_px>0 )
-                    for( s=0; s<Avail-ContentWidth; s+=space_glyph_width_px )
+                    for( s=0; s<available_text_width_px-ContentWidth; s+=space_glyph_width_px )
                         *CurrentLabel = sdscatlen(*CurrentLabel, " ", 1);
                 if( Truncated )
                     for( int d=0; d<NbEtc; ++d )
                         *CurrentLabel = sdscatlen(*CurrentLabel, ".", 1);
                 *CurrentLabel = sdscatlen(*CurrentLabel, (const char *)Text+FirstKept, Len-FirstKept);
             }
-            else if( x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']<WidthMax || ClipBypass)
+            else if( x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']<label_width_limit_px || ClipBypass)
                 for( i=0; i<Len; ++i )
                 {
                     ch = (Etc==0) ? Text[i] : '.';
@@ -4551,7 +4551,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                         if( Etc>NbEtc )
                             break;
                     }
-                    else if( i<Len-2 && x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']>=WidthMax && !ClipBypass)
+                    else if( i<Len-2 && x+(NbEtc+2)*_Font->m_CharWidth[(int)'.']>=label_width_limit_px && !ClipBypass)
                         Etc = 1;
                 }
         }
