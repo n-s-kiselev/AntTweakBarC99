@@ -499,6 +499,14 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   static example links pass on macOS.
 - No production source or public API changes were needed for these checks.
 
+### 2026-09-17: Dynamic backend example validation
+
+- Built the GLFW3, SDL3, and SFML3 example suites against
+  `libAntTweakBarC99.dylib` using `./nob -dynamic -examples-glfw`,
+  `./nob -dynamic -examples-sdl`, and `./nob -dynamic -examples-sfml`.
+- All 39 dynamic example link steps passed. Runtime launch still depends on
+  the dynamic loader locating the dylib and an interactive desktop session.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
