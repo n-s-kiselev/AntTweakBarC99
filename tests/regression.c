@@ -149,6 +149,7 @@ static void test_scene(FILE *output, int font_size, int scale)
              "Baseline fontsize=%d position='40 40' size='700 880' valueswidth=310 color='70 100 130'", font_size);
     CHECK(TwDefine(definition));
     int number = 3, enabled = 0, selected = 0, clicks = 0;
+    float accent_color[3] = {0.25f, 0.50f, 0.75f};
     char text[256] = "First line wraps with enough words to cross the column boundary.\nSecond line.\nThird line.\nFourth line.\nFifth line.";
     const TwEnumVal options[] = {{0, "Short"}, {1, "WWWW a reasonably wide popup option"}, {2, "Last"}};
     TwType enumeration = TwDefineEnum("SceneOptions", options, 3);
@@ -160,6 +161,7 @@ static void test_scene(FILE *output, int font_size, int scale)
     CHECK(TwAddVarRW(bar, "text", TW_TYPE_CSSTRING(sizeof(text)), text, "group=Inner lines=3"));
     CHECK(TwDefine("Baseline/Inner group=Outer"));
     CHECK(TwAddVarRO(bar, "wide", TW_TYPE_CSSTRING(sizeof(text)), text, "full_width=true lines=2"));
+    CHECK(TwAddVarRW(bar, "accent", TW_TYPE_COLOR3F, accent_color, "label='Accent color' group=Appearance"));
     CHECK(TwDraw());
     CHECK(fprintf(output, "\nCASE font=%d scale=%d\n", font_size, scale) > 0);
     capture(output, "unfocused");

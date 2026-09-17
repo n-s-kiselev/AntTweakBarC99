@@ -508,3 +508,11 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - The regenerated `tests/widget-layout.txt` is byte-for-byte unchanged and all
   29 parameter/scene checks pass. This confirms the current refactoring is
   deterministic; real OpenGL captures and other platforms remain outstanding.
+
+### 2026-09-17: Stage 0 built-in custom widget coverage
+
+- Added a `TW_TYPE_COLOR3F` variable to the deterministic scene. This exercises
+  public color registration, generated group hierarchy, custom layout and
+  swatch drawing through the recording renderer.
+- Regenerated the fixture and verified all 29 parameter/scene checks pass with
+  `./nob -test-record` followed by `./nob -test`.

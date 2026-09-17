@@ -28,10 +28,16 @@ line 45 126 46 126 ffffffff ffffffff 0
 rect 54 133 726 143 29ffffff 29ffffff 29ffffff 29ffffff
 rect 47 136 51 140 3319242f 3319242f 3319242f 3319242f
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 45 210 46 210 ffffffff ffffffff 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 52 180 726 203 46191919 46191919 46191919 46191919
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -44,8 +50,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -58,6 +66,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -66,6 +76,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -110,6 +130,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -194,7 +232,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -207,8 +245,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -221,6 +261,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -229,6 +271,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 719 73 725 81 4c587da3 4c587da3 4c587da3 4c587da3
 line 721 75 719 77 ffffffff ffffffff 1
 line 719 77 721 79 ffffffff ffffffff 1
@@ -279,6 +331,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -363,7 +433,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -376,8 +446,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -390,6 +462,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -398,6 +472,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 414 52 415 56 ffffffff ffffffff ffffffff ffffffff
 line 415 57 416 57 99000000 99000000 0
 line 416 57 416 52 99000000 99000000 0
@@ -446,6 +530,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -530,7 +632,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -543,8 +645,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -557,6 +661,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -565,6 +671,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 719 85 725 93 4c587da3 4c587da3 4c587da3 4c587da3
 line 721 88 722 91 ffffffff ffffffff 1
 line 722 91 723 88 ffffffff ffffffff 1
@@ -610,6 +726,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -694,7 +828,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -707,8 +841,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -721,6 +857,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -729,6 +867,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 719 85 725 93 4c587da3 4c587da3 4c587da3 4c587da3
 line 721 88 722 91 ffffffff ffffffff 1
 line 722 91 723 88 ffffffff ffffffff 1
@@ -774,6 +922,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -858,7 +1024,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -871,8 +1037,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -885,6 +1053,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -893,6 +1063,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 719 85 725 93 4c587da3 4c587da3 4c587da3 4c587da3
 line 721 88 722 91 ffffffff ffffffff 1
 line 722 91 723 88 ffffffff ffffffff 1
@@ -938,6 +1118,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -1022,7 +1220,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1035,8 +1233,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -1049,6 +1249,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1057,6 +1259,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 719 85 725 93 4c587da3 4c587da3 4c587da3 4c587da3
 line 721 88 722 91 ffffffff ffffffff 1
 line 722 91 723 88 ffffffff ffffffff 1
@@ -1125,6 +1337,24 @@ line 51 136 51 141 99ffffff 99ffffff 0
 line 51 140 47 140 99ffffff 99ffffff 0
 line 47 140 47 136 99ffffff 99ffffff 0
 line 49 138 50 138 ffffffff ffffffff 0
+rect 50 205 726 215 29ffffff 29ffffff 29ffffff 29ffffff
+line 48 209 48 213 99000000 99000000 0
+line 44 213 49 213 99000000 99000000 0
+rect 43 208 47 212 3319242f 3319242f 3319242f 3319242f
+line 43 208 47 208 99ffffff 99ffffff 0
+line 47 208 47 213 99ffffff 99ffffff 0
+line 47 212 43 212 99ffffff 99ffffff 0
+line 43 212 43 208 99ffffff 99ffffff 0
+line 45 210 46 210 ffffffff ffffffff 0
+line 52 221 52 225 99000000 99000000 0
+line 48 225 53 225 99000000 99000000 0
+rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
+line 47 220 51 220 99ffffff 99ffffff 0
+line 51 220 51 225 99ffffff 99ffffff 0
+line 51 224 47 224 99ffffff 99ffffff 0
+line 47 224 47 220 99ffffff 99ffffff 0
+line 49 222 50 222 ffffffff ffffffff 0
+line 49 222 49 223 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -1209,7 +1439,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1222,8 +1452,10 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "   "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -1236,6 +1468,8 @@ text 416 60 00000000 00000000
   color ffc7d7ff background 00000000 "Fourth line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1244,6 +1478,16 @@ line 53 104 724 104 99ffffff 99ffffff 0
 line 724 104 724 99 99ffffff 99ffffff 0
 line 724 99 53 99 99ffffff 99ffffff 0
 line 52 113 726 113 ffb7b7b7 ffb7b7b7 0
+rect 416 218 453 221 ffffffff ffffffff ffffffff ffffffff
+rect 454 222 492 226 ffffffff ffffffff ffffffff ffffffff
+rect 493 218 531 221 ffffffff ffffffff ffffffff ffffffff
+rect 532 222 570 226 ffffffff ffffffff ffffffff ffffffff
+rect 571 218 608 221 ffffffff ffffffff ffffffff ffffffff
+rect 609 222 647 226 ffffffff ffffffff ffffffff ffffffff
+rect 648 218 686 221 ffffffff ffffffff ffffffff ffffffff
+rect 687 222 725 226 ffffffff ffffffff ffffffff ffffffff
+rect 416 218 725 226 bfffffff bfffffff bfffffff bfffffff
+rect 416 218 725 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 703 61 709 69 4c587da3 4c587da3 4c587da3 4c587da3
 rect 711 61 717 69 4c587da3 4c587da3 4c587da3 4c587da3
 line 705 65 708 65 ffffffff ffffffff 0
@@ -1578,10 +1822,16 @@ line -15 126 -14 126 ff000000 ff000000 0
 rect -6 133 666 143 1c000000 1c000000 1c000000 1c000000
 rect -13 136 -9 140 3319242f 3319242f 3319242f 3319242f
 line -11 138 -10 138 ff000000 ff000000 0
+rect -10 205 666 215 1c000000 1c000000 1c000000 1c000000
+rect -17 208 -13 212 3319242f 3319242f 3319242f 3319242f
+line -15 210 -14 210 ff000000 ff000000 0
+rect -13 220 -9 224 3319242f 3319242f 3319242f 3319242f
+line -11 222 -10 222 ff000000 ff000000 0
+line -11 222 -11 223 ff000000 ff000000 0
 rect 356 144 666 179 46ffffff 46ffffff 46ffffff 46ffffff
 rect -8 180 666 203 46ffffff 46ffffff 46ffffff 46ffffff
 text -9 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 12
+  font-height 11 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -1594,8 +1844,10 @@ text -9 60 00000000 00000000
   color ff000000 background 00000000 "   "
   color ff000000 background 00000000 "First line wraps with enough words to cross the column boundary."
   color ff000000 background 00000000 "Second line."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "  Accent color"
 text 356 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 12
+  font-height 11 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -1608,6 +1860,8 @@ text 356 60 00000000 00000000
   color ff000080 background 00000000 "Fourth line."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect -5 105 666 106 7f000000 7f000000 7f000000 7f000000
 rect 665 101 666 104 7f000000 7f000000 7f000000 7f000000
 rect -7 99 664 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1616,6 +1870,16 @@ line -7 104 664 104 994c4c4c 994c4c4c 0
 line 664 104 664 99 994c4c4c 994c4c4c 0
 line 664 99 -7 99 994c4c4c 994c4c4c 0
 line -8 113 666 113 ff505050 ff505050 0
+rect 356 218 393 221 ffffffff ffffffff ffffffff ffffffff
+rect 394 222 432 226 ffffffff ffffffff ffffffff ffffffff
+rect 433 218 471 221 ffffffff ffffffff ffffffff ffffffff
+rect 472 222 510 226 ffffffff ffffffff ffffffff ffffffff
+rect 511 218 548 221 ffffffff ffffffff ffffffff ffffffff
+rect 549 222 587 226 ffffffff ffffffff ffffffff ffffffff
+rect 588 218 626 221 ffffffff ffffffff ffffffff ffffffff
+rect 627 222 665 226 ffffffff ffffffff ffffffff ffffffff
+rect 356 218 665 226 bfffffff bfffffff bfffffff bfffffff
+rect 356 218 665 226 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
@@ -1643,7 +1907,7 @@ rect -6 133 666 143 1c000000 1c000000 1c000000 1c000000
 rect -13 136 -9 140 3319242f 3319242f 3319242f 3319242f
 line -11 138 -10 138 ff000000 ff000000 0
 rect 672 69 676 176 11466482 11466482 11466482 11466482
-rect 673 70 675 158 4c587da3 4c587da3 4c587da3 4c587da3
+rect 673 70 675 145 4c587da3 4c587da3 4c587da3 4c587da3
 rect 356 144 666 179 46ffffff 46ffffff 46ffffff 46ffffff
 text -9 60 00000000 00000000
   font-height 11 gap 1 background-width 0 lines 10
@@ -1758,10 +2022,16 @@ line 45 145 50 145 ffffffff ffffffff 0
 rect 62 154 723 167 29ffffff 29ffffff 29ffffff 29ffffff
 rect 51 156 59 164 3319242f 3319242f 3319242f 3319242f
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 45 250 50 250 ffffffff ffffffff 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 55 213 723 242 46191919 46191919 46191919 46191919
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1774,8 +2044,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -1788,6 +2060,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1796,6 +2070,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -1840,6 +2124,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -1940,7 +2242,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1953,8 +2255,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -1967,6 +2271,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1975,6 +2281,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 714 79 722 90 4c587da3 4c587da3 4c587da3 4c587da3
 line 717 83 715 85 ffffffff ffffffff 1
 line 715 85 717 87 ffffffff ffffffff 1
@@ -2025,6 +2341,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2125,7 +2459,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2138,8 +2472,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2152,6 +2488,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2160,6 +2498,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 411 55 412 59 ffffffff ffffffff ffffffff ffffffff
 line 412 60 413 60 99000000 99000000 0
 line 413 60 413 55 99000000 99000000 0
@@ -2208,6 +2556,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2308,7 +2674,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2321,8 +2687,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2335,6 +2703,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2343,6 +2713,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 714 94 722 105 4c587da3 4c587da3 4c587da3 4c587da3
 line 716 99 718 103 ffffffff ffffffff 1
 line 718 103 720 99 ffffffff ffffffff 1
@@ -2388,6 +2768,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2488,7 +2886,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2501,8 +2899,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2515,6 +2915,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2523,6 +2925,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 714 94 722 105 4c587da3 4c587da3 4c587da3 4c587da3
 line 716 99 718 103 ffffffff ffffffff 1
 line 718 103 720 99 ffffffff ffffffff 1
@@ -2568,6 +2980,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2668,7 +3098,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2681,8 +3111,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2695,6 +3127,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2703,6 +3137,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 714 94 722 105 4c587da3 4c587da3 4c587da3 4c587da3
 line 716 99 718 103 ffffffff ffffffff 1
 line 718 103 720 99 ffffffff ffffffff 1
@@ -2748,6 +3192,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2848,7 +3310,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2861,8 +3323,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2875,6 +3339,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2883,6 +3349,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 714 94 722 105 4c587da3 4c587da3 4c587da3 4c587da3
 line 716 99 718 103 ffffffff ffffffff 1
 line 718 103 720 99 ffffffff ffffffff 1
@@ -2951,6 +3427,24 @@ line 59 156 59 165 99ffffff 99ffffff 0
 line 59 164 51 164 99ffffff 99ffffff 0
 line 51 164 51 156 99ffffff 99ffffff 0
 line 53 160 58 160 ffffffff ffffffff 0
+rect 54 244 723 257 29ffffff 29ffffff 29ffffff 29ffffff
+line 52 247 52 255 99000000 99000000 0
+line 44 255 53 255 99000000 99000000 0
+rect 43 246 51 254 3319242f 3319242f 3319242f 3319242f
+line 43 246 51 246 99ffffff 99ffffff 0
+line 51 246 51 255 99ffffff 99ffffff 0
+line 51 254 43 254 99ffffff 99ffffff 0
+line 43 254 43 246 99ffffff 99ffffff 0
+line 45 250 50 250 ffffffff ffffffff 0
+line 60 262 60 270 99000000 99000000 0
+line 52 270 61 270 99000000 99000000 0
+rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
+line 51 261 59 261 99ffffff 99ffffff 0
+line 59 261 59 270 99ffffff 99ffffff 0
+line 59 269 51 269 99ffffff 99ffffff 0
+line 51 269 51 261 99ffffff 99ffffff 0
+line 53 265 58 265 ffffffff ffffffff 0
+line 55 263 55 268 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -3051,7 +3545,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3064,8 +3558,10 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -3078,6 +3574,8 @@ text 413 63 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3086,6 +3584,16 @@ line 56 119 721 119 99ffffff 99ffffff 0
 line 721 119 721 111 99ffffff 99ffffff 0
 line 721 111 56 111 99ffffff 99ffffff 0
 line 55 130 723 130 ffb7b7b7 ffb7b7b7 0
+rect 413 260 450 265 ffffffff ffffffff ffffffff ffffffff
+rect 451 266 489 271 ffffffff ffffffff ffffffff ffffffff
+rect 490 260 528 265 ffffffff ffffffff ffffffff ffffffff
+rect 529 266 567 271 ffffffff ffffffff ffffffff ffffffff
+rect 568 260 605 265 ffffffff ffffffff ffffffff ffffffff
+rect 606 266 644 271 ffffffff ffffffff ffffffff ffffffff
+rect 645 260 683 265 ffffffff ffffffff ffffffff ffffffff
+rect 684 266 722 271 ffffffff ffffffff ffffffff ffffffff
+rect 413 260 722 271 bfffffff bfffffff bfffffff bfffffff
+rect 413 260 722 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 694 64 702 75 4c587da3 4c587da3 4c587da3 4c587da3
 rect 704 64 712 75 4c587da3 4c587da3 4c587da3 4c587da3
 line 697 70 700 70 ffffffff ffffffff 0
@@ -3486,10 +3994,16 @@ line -15 145 -10 145 ff000000 ff000000 0
 rect 2 154 663 167 1c000000 1c000000 1c000000 1c000000
 rect -9 156 -1 164 3319242f 3319242f 3319242f 3319242f
 line -7 160 -2 160 ff000000 ff000000 0
+rect -6 244 663 257 1c000000 1c000000 1c000000 1c000000
+rect -17 246 -9 254 3319242f 3319242f 3319242f 3319242f
+line -15 250 -10 250 ff000000 ff000000 0
+rect -9 261 -1 269 3319242f 3319242f 3319242f 3319242f
+line -7 265 -2 265 ff000000 ff000000 0
+line -5 263 -5 268 ff000000 ff000000 0
 rect 353 168 663 212 46ffffff 46ffffff 46ffffff 46ffffff
 rect -5 213 663 242 46ffffff 46ffffff 46ffffff 46ffffff
 text -6 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 12
+  font-height 14 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 "..rately long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -3502,8 +4016,10 @@ text -6 63 00000000 00000000
   color ff000000 background 00000000 "    "
   color ff000000 background 00000000 "First line wraps with enough words to cross the column boundary."
   color ff000000 background 00000000 "Second line."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "  Accent color"
 text 353 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 12
+  font-height 14 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -3516,6 +4032,8 @@ text 353 63 00000000 00000000
   color ff000080 background 00000000 "Third line."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect -2 120 663 121 7f000000 7f000000 7f000000 7f000000
 rect 662 113 663 119 7f000000 7f000000 7f000000 7f000000
 rect -4 111 661 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3524,6 +4042,16 @@ line -4 119 661 119 994c4c4c 994c4c4c 0
 line 661 119 661 111 994c4c4c 994c4c4c 0
 line 661 111 -4 111 994c4c4c 994c4c4c 0
 line -5 130 663 130 ff505050 ff505050 0
+rect 353 260 390 265 ffffffff ffffffff ffffffff ffffffff
+rect 391 266 429 271 ffffffff ffffffff ffffffff ffffffff
+rect 430 260 468 265 ffffffff ffffffff ffffffff ffffffff
+rect 469 266 507 271 ffffffff ffffffff ffffffff ffffffff
+rect 508 260 545 265 ffffffff ffffffff ffffffff ffffffff
+rect 546 266 584 271 ffffffff ffffffff ffffffff ffffffff
+rect 585 260 623 265 ffffffff ffffffff ffffffff ffffffff
+rect 624 266 662 271 ffffffff ffffffff ffffffff ffffffff
+rect 353 260 662 271 bfffffff bfffffff bfffffff bfffffff
+rect 353 260 662 271 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
@@ -3551,7 +4079,7 @@ rect 2 154 663 167 1c000000 1c000000 1c000000 1c000000
 rect -9 156 -1 164 3319242f 3319242f 3319242f 3319242f
 line -7 160 -2 160 ff000000 ff000000 0
 rect 669 74 675 171 11466482 11466482 11466482 11466482
-rect 670 75 674 138 4c587da3 4c587da3 4c587da3 4c587da3
+rect 670 75 674 129 4c587da3 4c587da3 4c587da3 4c587da3
 rect 353 168 663 183 46ffffff 46ffffff 46ffffff 46ffffff
 text -6 63 00000000 00000000
   font-height 14 gap 1 background-width 0 lines 8
@@ -3662,10 +4190,16 @@ line 45 158 52 158 ffffffff ffffffff 0
 rect 66 168 721 183 29ffffff 29ffffff 29ffffff 29ffffff
 rect 53 170 63 180 3319242f 3319242f 3319242f 3319242f
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 45 277 52 277 ffffffff ffffffff 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 57 235 721 268 46191919 46191919 46191919 46191919
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3678,8 +4212,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -3692,6 +4228,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3700,6 +4238,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -3744,6 +4292,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -3852,7 +4418,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3865,8 +4431,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -3879,6 +4447,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3887,6 +4457,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 710 83 720 96 4c587da3 4c587da3 4c587da3 4c587da3
 line 714 87 711 90 ffffffff ffffffff 1
 line 711 90 714 93 ffffffff ffffffff 1
@@ -3937,6 +4517,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4045,7 +4643,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4058,8 +4656,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4072,6 +4672,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4080,6 +4682,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 409 57 410 61 ffffffff ffffffff ffffffff ffffffff
 line 410 62 411 62 99000000 99000000 0
 line 411 62 411 57 99000000 99000000 0
@@ -4128,6 +4740,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4236,7 +4866,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4249,8 +4879,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4263,6 +4895,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4271,6 +4905,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 710 100 720 113 4c587da3 4c587da3 4c587da3 4c587da3
 line 712 106 715 111 ffffffff ffffffff 1
 line 715 111 718 106 ffffffff ffffffff 1
@@ -4316,6 +4960,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4424,7 +5086,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4437,8 +5099,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4451,6 +5115,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4459,6 +5125,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 710 100 720 113 4c587da3 4c587da3 4c587da3 4c587da3
 line 712 106 715 111 ffffffff ffffffff 1
 line 715 111 718 106 ffffffff ffffffff 1
@@ -4504,6 +5180,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4612,7 +5306,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4625,8 +5319,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4639,6 +5335,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4647,6 +5345,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 710 100 720 113 4c587da3 4c587da3 4c587da3 4c587da3
 line 712 106 715 111 ffffffff ffffffff 1
 line 715 111 718 106 ffffffff ffffffff 1
@@ -4692,6 +5400,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4800,7 +5526,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4813,8 +5539,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4827,6 +5555,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4835,6 +5565,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 710 100 720 113 4c587da3 4c587da3 4c587da3 4c587da3
 line 712 106 715 111 ffffffff ffffffff 1
 line 715 111 718 106 ffffffff ffffffff 1
@@ -4903,6 +5643,24 @@ line 63 170 63 181 99ffffff 99ffffff 0
 line 63 180 53 180 99ffffff 99ffffff 0
 line 53 180 53 170 99ffffff 99ffffff 0
 line 55 175 62 175 ffffffff ffffffff 0
+rect 56 270 721 285 29ffffff 29ffffff 29ffffff 29ffffff
+line 54 273 54 283 99000000 99000000 0
+line 44 283 55 283 99000000 99000000 0
+rect 43 272 53 282 3319242f 3319242f 3319242f 3319242f
+line 43 272 53 272 99ffffff 99ffffff 0
+line 53 272 53 283 99ffffff 99ffffff 0
+line 53 282 43 282 99ffffff 99ffffff 0
+line 43 282 43 272 99ffffff 99ffffff 0
+line 45 277 52 277 ffffffff ffffffff 0
+line 64 290 64 300 99000000 99000000 0
+line 54 300 65 300 99000000 99000000 0
+rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
+line 53 289 63 289 99ffffff 99ffffff 0
+line 63 289 63 300 99ffffff 99ffffff 0
+line 63 299 53 299 99ffffff 99ffffff 0
+line 53 299 53 289 99ffffff 99ffffff 0
+line 55 294 62 294 ffffffff ffffffff 0
+line 58 291 58 298 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -5011,7 +5769,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5024,8 +5782,10 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -5038,6 +5798,8 @@ text 411 65 00000000 00000000
   color ffc7d7ff background 00000000 "Third line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5046,6 +5808,16 @@ line 58 129 719 129 99ffffff 99ffffff 0
 line 719 129 719 119 99ffffff 99ffffff 0
 line 719 119 58 119 99ffffff 99ffffff 0
 line 57 141 721 141 ffb7b7b7 ffb7b7b7 0
+rect 411 288 448 294 ffffffff ffffffff ffffffff ffffffff
+rect 449 295 487 301 ffffffff ffffffff ffffffff ffffffff
+rect 488 288 526 294 ffffffff ffffffff ffffffff ffffffff
+rect 527 295 565 301 ffffffff ffffffff ffffffff ffffffff
+rect 566 288 603 294 ffffffff ffffffff ffffffff ffffffff
+rect 604 295 642 301 ffffffff ffffffff ffffffff ffffffff
+rect 643 288 681 294 ffffffff ffffffff ffffffff ffffffff
+rect 682 295 720 301 ffffffff ffffffff ffffffff ffffffff
+rect 411 288 720 301 bfffffff bfffffff bfffffff bfffffff
+rect 411 288 720 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 686 66 696 79 4c587da3 4c587da3 4c587da3 4c587da3
 rect 698 66 708 79 4c587da3 4c587da3 4c587da3 4c587da3
 line 689 73 694 73 ffffffff ffffffff 0
@@ -5494,10 +6266,16 @@ line -15 158 -8 158 ff000000 ff000000 0
 rect 6 168 661 183 1c000000 1c000000 1c000000 1c000000
 rect -7 170 3 180 3319242f 3319242f 3319242f 3319242f
 line -5 175 2 175 ff000000 ff000000 0
+rect -4 270 661 285 1c000000 1c000000 1c000000 1c000000
+rect -17 272 -7 282 3319242f 3319242f 3319242f 3319242f
+line -15 277 -8 277 ff000000 ff000000 0
+rect -7 289 3 299 3319242f 3319242f 3319242f 3319242f
+line -5 294 2 294 ff000000 ff000000 0
+line -2 291 -2 298 ff000000 ff000000 0
 rect 351 184 661 234 46ffffff 46ffffff 46ffffff 46ffffff
 rect -3 235 661 268 46ffffff 46ffffff 46ffffff 46ffffff
 text -4 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 12
+  font-height 16 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 "..ly long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -5510,8 +6288,10 @@ text -4 65 00000000 00000000
   color ff000000 background 00000000 "     "
   color ff000000 background 00000000 "First line wraps with enough words to cross the column boundary."
   color ff000000 background 00000000 "Second line."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "   Accent color"
 text 351 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 12
+  font-height 16 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -5524,6 +6304,8 @@ text 351 65 00000000 00000000
   color ff000080 background 00000000 "Third line."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect 0 130 661 131 7f000000 7f000000 7f000000 7f000000
 rect 660 121 661 129 7f000000 7f000000 7f000000 7f000000
 rect -2 119 659 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5532,6 +6314,16 @@ line -2 129 659 129 994c4c4c 994c4c4c 0
 line 659 129 659 119 994c4c4c 994c4c4c 0
 line 659 119 -2 119 994c4c4c 994c4c4c 0
 line -3 141 661 141 ff505050 ff505050 0
+rect 351 288 388 294 ffffffff ffffffff ffffffff ffffffff
+rect 389 295 427 301 ffffffff ffffffff ffffffff ffffffff
+rect 428 288 466 294 ffffffff ffffffff ffffffff ffffffff
+rect 467 295 505 301 ffffffff ffffffff ffffffff ffffffff
+rect 506 288 543 294 ffffffff ffffffff ffffffff ffffffff
+rect 544 295 582 301 ffffffff ffffffff ffffffff ffffffff
+rect 583 288 621 294 ffffffff ffffffff ffffffff ffffffff
+rect 622 295 660 301 ffffffff ffffffff ffffffff ffffffff
+rect 351 288 660 301 bfffffff bfffffff bfffffff bfffffff
+rect 351 288 660 301 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
@@ -5556,7 +6348,7 @@ rect -4 151 661 166 1c000000 1c000000 1c000000 1c000000
 rect -17 153 -7 163 3319242f 3319242f 3319242f 3319242f
 line -15 158 -8 158 ff000000 ff000000 0
 rect 667 78 675 167 11466482 11466482 11466482 11466482
-rect 668 79 674 122 4c587da3 4c587da3 4c587da3 4c587da3
+rect 668 79 674 115 4c587da3 4c587da3 4c587da3 4c587da3
 text -4 65 00000000 00000000
   font-height 16 gap 1 background-width 0 lines 6
   color ff000000 background 00000000 "..ly long label that exceeds the available label column"
@@ -5662,10 +6454,16 @@ line 45 197 58 197 ffffffff ffffffff 0
 rect 78 210 715 231 29ffffff 29ffffff 29ffffff 29ffffff
 rect 59 212 75 228 3319242f 3319242f 3319242f 3319242f
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 45 358 58 358 ffffffff ffffffff 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 63 301 715 346 46191919 46191919 46191919 46191919
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5678,8 +6476,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -5692,6 +6492,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5700,6 +6502,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -5744,6 +6556,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -5876,7 +6706,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5889,8 +6719,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -5903,6 +6735,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5911,6 +6745,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 700 95 714 114 4c587da3 4c587da3 4c587da3 4c587da3
 line 706 101 702 105 ffffffff ffffffff 1
 line 702 105 706 109 ffffffff ffffffff 1
@@ -5961,6 +6805,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6093,7 +6955,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6106,8 +6968,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -6120,6 +6984,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6128,6 +6994,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 403 63 404 67 ffffffff ffffffff ffffffff ffffffff
 line 404 68 405 68 99000000 99000000 0
 line 405 68 405 63 99000000 99000000 0
@@ -6176,6 +7052,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6308,7 +7202,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6321,8 +7215,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -6335,6 +7231,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6343,6 +7241,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 700 118 714 137 4c587da3 4c587da3 4c587da3 4c587da3
 line 702 127 707 135 ffffffff ffffffff 1
 line 707 135 712 127 ffffffff ffffffff 1
@@ -6388,6 +7296,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6520,7 +7446,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6533,8 +7459,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -6547,6 +7475,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6555,6 +7485,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 700 118 714 137 4c587da3 4c587da3 4c587da3 4c587da3
 line 702 127 707 135 ffffffff ffffffff 1
 line 707 135 712 127 ffffffff ffffffff 1
@@ -6600,6 +7540,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6732,7 +7690,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6745,8 +7703,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -6759,6 +7719,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6767,6 +7729,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 700 118 714 137 4c587da3 4c587da3 4c587da3 4c587da3
 line 702 127 707 135 ffffffff ffffffff 1
 line 707 135 712 127 ffffffff ffffffff 1
@@ -6835,6 +7807,24 @@ line 75 212 75 229 99ffffff 99ffffff 0
 line 75 228 59 228 99ffffff 99ffffff 0
 line 59 228 59 212 99ffffff 99ffffff 0
 line 61 220 74 220 ffffffff ffffffff 0
+rect 62 348 715 369 29ffffff 29ffffff 29ffffff 29ffffff
+line 60 351 60 367 99000000 99000000 0
+line 44 367 61 367 99000000 99000000 0
+rect 43 350 59 366 3319242f 3319242f 3319242f 3319242f
+line 43 350 59 350 99ffffff 99ffffff 0
+line 59 350 59 367 99ffffff 99ffffff 0
+line 59 366 43 366 99ffffff 99ffffff 0
+line 43 366 43 350 99ffffff 99ffffff 0
+line 45 358 58 358 ffffffff ffffffff 0
+line 76 374 76 390 99000000 99000000 0
+line 60 390 77 390 99000000 99000000 0
+rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
+line 59 373 75 373 99ffffff 99ffffff 0
+line 75 373 75 390 99ffffff 99ffffff 0
+line 75 389 59 389 99ffffff 99ffffff 0
+line 59 389 59 373 99ffffff 99ffffff 0
+line 61 381 74 381 ffffffff ffffffff 0
+line 67 375 67 388 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6967,7 +7957,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6980,8 +7970,10 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "    "
   color ffffffff background 00000000 "First line wraps with enough words to cross the column boundary."
   color ffffffff background 00000000 "Second line."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "  Accent color"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup .."
@@ -6994,6 +7986,8 @@ text 405 71 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7002,6 +7996,16 @@ line 64 159 713 159 99ffffff 99ffffff 0
 line 713 159 713 143 99ffffff 99ffffff 0
 line 713 143 64 143 99ffffff 99ffffff 0
 line 63 174 715 174 ffb7b7b7 ffb7b7b7 0
+rect 405 372 442 381 ffffffff ffffffff ffffffff ffffffff
+rect 443 382 481 391 ffffffff ffffffff ffffffff ffffffff
+rect 482 372 520 381 ffffffff ffffffff ffffffff ffffffff
+rect 521 382 559 391 ffffffff ffffffff ffffffff ffffffff
+rect 560 372 597 381 ffffffff ffffffff ffffffff ffffffff
+rect 598 382 636 391 ffffffff ffffffff ffffffff ffffffff
+rect 637 372 675 381 ffffffff ffffffff ffffffff ffffffff
+rect 676 382 714 391 ffffffff ffffffff ffffffff ffffffff
+rect 405 372 714 391 bfffffff bfffffff bfffffff bfffffff
+rect 405 372 714 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 668 72 682 91 4c587da3 4c587da3 4c587da3 4c587da3
 rect 684 72 698 91 4c587da3 4c587da3 4c587da3 4c587da3
 line 671 82 680 82 ffffffff ffffffff 0
@@ -7596,10 +8600,16 @@ line -15 197 -2 197 ff000000 ff000000 0
 rect 18 210 655 231 1c000000 1c000000 1c000000 1c000000
 rect -1 212 15 228 3319242f 3319242f 3319242f 3319242f
 line 1 220 14 220 ff000000 ff000000 0
+rect 2 348 655 369 1c000000 1c000000 1c000000 1c000000
+rect -17 350 -1 366 3319242f 3319242f 3319242f 3319242f
+line -15 358 -2 358 ff000000 ff000000 0
+rect -1 373 15 389 3319242f 3319242f 3319242f 3319242f
+line 1 381 14 381 ff000000 ff000000 0
+line 7 375 7 388 ff000000 ff000000 0
 rect 345 232 655 300 46ffffff 46ffffff 46ffffff 46ffffff
 rect 3 301 655 346 46ffffff 46ffffff 46ffffff 46ffffff
 text 2 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 12
+  font-height 22 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 " ..t exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -7612,8 +8622,10 @@ text 2 71 00000000 00000000
   color ff000000 background 00000000 "    "
   color ff000000 background 00000000 "First line wraps with enough words to cross the column boundary."
   color ff000000 background 00000000 "Second line."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "  Accent color"
 text 345 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 12
+  font-height 22 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup .."
@@ -7626,6 +8638,8 @@ text 345 71 00000000 00000000
   color ff000080 background 00000000 "Second line."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect 6 160 655 161 7f000000 7f000000 7f000000 7f000000
 rect 654 145 655 159 7f000000 7f000000 7f000000 7f000000
 rect 4 143 653 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7634,6 +8648,16 @@ line 4 159 653 159 994c4c4c 994c4c4c 0
 line 653 159 653 143 994c4c4c 994c4c4c 0
 line 653 143 4 143 994c4c4c 994c4c4c 0
 line 3 174 655 174 ff505050 ff505050 0
+rect 345 372 382 381 ffffffff ffffffff ffffffff ffffffff
+rect 383 382 421 391 ffffffff ffffffff ffffffff ffffffff
+rect 422 372 460 381 ffffffff ffffffff ffffffff ffffffff
+rect 461 382 499 391 ffffffff ffffffff ffffffff ffffffff
+rect 500 372 537 381 ffffffff ffffffff ffffffff ffffffff
+rect 538 382 576 391 ffffffff ffffffff ffffffff ffffffff
+rect 577 372 615 381 ffffffff ffffffff ffffffff ffffffff
+rect 616 382 654 391 ffffffff ffffffff ffffffff ffffffff
+rect 345 372 654 391 bfffffff bfffffff bfffffff bfffffff
+rect 345 372 654 391 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
@@ -7655,7 +8679,7 @@ rect 680 200 683 203 20000000 00000000 00000000 00000000
 rect 680 40 683 43 00000000 00000000 20000000 00000000
 rect 680 44 683 199 20000000 00000000 20000000 00000000
 rect 661 90 675 155 11466482 11466482 11466482 11466482
-rect 662 91 674 111 4c587da3 4c587da3 4c587da3 4c587da3
+rect 662 91 674 107 4c587da3 4c587da3 4c587da3 4c587da3
 text 2 71 00000000 00000000
   font-height 22 gap 1 background-width 0 lines 4
   color ff000000 background 00000000 " ..t exceeds the available label column"
@@ -7756,10 +8780,16 @@ line 45 236 64 236 ffffffff ffffffff 0
 rect 90 252 709 279 29ffffff 29ffffff 29ffffff 29ffffff
 rect 65 254 87 276 3319242f 3319242f 3319242f 3319242f
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 45 439 64 439 ffffffff ffffffff 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 69 367 709 424 46191919 46191919 46191919 46191919
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -7772,8 +8802,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -7786,6 +8818,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "the column boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7794,6 +8828,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -7838,6 +8882,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -7994,7 +9056,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8007,8 +9069,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -8021,6 +9085,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "the column boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8029,6 +9095,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 690 107 708 132 4c587da3 4c587da3 4c587da3 4c587da3
 line 698 115 693 120 ffffffff ffffffff 1
 line 693 120 698 125 ffffffff ffffffff 1
@@ -8079,6 +9155,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -8235,7 +9329,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8248,8 +9342,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -8262,6 +9358,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8270,6 +9368,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 397 69 398 73 ffffffff ffffffff ffffffff ffffffff
 line 398 74 399 74 99000000 99000000 0
 line 399 74 399 69 99000000 99000000 0
@@ -8318,6 +9426,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -8474,7 +9600,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8487,8 +9613,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -8501,6 +9629,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8509,6 +9639,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 690 136 708 161 4c587da3 4c587da3 4c587da3 4c587da3
 line 692 148 699 159 ffffffff ffffffff 1
 line 699 159 706 148 ffffffff ffffffff 1
@@ -8554,6 +9694,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -8710,7 +9868,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8723,8 +9881,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -8737,6 +9897,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8745,6 +9907,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 690 136 708 161 4c587da3 4c587da3 4c587da3 4c587da3
 line 692 148 699 159 ffffffff ffffffff 1
 line 699 159 706 148 ffffffff ffffffff 1
@@ -8790,6 +9962,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -8946,7 +10136,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8959,8 +10149,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -8973,6 +10165,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8981,6 +10175,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 690 136 708 161 4c587da3 4c587da3 4c587da3 4c587da3
 line 692 148 699 159 ffffffff ffffffff 1
 line 699 159 706 148 ffffffff ffffffff 1
@@ -9049,6 +10253,24 @@ line 87 254 87 277 99ffffff 99ffffff 0
 line 87 276 65 276 99ffffff 99ffffff 0
 line 65 276 65 254 99ffffff 99ffffff 0
 line 67 265 86 265 ffffffff ffffffff 0
+rect 68 426 709 453 29ffffff 29ffffff 29ffffff 29ffffff
+line 66 429 66 451 99000000 99000000 0
+line 44 451 67 451 99000000 99000000 0
+rect 43 428 65 450 3319242f 3319242f 3319242f 3319242f
+line 43 428 65 428 99ffffff 99ffffff 0
+line 65 428 65 451 99ffffff 99ffffff 0
+line 65 450 43 450 99ffffff 99ffffff 0
+line 43 450 43 428 99ffffff 99ffffff 0
+line 45 439 64 439 ffffffff ffffffff 0
+line 88 458 88 480 99000000 99000000 0
+line 66 480 89 480 99000000 99000000 0
+rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
+line 65 457 87 457 99ffffff 99ffffff 0
+line 87 457 87 480 99ffffff 99ffffff 0
+line 87 479 65 479 99ffffff 99ffffff 0
+line 65 479 65 457 99ffffff 99ffffff 0
+line 67 468 86 468 ffffffff ffffffff 0
+line 76 459 76 478 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -9205,7 +10427,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -9218,8 +10440,10 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "     "
   color ffffffff background 00000000 "First line wraps with enough words to cross the"
   color ffffffff background 00000000 "column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "   Accent color"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably w.."
@@ -9232,6 +10456,8 @@ text 399 77 00000000 00000000
   color ffc7d7ff background 00000000 "Second line."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -9240,6 +10466,16 @@ line 70 189 707 189 99ffffff 99ffffff 0
 line 707 189 707 167 99ffffff 99ffffff 0
 line 707 167 70 167 99ffffff 99ffffff 0
 line 69 207 709 207 ffb7b7b7 ffb7b7b7 0
+rect 399 456 436 468 ffffffff ffffffff ffffffff ffffffff
+rect 437 469 475 481 ffffffff ffffffff ffffffff ffffffff
+rect 476 456 514 468 ffffffff ffffffff ffffffff ffffffff
+rect 515 469 553 481 ffffffff ffffffff ffffffff ffffffff
+rect 554 456 591 468 ffffffff ffffffff ffffffff ffffffff
+rect 592 469 630 481 ffffffff ffffffff ffffffff ffffffff
+rect 631 456 669 468 ffffffff ffffffff ffffffff ffffffff
+rect 670 469 708 481 ffffffff ffffffff ffffffff ffffffff
+rect 399 456 708 481 bfffffff bfffffff bfffffff bfffffff
+rect 399 456 708 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 650 78 668 103 4c587da3 4c587da3 4c587da3 4c587da3
 rect 670 78 688 103 4c587da3 4c587da3 4c587da3 4c587da3
 line 653 91 666 91 ffffffff ffffffff 0
@@ -9972,10 +11208,16 @@ line -15 236 4 236 ff000000 ff000000 0
 rect 30 252 649 279 1c000000 1c000000 1c000000 1c000000
 rect 5 254 27 276 3319242f 3319242f 3319242f 3319242f
 line 7 265 26 265 ff000000 ff000000 0
+rect 8 426 649 453 1c000000 1c000000 1c000000 1c000000
+rect -17 428 5 450 3319242f 3319242f 3319242f 3319242f
+line -15 439 4 439 ff000000 ff000000 0
+rect 5 457 27 479 3319242f 3319242f 3319242f 3319242f
+line 7 468 26 468 ff000000 ff000000 0
+line 16 459 16 478 ff000000 ff000000 0
 rect 339 280 649 366 46ffffff 46ffffff 46ffffff 46ffffff
 rect 9 367 649 424 46ffffff 46ffffff 46ffffff 46ffffff
 text 8 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 12
+  font-height 28 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 "..e available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -9988,8 +11230,10 @@ text 8 77 00000000 00000000
   color ff000000 background 00000000 "     "
   color ff000000 background 00000000 "First line wraps with enough words to cross the"
   color ff000000 background 00000000 "column boundary."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "   Accent color"
 text 339 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 12
+  font-height 28 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably w.."
@@ -10002,6 +11246,8 @@ text 339 77 00000000 00000000
   color ff000080 background 00000000 "Second line."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect 12 190 649 191 7f000000 7f000000 7f000000 7f000000
 rect 648 169 649 189 7f000000 7f000000 7f000000 7f000000
 rect 10 167 647 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10010,6 +11256,16 @@ line 10 189 647 189 994c4c4c 994c4c4c 0
 line 647 189 647 167 994c4c4c 994c4c4c 0
 line 647 167 10 167 994c4c4c 994c4c4c 0
 line 9 207 649 207 ff505050 ff505050 0
+rect 339 456 376 468 ffffffff ffffffff ffffffff ffffffff
+rect 377 469 415 481 ffffffff ffffffff ffffffff ffffffff
+rect 416 456 454 468 ffffffff ffffffff ffffffff ffffffff
+rect 455 469 493 481 ffffffff ffffffff ffffffff ffffffff
+rect 494 456 531 468 ffffffff ffffffff ffffffff ffffffff
+rect 532 469 570 481 ffffffff ffffffff ffffffff ffffffff
+rect 571 456 609 468 ffffffff ffffffff ffffffff ffffffff
+rect 610 469 648 481 ffffffff ffffffff ffffffff ffffffff
+rect 339 456 648 481 bfffffff bfffffff bfffffff bfffffff
+rect 339 456 648 481 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
@@ -10031,7 +11287,7 @@ rect 680 200 683 203 20000000 00000000 00000000 00000000
 rect 680 40 683 43 00000000 00000000 20000000 00000000
 rect 680 44 683 199 20000000 00000000 20000000 00000000
 rect 655 102 675 143 11466482 11466482 11466482 11466482
-rect 656 103 674 111 4c587da3 4c587da3 4c587da3 4c587da3
+rect 656 103 674 110 4c587da3 4c587da3 4c587da3 4c587da3
 text 8 77 00000000 00000000
   font-height 28 gap 1 background-width 0 lines 3
   color ff000000 background 00000000 "..e available label column"
@@ -10123,10 +11379,16 @@ line 45 262 68 262 ffffffff ffffffff 0
 rect 98 280 705 311 29ffffff 29ffffff 29ffffff 29ffffff
 rect 69 282 95 308 3319242f 3319242f 3319242f 3319242f
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 45 493 68 493 ffffffff ffffffff 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 73 411 705 476 46191919 46191919 46191919 46191919
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10139,8 +11401,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -10153,6 +11417,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "cross the column"
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10161,6 +11427,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE focused
@@ -10205,6 +11481,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -10377,7 +11671,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10390,8 +11684,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -10404,6 +11700,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "cross the column"
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10412,6 +11710,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 684 115 704 144 4c587da3 4c587da3 4c587da3 4c587da3
 line 693 125 688 130 ffffffff ffffffff 1
 line 688 130 693 135 ffffffff ffffffff 1
@@ -10462,6 +11770,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -10634,7 +11960,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10647,8 +11973,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -10661,6 +11989,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10669,6 +11999,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 393 73 394 77 ffffffff ffffffff ffffffff ffffffff
 line 394 78 395 78 99000000 99000000 0
 line 395 78 395 73 99000000 99000000 0
@@ -10717,6 +12057,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -10889,7 +12247,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10902,8 +12260,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -10916,6 +12276,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10924,6 +12286,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 684 148 704 177 4c587da3 4c587da3 4c587da3 4c587da3
 line 686 162 694 175 ffffffff ffffffff 1
 line 694 175 702 162 ffffffff ffffffff 1
@@ -10969,6 +12341,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -11141,7 +12531,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11154,8 +12544,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -11168,6 +12560,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11176,6 +12570,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 684 148 704 177 4c587da3 4c587da3 4c587da3 4c587da3
 line 686 162 694 175 ffffffff ffffffff 1
 line 694 175 702 162 ffffffff ffffffff 1
@@ -11221,6 +12625,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -11393,7 +12815,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11406,8 +12828,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -11420,6 +12844,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11428,6 +12854,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 684 148 704 177 4c587da3 4c587da3 4c587da3 4c587da3
 line 686 162 694 175 ffffffff ffffffff 1
 line 694 175 702 162 ffffffff ffffffff 1
@@ -11496,6 +12932,24 @@ line 95 282 95 309 99ffffff 99ffffff 0
 line 95 308 69 308 99ffffff 99ffffff 0
 line 69 308 69 282 99ffffff 99ffffff 0
 line 71 295 94 295 ffffffff ffffffff 0
+rect 72 478 705 509 29ffffff 29ffffff 29ffffff 29ffffff
+line 70 481 70 507 99000000 99000000 0
+line 44 507 71 507 99000000 99000000 0
+rect 43 480 69 506 3319242f 3319242f 3319242f 3319242f
+line 43 480 69 480 99ffffff 99ffffff 0
+line 69 480 69 507 99ffffff 99ffffff 0
+line 69 506 43 506 99ffffff 99ffffff 0
+line 43 506 43 480 99ffffff 99ffffff 0
+line 45 493 68 493 ffffffff ffffffff 0
+line 96 514 96 540 99000000 99000000 0
+line 70 540 97 540 99000000 99000000 0
+rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
+line 69 513 95 513 99ffffff 99ffffff 0
+line 95 513 95 540 99ffffff 99ffffff 0
+line 95 539 69 539 99ffffff 99ffffff 0
+line 69 539 69 513 99ffffff 99ffffff 0
+line 71 526 94 526 ffffffff ffffffff 0
+line 82 515 82 538 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -11668,7 +13122,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11681,8 +13135,10 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "       "
   color ffffffff background 00000000 "First line wraps with enough words to cross"
   color ffffffff background 00000000 "the column boundary."
+  color ffffff80 background 00000000 "Appearance"
+  color ffefef00 background 00000000 "    Accent color"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably .."
@@ -11695,6 +13151,8 @@ text 395 81 00000000 00000000
   color ffc7d7ff background 00000000 "boundary."
   color ffb7b7b7 background 00000000 ""
   color ffb7b7b7 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ffb7b7b7 background ff000000 " "
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11703,6 +13161,16 @@ line 74 209 703 209 99ffffff 99ffffff 0
 line 703 209 703 183 99ffffff 99ffffff 0
 line 703 183 74 183 99ffffff 99ffffff 0
 line 73 229 705 229 ffb7b7b7 ffb7b7b7 0
+rect 395 512 432 526 ffffffff ffffffff ffffffff ffffffff
+rect 433 527 471 541 ffffffff ffffffff ffffffff ffffffff
+rect 472 512 510 526 ffffffff ffffffff ffffffff ffffffff
+rect 511 527 549 541 ffffffff ffffffff ffffffff ffffffff
+rect 550 512 587 526 ffffffff ffffffff ffffffff ffffffff
+rect 588 527 626 541 ffffffff ffffffff ffffffff ffffffff
+rect 627 512 665 526 ffffffff ffffffff ffffffff ffffffff
+rect 666 527 704 541 ffffffff ffffffff ffffffff ffffffff
+rect 395 512 704 541 bfffffff bfffffff bfffffff bfffffff
+rect 395 512 704 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 rect 640 82 660 111 4c587da3 4c587da3 4c587da3 4c587da3
 rect 662 82 682 111 4c587da3 4c587da3 4c587da3 4c587da3
 line 643 97 658 97 ffffffff ffffffff 0
@@ -12426,10 +13894,16 @@ line -15 262 8 262 ff000000 ff000000 0
 rect 38 280 645 311 1c000000 1c000000 1c000000 1c000000
 rect 9 282 35 308 3319242f 3319242f 3319242f 3319242f
 line 11 295 34 295 ff000000 ff000000 0
+rect 12 478 645 509 1c000000 1c000000 1c000000 1c000000
+rect -17 480 9 506 3319242f 3319242f 3319242f 3319242f
+line -15 493 8 493 ff000000 ff000000 0
+rect 9 513 35 539 3319242f 3319242f 3319242f 3319242f
+line 11 526 34 526 ff000000 ff000000 0
+line 22 515 22 538 ff000000 ff000000 0
 rect 335 312 645 410 46ffffff 46ffffff 46ffffff 46ffffff
 rect 13 411 645 476 46ffffff 46ffffff 46ffffff 46ffffff
 text 12 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 12
+  font-height 32 gap 1 background-width 0 lines 14
   color ff000000 background 00000000 "..available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -12442,8 +13916,10 @@ text 12 81 00000000 00000000
   color ff000000 background 00000000 "       "
   color ff000000 background 00000000 "First line wraps with enough words to cross"
   color ff000000 background 00000000 "the column boundary."
+  color ff000000 background 00000000 "Appearance"
+  color ff303000 background 00000000 "    Accent color"
 text 335 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 12
+  font-height 32 gap 1 background-width 310 lines 14
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably .."
@@ -12456,6 +13932,8 @@ text 335 81 00000000 00000000
   color ff000080 background 00000000 "boundary."
   color ff505050 background 00000000 ""
   color ff505050 background 00000000 ""
+  color ff000000 background 00000000 ""
+  color ff505050 background ff000000 " "
 rect 16 210 645 211 7f000000 7f000000 7f000000 7f000000
 rect 644 185 645 209 7f000000 7f000000 7f000000 7f000000
 rect 14 183 643 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -12464,6 +13942,16 @@ line 14 209 643 209 994c4c4c 994c4c4c 0
 line 643 209 643 183 994c4c4c 994c4c4c 0
 line 643 183 14 183 994c4c4c 994c4c4c 0
 line 13 229 645 229 ff505050 ff505050 0
+rect 335 512 372 526 ffffffff ffffffff ffffffff ffffffff
+rect 373 527 411 541 ffffffff ffffffff ffffffff ffffffff
+rect 412 512 450 526 ffffffff ffffffff ffffffff ffffffff
+rect 451 527 489 541 ffffffff ffffffff ffffffff ffffffff
+rect 490 512 527 526 ffffffff ffffffff ffffffff ffffffff
+rect 528 527 566 541 ffffffff ffffffff ffffffff ffffffff
+rect 567 512 605 526 ffffffff ffffffff ffffffff ffffffff
+rect 606 527 644 541 ffffffff ffffffff ffffffff ffffffff
+rect 335 512 644 541 bfffffff bfffffff bfffffff bfffffff
+rect 335 512 644 541 ff4080c0 ff4080c0 ff4080c0 ff4080c0
 end
 
 SCENE clipped
