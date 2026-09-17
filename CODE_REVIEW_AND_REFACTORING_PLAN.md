@@ -523,6 +523,12 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   refactoring. This check normalizes the leading Mach-O underscore and does
   not alter the library or header.
 
+### 2026-09-17: Static-archive API export check
+
+- Repeated the public-symbol comparison against
+  `build/lib/libAntTweakBarC99.a`; all 43 declared `TW_API` functions are
+  present in the static archive as well.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
