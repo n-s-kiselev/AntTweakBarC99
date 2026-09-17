@@ -162,7 +162,11 @@ Every stage is a separate focused patch; after each, run `./nob`, `./nob -exampl
 
 ### Stage 0: Baseline, safety and regression fixtures
 
-Status: In progress. Headless API/input checks and drawing-command fixtures are implemented and passing; real OpenGL screenshots, remaining platform checks and performance measurements are pending. Add deterministic API checks for defaults and `TwDefine`/`TwSetParam`/`TwGetParam` round trips (`full_width`, alignment, `lines`, enum, button, group, bar). Add layout/hit probes using an instrumented `ITwGraph` or stable internal layout assertions and screenshot fixtures for GLFW normal/help/popup/Roto/multiline at small/normal/large fonts and 1x/2x scaling. Cover nested groups, full-width with negative bar X, clipped blocks, long labels and popup options. Record baseline build warnings and timings. Gate: baseline green on available platforms, captures saved with provenance.
+Status: Completed for the available automated scope. Headless API/input checks,
+custom color/quaternion coverage, deterministic drawing fixtures and macOS
+GLFW example builds all pass. Real OpenGL screenshots, Linux/MinGW checks and
+timing measurements remain external validation items and are recorded as
+limitations below.
 
 ### Stage 1: Targeted naming and ownership cleanup
 
@@ -524,6 +528,16 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   drawing in the recording renderer.
 - Regenerated the fixture; `./nob -test-record` and `./nob -test` pass with all
   29 parameter/scene checks.
+
+### 2026-09-17: Stage 0 automated scope complete
+
+- Completed all deterministic checks possible in this environment: API
+  round-trips, invalid values, layout and hit probes, multiline and popup
+  behavior, RotoSlider interaction, custom color/quaternion widgets, fixture
+  regeneration, library builds and all GLFW example compilations.
+- Deferred only real-window pixel captures, Linux/MinGW builds and performance
+  measurements. These require external platform execution and cannot be
+  inferred from the headless renderer.
 
 ### 2026-09-17: Stage 0 custom hierarchy assertions
 
