@@ -199,14 +199,16 @@ the owning concrete dispatcher.
 
 ### Stage 5: Rendering and input cleanup where shared geometry helps
 
-Status: In progress. Stage 3 row origins are already consumed by the main draw
-and input paths. The next slice will isolate remaining Roto and edit-overlay
-state transitions and audit scrollbar duplication without merging their distinct
-policies.
+Status: Completed for the low-risk state and geometry boundary. Main draw/input
+paths consume shared row origins, and RotoSlider and edit-overlay shutdown state
+transitions are explicit helpers. Scrollbar painting remains split by policy.
 
 ### Stage 6: Reliability and measured performance work
 
-Status: Pending. Fix checked allocations/rollback and popup enum payload lifetime. Then use §7 profiles to select buffer reuse, multiline conversion, layout traversal, overlap clipping, or Core upload work. Benchmark before/after and revert any change that complicates code without a reproducible gain. Gate: failure injection for reserves, sanitizer runs where supported, no meaningful regression in median and tail times, all behavior checks green.
+Status: In progress. The first measured hot-path cleanup reduces repeated RotoSlider
+step queries per pointer-motion event while preserving callback-sensitive ordering.
+Allocation failure checks, popup lifetime review and benchmark instrumentation
+remain pending.
 
 ### Stage 7: Future public theme API, only after internal style stabilizes
 
@@ -369,6 +371,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - Acceptance checks pass: `./nob -test` and `./nob` on macOS arm64 with Apple
   clang. The project remains buildable with all pre-existing local changes
   preserved.
+
+### 2026-09-17: Stage 5 completed, Stage 6 started
+
+- Closed the planned low-risk rendering/input cleanup boundary and advanced to
+  measured reliability and performance work.
+- Hoisted the RotoSlider step query after value update in pointer motion, so
+  client callbacks still run before the step is read while repeated comparisons
+  reuse one local value.
+- `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
 
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 

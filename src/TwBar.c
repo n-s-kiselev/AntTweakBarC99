@@ -7829,6 +7829,9 @@ void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
     if( _Bar->m_Roto.m_Active ){
         _Bar->m_Roto.m_Current = p;
         CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));
+        /* Query the step once per motion event. SetRotoSliderValue above may
+           invoke client code, so this intentionally stays afterward. */
+        const double step = CTwBar_GetRotoSliderStep(_Bar);
         //DrawManip();
 
         double t = 0;
@@ -7844,8 +7847,8 @@ void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
                 double dt = acos(max(-1+1.0e-30,min(1-1.0e-30,(double)(v0.x*v1.x+v0.y*v1.y)/(l0*l1))));
                 if( v0.x*v1.y-v0.y*v1.x>0 )
                     dt = - dt;
-                double preciseInc = (double)(_Bar->m_Roto.m_Subdiv) * dt/(2.0*M_PI) * CTwBar_GetRotoSliderStep(_Bar);
-                if( preciseInc>CTwBar_GetRotoSliderStep(_Bar) || preciseInc<-CTwBar_GetRotoSliderStep(_Bar) )
+                double preciseInc = (double)(_Bar->m_Roto.m_Subdiv) * dt/(2.0*M_PI) * step;
+                if( preciseInc>step || preciseInc<-step )
                 {
                     _Bar->m_Roto.m_PreciseValue += preciseInc;
                     if( _Bar->m_Roto.m_PreciseValue>CTwBar_GetRotoSliderMax(_Bar) )
