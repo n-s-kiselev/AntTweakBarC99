@@ -3858,8 +3858,8 @@ static inline int CTwBar_RowWidgetX0(const CTwBar *_Bar, const CTwVar *_Var, int
 {
     if( _Var->m_FullWidth )
     {
-        int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
-        return _Bar->m_PosX + _Bar->m_VarX0 + _Level*LevelSpace;
+        int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
+        return _Bar->m_PosX + _Bar->m_VarX0 + _Level*group_indent_px;
     }
     return _Bar->m_PosX + _Bar->m_VarX1;
 }
@@ -4358,7 +4358,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
     int WidthMax;
     
     int Space = _Font->m_CharWidth[(int)' '];
-    int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
+    int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
 
     int nh = (int)_Bar->m_HierTags.count;
     for( int h=0; h<nh; ++h )
@@ -4419,7 +4419,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                     // Unlike the help bar's text, this value and the bar width can both change
                     // between frames, so there is no one-time wrap width to cache against.
                     static CTwMultilineWrapCache full_width_wrap_cache = {0};
-                    int WrapWidth = CTwMultilineWrapWidth(_Font, _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*LevelSpace);
+                    int WrapWidth = CTwMultilineWrapWidth(_Font, _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*group_indent_px);
                     const CSdsArray *Lines = CTwBar_MultilineWrapText(&full_width_wrap_cache, FWAtom, full_width_value_string, WrapWidth, _Font);
                     sds WrappedLine = CTwBar_MultilineLineAt(_Bar, FWAtom, Lines, h);
                     if( WrappedLine!=NULL )
@@ -4464,7 +4464,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             sds *CurrentLabel = &_Labels->items[_Labels->count-1];
             if( _Bar->m_HierTags.items[h].m_Var->m_FullWidth )
                 // Full row width, minus the indent spaces prepended below.
-                WidthMax = _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*LevelSpace;
+                WidthMax = _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*group_indent_px;
             else if( CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarGroup *)_Bar->m_HierTags.items[h].m_Var)->m_SummaryCallback==NULL )
                 WidthMax = _GroupWidthMax;
             else if( !CTwVar_IsGroup(_Bar->m_HierTags.items[h].m_Var) && ((const CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Type==TW_TYPE_BUTTON )
@@ -4482,7 +4482,7 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             else
                 WidthMax = _AtomWidthMax;
             if( Space>0 )
-                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*LevelSpace; s+=Space )
+                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=Space )
                 {
                     char sp = ' ';
                     *CurrentLabel = sdscatlen(*CurrentLabel, &sp, 1);
@@ -4735,7 +4735,7 @@ int CTwBar_ComputeLabelsWidth(CTwBar *_Bar, const CTexFont *_Font)
     const unsigned char *Text;
     int LabelsWidth = 0;    
     int Space = _Font->m_CharWidth[(int)' '];
-    int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
+    int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
 
     int nh = (int)_Bar->m_HierTags.count;
     for( int h=0; h<nh; ++h )
@@ -4753,7 +4753,7 @@ int CTwBar_ComputeLabelsWidth(CTwBar *_Bar, const CTexFont *_Font)
         if( !IsCustom )
         {
             if( Space>0 )
-                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*LevelSpace; s+=Space )
+                for( s=0; s<_Bar->m_HierTags.items[h].m_Level*group_indent_px; s+=Space )
                     x += Space;
             for( i=0; i<Len; ++i )
                 x += _Font->m_CharWidth[(int)Text[i]];
@@ -5402,7 +5402,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
     if( !_Bar->m_IsMinimized )
     {
         int y = _Bar->m_PosY+1;
-        int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
+        int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
 
         color32 colBg = _Bar->m_ColBg, colBg1 = _Bar->m_ColBg1, colBg2 = _Bar->m_ColBg2;
         if( _Bar->m_DrawHandles || _Bar->m_IsPopupList )
@@ -5470,10 +5470,10 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                         && !CTwVar_IsCustom(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) ) ) )
             {
                 int y0 = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine);
-                Gr->DrawRect(Gr, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
+                Gr->DrawRect(Gr, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px+group_indent_px*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
                 int eps = (g_TwMgr->m_GraphAPI==TW_OPENGL || g_TwMgr->m_GraphAPI==TW_OPENGL_CORE) ? 1 : 0;
                 if( !_Bar->m_EditInPlace.m_Active )
-                    Gr->DrawLine(Gr, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_ColUnderline, _Bar->m_ColUnderline, false);
+                    Gr->DrawLine(Gr, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px+group_indent_px*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight+_Bar->m_LineSep-1+eps, _Bar->m_ColUnderline, _Bar->m_ColUnderline, false);
             }
             else if( HasHighlightedLine && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
@@ -5482,9 +5482,9 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                 CTwVarAtom *Atom = ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var);
                 if( !IsCustomType(Atom->m_Type)
                     && !(Atom->m_Type==TW_TYPE_BUTTON && Atom->m_Val.m_Button.m_Callback==NULL) )
-                    Gr->DrawRect(Gr, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, col, col, col, col);
+                    Gr->DrawRect(Gr, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px+group_indent_px*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, col, col, col, col);
                 else
-                    Gr->DrawRect(Gr, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level+4, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, col, col, col, col);
+                    Gr->DrawRect(Gr, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px+group_indent_px*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px+group_indent_px*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level+4, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, col, col, col, col);
             }
             color32 clight = 0x5FFFFFFF; // bar contour
             Gr->DrawLine(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX, _Bar->m_PosY+_Bar->m_Height, clight, clight, false);
@@ -5507,7 +5507,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
 
             // Draw labels
             PERF( Timer.Reset(); )
-            Gr->DrawText(Gr, _Bar->m_LabelsTextObj, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px, _Bar->m_PosY+_Bar->m_VarY0, 0 /*_Bar->m_ColLabelText*/, 0);
+            Gr->DrawText(Gr, _Bar->m_LabelsTextObj, _Bar->m_PosX+group_indent_px+_Bar->m_Style.geometry.label_origin_after_indent_px, _Bar->m_PosY+_Bar->m_VarY0, 0 /*_Bar->m_ColLabelText*/, 0);
             PERF( DT = Timer.GetTime(); printf("Labels=%.4fms ", 1000.0*DT); )
 
             // Draw values
@@ -5615,8 +5615,8 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     }
                     else if( ((CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var)->m_Val.m_Button.m_Separator==1 )
                     {
-                        int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
-                        Gr->DrawLine(Gr, _Bar->m_PosX+_Bar->m_VarX0+_Bar->m_HierTags.items[h].m_Level*LevelSpace, yh+_Bar->m_Font->m_CharHeight/2, _Bar->m_PosX+_Bar->m_VarX2, yh+_Bar->m_Font->m_CharHeight/2, _Bar->m_ColSeparator, _Bar->m_ColSeparator, false);
+                        int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
+                        Gr->DrawLine(Gr, _Bar->m_PosX+_Bar->m_VarX0+_Bar->m_HierTags.items[h].m_Level*group_indent_px, yh+_Bar->m_Font->m_CharHeight/2, _Bar->m_PosX+_Bar->m_VarX2, yh+_Bar->m_Font->m_CharHeight/2, _Bar->m_ColSeparator, _Bar->m_ColSeparator, false);
                     }
                 }
                 else if( CTwVar_IsCustom(_Bar->m_HierTags.items[h].m_Var) )
@@ -5625,7 +5625,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     if( mProxy!=NULL && mProxy->m_StructProxy!=NULL )
                     {
                         CCustomRecord *rec = CTwBar_CustomMap_Find(_Bar, mProxy->m_StructProxy);
-                        int xMin = _Bar->m_PosX + _Bar->m_VarX0 + _Bar->m_HierTags.items[h].m_Level*LevelSpace;
+                        int xMin = _Bar->m_PosX + _Bar->m_VarX0 + _Bar->m_HierTags.items[h].m_Level*group_indent_px;
                         int xMax = _Bar->m_PosX + _Bar->m_VarX2 - 2;
                         int yMin = yh + 1;
                         int yMax = yh + _Bar->m_Font->m_CharHeight;
@@ -6725,13 +6725,13 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     g_TwMgr->m_PopupBar->m_PosY = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine+1);
                     // CTwBar_Update() gives a popup list m_VarX0=2 and clips labels to
                     // m_VarX2-m_VarX0 = m_Width-CharHeight-Sep-4, but CTwBar_Draw() always draws
-                    // the label text itself starting at PosX+LevelSpace+6 (LevelSpace = max
+                    // the label text itself starting at PosX+group_indent_px+6 (group_indent_px = max
                     // (CharHeight-6,4)), not PosX+m_VarX0 - so the actual on-screen room to the
-                    // right border is m_Width-CharHeight-Sep-2-(LevelSpace+6), 4+LevelSpace less
+                    // right border is m_Width-CharHeight-Sep-2-(group_indent_px+6), 4+group_indent_px less
                     // than the clipping column width above. Pad by that much extra so the widest
                     // label's full pixel width still lands inside the border once drawn.
-                    int LevelSpace = _Bar->m_Style.geometry.group_indent_step_px;
-                    g_TwMgr->m_PopupBar->m_Width = ContentWidth + _Bar->m_Font->m_CharHeight + g_TwMgr->m_PopupBar->m_Sep + LevelSpace + 8;
+                    int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
+                    g_TwMgr->m_PopupBar->m_Width = ContentWidth + _Bar->m_Font->m_CharHeight + g_TwMgr->m_PopupBar->m_Sep + group_indent_px + 8;
                     g_TwMgr->m_PopupBar->m_LineSep = g_TwMgr->m_PopupBar->m_Sep;
                     int popHeight0 = (int)e->m_Entries.count*(_Bar->m_Font->m_CharHeight+_Bar->m_Sep) + _Bar->m_Font->m_CharHeight/2+2;
                     int popHeight = popHeight0;

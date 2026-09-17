@@ -430,6 +430,14 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - A public theme implementation is intentionally a follow-up task because it
   requires an explicit compatibility review and alternate-theme capture matrix.
 
+### 2026-09-17: Stage 1, hierarchy metric naming
+
+- Renamed the internal `LevelSpace` locals to `group_indent_px` throughout
+  hierarchy layout, label/value construction, drawing, separators and popup
+  sizing. The new name states both ownership and pixel units.
+- No public symbols or definition strings changed. `./nob -test` passes with
+  the unchanged drawing fixture.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,
