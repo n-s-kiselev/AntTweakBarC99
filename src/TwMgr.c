@@ -2833,6 +2833,7 @@ void CTwMgr_SetFont(CTwMgr *_Mgr, const CTexFont *_Font, bool _ResizeBars)
         {
             int fh = _Mgr->m_Bars.items[i]->m_Font->m_CharHeight;
             _Mgr->m_Bars.items[i]->m_Font = _Font;
+            TwStyle_Init(&_Mgr->m_Bars.items[i]->m_Style, _Font);
             if( _ResizeBars )
             {
                 if( _Mgr->m_Bars.items[i]->m_Movable )
@@ -6478,4 +6479,3 @@ bool CRect_SubtractMany(const CRect *_This, const CRectArray *_Rects, CRectArray
 }
 
 //  ---------------------------------------------------------------------------
-

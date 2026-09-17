@@ -370,6 +370,26 @@ typedef struct { CCustomEntry *items; size_t count; size_t capacity; } CustomMap
 enum EValuesWidthFit    { VALUES_WIDTH_FIT = -5555 };
 enum EDrawPart          { DRAW_BG=(1<<0), DRAW_CONTENT=(1<<1), DRAW_ALL=DRAW_BG|DRAW_CONTENT };
 
+// Resolved visual metrics for one bar. Values are screen pixels and are
+// derived from the active font; keeping them together makes later theme
+// changes invalidate one small context instead of scattering formulas.
+typedef struct TwStyleGeometry
+{
+    int group_indent_step_px;
+    int label_origin_after_indent_px;
+} TwStyleGeometry;
+
+typedef struct TwStyle
+{
+    TwStyleGeometry geometry;
+} TwStyle;
+
+static inline void TwStyle_Init(TwStyle *_Style, const CTexFont *_Font)
+{
+    _Style->geometry.group_indent_step_px = max(_Font->m_CharHeight-6, 4);
+    _Style->geometry.label_origin_after_indent_px = 6;
+}
+
 struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a pointer type before this full definition loads)
 {
     sds                     m_Name;
@@ -397,6 +417,7 @@ struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a point
     bool                    m_Movable;
     bool                    m_Iconifiable;
     bool                    m_Contained;
+    TwStyle                 m_Style;
 
     CTwVarGroup             m_VarRoot;
 

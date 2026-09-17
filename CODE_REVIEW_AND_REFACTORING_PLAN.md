@@ -170,7 +170,7 @@ Status: In progress. Rename only internal symbols whose role is misunderstood in
 
 ### Stage 2: Internal style and color context
 
-Status: Pending. Add internal `TwStyleGeometry` and `TwStyleColors`, default initialization with the exact formulas in §6, and resolution on bar/font/tint changes. Migrate one category at a time: bar/content/title, row/text, buttons/scrollbars, popup/multiline/Roto, then color literals. Change draw and hit consumers in the same small step for each metric. Keep existing bar overrides. Gate: exact pixel and edge hit comparisons; audit every §6 row and remaining active literal.
+Status: In progress. Add internal `TwStyleGeometry` and `TwStyleColors`, default initialization with the exact formulas in §6, and resolution on bar/font/tint changes. Migrate one category at a time: bar/content/title, row/text, buttons/scrollbars, popup/multiline/Roto, then color literals. Change draw and hit consumers in the same small step for each metric. Keep existing bar overrides. Gate: exact pixel and edge hit comparisons; audit every §6 row and remaining active literal.
 
 ### Stage 3: Derived layout and row model
 
@@ -256,3 +256,18 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - `./nob -test` passes with the unchanged drawing fixture. Stage 1 remains in
   progress for later focused coordinate and row names; broad repository-wide
   renaming is intentionally deferred.
+
+### 2026-09-17: Stage 2, first geometry fields
+
+- Added the private `TwStyle` and `TwStyleGeometry` context to `CTwBar`, with
+  explicit pixel fields for `group_indent_step_px` and
+  `label_origin_after_indent_px`. Defaults preserve `max(font_height - 6, 4)`
+  and `6` exactly.
+- Resolved these fields at bar creation and whenever the manager changes the
+  active font. Group indentation and label-origin consumers in hierarchy,
+  label/value construction, highlights, drawing and popup sizing now read the
+  same context. `m_Sep`, `m_LineSep`, public bar geometry and color overrides
+  remain unchanged.
+- `./nob -test` and `./nob` pass; the drawing-command fixture is unchanged.
+  This is the first Stage 2 slice; colors and the remaining geometry inventory
+  are intentionally still pending.
