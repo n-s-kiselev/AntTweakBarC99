@@ -378,3 +378,11 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - Value accumulation and callback timing remain unchanged; the helper only
   clears interaction ownership and transient drag state.
 - `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
+
+### 2026-09-17: Stage 5, edit overlay state cleanup
+
+- Added `CTwBar_EditInPlaceClearInteraction` and routed editor shutdown through
+  it after commit or cancellation. The helper makes editor ownership explicit
+  and keeps the text buffer, selection and renderer objects intact for reuse.
+- Callback ordering and commit behavior are unchanged. `./nob -test` and
+  `./nob` pass on macOS arm64 with Apple clang.

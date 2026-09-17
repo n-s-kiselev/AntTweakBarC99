@@ -8229,6 +8229,12 @@ void CTwBar_EditInPlaceStart(CTwBar *_Bar, CTwVarAtom* _Var, int _X, int _Y, int
     _Bar->m_EditInPlace.m_DesiredX = -1;
 }
 
+static void CTwBar_EditInPlaceClearInteraction(CEditInPlace *_Edit)
+{
+    _Edit->m_Active = false;
+    _Edit->m_Var = NULL;
+}
+
 void CTwBar_EditInPlaceEnd(CTwBar *_Bar, bool _Commit)
 {
     if( _Commit && _Bar->m_EditInPlace.m_Active && _Bar->m_EditInPlace.m_Var!=NULL )
@@ -8289,8 +8295,7 @@ void CTwBar_EditInPlaceEnd(CTwBar *_Bar, bool _Commit)
         if( g_TwMgr!=NULL ) // Mgr might have been destroyed by the client inside a callback call
             CTwBar_NotUpToDate(_Bar);
     }
-    _Bar->m_EditInPlace.m_Active = false;
-    _Bar->m_EditInPlace.m_Var = NULL;
+    CTwBar_EditInPlaceClearInteraction(&_Bar->m_EditInPlace);
 }
 
 // Insert _Len bytes from _Text at byte offset _Pos into _S, growing it as needed.
