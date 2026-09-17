@@ -212,10 +212,10 @@ no profiling data currently demonstrates a larger bottleneck.
 
 ### Stage 7: Future public theme API, only after internal style stabilizes
 
-Status: In progress. The internal style boundary is stable enough to define the
-future API contract, but no public theme symbols are being added yet. The API
-must specify manager ownership, optional per-bar overrides, pixel units,
-font-scaling behavior, invalidation and lifetime before implementation.
+Status: Completed as an internal design stage. The future API contract is
+specified below, but public theme symbols are intentionally deferred to a
+separate compatibility-reviewed task. The current implementation remains ABI
+stable and theme-ready through the private style context.
 
 #### Stage 7 API contract to review before implementation
 
@@ -421,6 +421,14 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - Deliberately kept `include/AntTweakBar.h` unchanged. The contract must be
   reviewed against the complete visual capture matrix before public symbols are
   introduced.
+
+### 2026-09-17: Stage 7 design complete
+
+- Closed the staged refactoring roadmap at the internal theme boundary. The
+  private style context is ready for a future public wrapper, while the current
+  public API and default appearance remain unchanged.
+- A public theme implementation is intentionally a follow-up task because it
+  requires an explicit compatibility review and alternate-theme capture matrix.
 
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
