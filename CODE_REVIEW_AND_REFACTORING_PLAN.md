@@ -507,6 +507,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - All 39 dynamic example link steps passed. Runtime launch still depends on
   the dynamic loader locating the dylib and an interactive desktop session.
 
+### 2026-09-17: Clean rebuild validation
+
+- Removed build products with `./nob -clean`, rebuilt the static and shared
+  libraries from source with `./nob`, and reran `./nob -test`.
+- The clean build and all 29 headless regression checks passed, confirming the
+  current results do not depend on stale objects.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
