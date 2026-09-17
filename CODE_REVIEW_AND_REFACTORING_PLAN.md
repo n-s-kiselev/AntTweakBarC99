@@ -529,6 +529,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   `build/lib/libAntTweakBarC99.a`; all 43 declared `TW_API` functions are
   present in the static archive as well.
 
+### 2026-09-17: Clean drawing-baseline regeneration
+
+- Regenerated `tests/widget-layout.txt` with `./nob -test-record` and then
+  ran `./nob -test` against the regenerated baseline.
+- All 29 checks passed and the fixture produced no diff, confirming stable
+  drawing output after the clean rebuild.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
