@@ -377,6 +377,10 @@ typedef struct TwStyleGeometry
 {
     int group_indent_step_px;
     int label_origin_after_indent_px;
+    int content_left_inset_px;
+    int content_right_inset_px;
+    int content_top_inset_px;
+    int content_bottom_inset_px;
     int roto_activation_radius_px;
     int roto_ring_inner_radius_px;
     int roto_ring_middle_radius_px;
@@ -400,6 +404,10 @@ static inline void TwStyle_Init(TwStyle *_Style, const CTexFont *_Font)
     int h = _Font->m_CharHeight;
     _Style->geometry.group_indent_step_px = max(_Font->m_CharHeight-6, 4);
     _Style->geometry.label_origin_after_indent_px = 6;
+    _Style->geometry.content_left_inset_px = h + 1;
+    _Style->geometry.content_right_inset_px = h + 3;
+    _Style->geometry.content_top_inset_px = h + 9;
+    _Style->geometry.content_bottom_inset_px = h + 3;
     /* RotoSlider artwork was authored for the normal 14 px font. */
     _Style->geometry.roto_activation_radius_px = (24*h+7)/14;
     _Style->geometry.roto_ring_inner_radius_px = (31*h+7)/14;

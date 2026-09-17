@@ -284,3 +284,10 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   macOS arm64 with Apple clang. The drawing fixture was regenerated because
   the requested scaling intentionally changes RotoSlider command geometry for
   non-normal fonts; normal 14 px geometry remains unchanged.
+
+### 2026-09-17: Stage 2, bar content insets
+
+- Added named left, right, top and bottom content inset fields and migrated the
+  regular bar layout bounds to use them. Defaults reproduce the existing
+  expressions exactly while retaining the separator adjustment.
+- `./nob -test` passes with the updated RotoSlider drawing fixture.

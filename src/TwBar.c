@@ -4931,9 +4931,9 @@ void CTwBar_Update(CTwBar *_Bar)
     if( !_Bar->m_IsPopupList )
     {
         //_Bar->m_VarX0 = 2*_Bar->m_Font->m_CharHeight+_Bar->m_Sep;
-        _Bar->m_VarX0 = _Bar->m_Font->m_CharHeight+_Bar->m_Sep;
+        _Bar->m_VarX0 = _Bar->m_Style.geometry.content_left_inset_px + (_Bar->m_Sep-1);
         //_Bar->m_VarX2 = _Bar->m_Width - 4;
-        _Bar->m_VarX2 = _Bar->m_Width - _Bar->m_Font->m_CharHeight - _Bar->m_Sep-2;
+        _Bar->m_VarX2 = _Bar->m_Width - _Bar->m_Style.geometry.content_right_inset_px - (_Bar->m_Sep-1);
         _Bar->m_VarX1 = _Bar->m_VarX2 - _Bar->m_ValuesWidth;
     }
     else
@@ -4950,8 +4950,8 @@ void CTwBar_Update(CTwBar *_Bar)
         _Bar->m_VarX1 = _Bar->m_VarX2;
     if( !_Bar->m_IsPopupList )
     {
-        _Bar->m_VarY0 = _Bar->m_Font->m_CharHeight+2+_Bar->m_Sep+6;
-        _Bar->m_VarY1 = _Bar->m_Height-_Bar->m_Font->m_CharHeight-2-_Bar->m_Sep;
+        _Bar->m_VarY0 = _Bar->m_Style.geometry.content_top_inset_px + (_Bar->m_Sep-1);
+        _Bar->m_VarY1 = _Bar->m_Height-_Bar->m_Style.geometry.content_bottom_inset_px - (_Bar->m_Sep-1);
         _Bar->m_VarY2 = _Bar->m_Height-1;
     }
     else
