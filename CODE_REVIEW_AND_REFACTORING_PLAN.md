@@ -446,6 +446,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   units directly.
 - No public symbols or behavior changed. `./nob -test` passes.
 
+### 2026-09-17: Stage 6, stepped-value query cleanup
+
+- Updated `CTwBar_GetRotoSliderSteppedValue` to read the step once per call
+  instead of querying it twice. Arithmetic and zero-step behavior remain
+  unchanged.
+- `./nob -test` passes with the unchanged drawing fixture.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,

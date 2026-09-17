@@ -7817,9 +7817,10 @@ double CTwBar_GetRotoSliderStep(const CTwBar *_Bar)
 
 double CTwBar_GetRotoSliderSteppedValue(const CTwBar *_Bar)
 {
+    const double step = CTwBar_GetRotoSliderStep(_Bar);
     double d = _Bar->m_Roto.m_PreciseValue-_Bar->m_Roto.m_Value0;
-    double n = (int)(d/CTwBar_GetRotoSliderStep(_Bar));
-    return _Bar->m_Roto.m_Value0 + CTwBar_GetRotoSliderStep(_Bar)*n;
+    double n = (int)(d/step);
+    return _Bar->m_Roto.m_Value0 + step*n;
 }
 
 // NSK 1
