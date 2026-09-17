@@ -501,3 +501,10 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - Rebuilt all 13 GLFW examples with `./nob -examples-glfw` successfully on
   macOS arm64. GUI execution and pixel capture remain unavailable in this
   headless session, so Stage 0 stays active for that external validation.
+
+### 2026-09-17: Stage 0 fixture reproducibility check
+
+- Ran `./nob -test-record` followed by `./nob -test`.
+- The regenerated `tests/widget-layout.txt` is byte-for-byte unchanged and all
+  29 parameter/scene checks pass. This confirms the current refactoring is
+  deterministic; real OpenGL captures and other platforms remain outstanding.
