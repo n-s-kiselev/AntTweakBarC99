@@ -453,6 +453,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   unchanged.
 - `./nob -test` passes with the unchanged drawing fixture.
 
+### 2026-09-17: Stage 1, visible row names
+
+- Renamed local `NbLines` variables to `visible_row_count` in update and
+  `visible_line_count` in the show/scroll helper. The names distinguish layout
+  capacity from the line index being revealed.
+- `./nob -test` passes; no public names or behavior changed.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,
