@@ -190,13 +190,19 @@ multiline scrollbars have intentionally different policies.
 
 ### Stage 4: Widget and property extension points
 
-Status: In progress. The common property boundary is now named explicitly;
-typed metadata and widget-specific capability helpers remain pending. Keep
-static C dispatch and all public attribute strings unchanged.
+Status: Completed for the planned low-risk boundary. Common property ownership
+is explicit through `CTwVar_*CommonAttrib`; atom-only and group-only dispatch
+remain separate. A metadata registry or widget vtable is deliberately deferred
+because it would add indirection and lifetime complexity without a demonstrated
+extension need. Future properties should first extend the common ID parser or
+the owning concrete dispatcher.
 
 ### Stage 5: Rendering and input cleanup where shared geometry helps
 
-Status: Pending. Have draw and hit paths consume Stage 3 rectangles; isolate Roto and edit overlay state transitions without creating a broad widget vtable. Consolidate duplicated scrollbar painting/geometry only if it keeps current outer versus multiline differences explicit. Gate: pointer/keyboard/wheel, popup deletion during callback, and custom viewport tests.
+Status: In progress. Stage 3 row origins are already consumed by the main draw
+and input paths. The next slice will isolate remaining Roto and edit-overlay
+state transitions and audit scrollbar duplication without merging their distinct
+policies.
 
 ### Stage 6: Reliability and measured performance work
 
@@ -335,6 +341,14 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   dispatchers retain atom-only and group-only behavior.
 - No public symbols, attribute spellings, numeric IDs, error paths or callback
   behavior changed. `./nob -test` passes with the unchanged fixture.
+
+### 2026-09-17: Stage 4 completed, Stage 5 started
+
+- Closed the property-extension stage at the explicit C dispatch boundary.
+  No speculative registry, heap descriptor or virtual-dispatch-like layer was
+  introduced.
+- Advanced to rendering and input cleanup, using the shared row layout as the
+  integration point for draw and hit-test consistency.
 
 ### 2026-09-17: Stage 2, title geometry
 
