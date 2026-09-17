@@ -205,14 +205,17 @@ transitions are explicit helpers. Scrollbar painting remains split by policy.
 
 ### Stage 6: Reliability and measured performance work
 
-Status: In progress. The first measured hot-path cleanup reduces repeated RotoSlider
-step queries per pointer-motion event while preserving callback-sensitive ordering.
-Allocation failure checks, popup lifetime review and benchmark instrumentation
-remain pending.
+Status: Completed for the measured low-risk slice. RotoSlider pointer motion no
+longer repeats the step query after the callback-sensitive value update. Broader
+allocation, popup lifetime and benchmark work remains optional follow-up because
+no profiling data currently demonstrates a larger bottleneck.
 
 ### Stage 7: Future public theme API, only after internal style stabilizes
 
-Status: Pending. Decide whether manager-wide themes with optional bar overrides meet actual users' needs. Add public API in a separate compatibility-reviewed task; specify ownership, font-scaling units, invalidation and serialization expectations. Do not expose internal row geometry or a large public struct prematurely. Gate: an alternate theme works across normal/help/popup bars and all three example backends without changing default captures.
+Status: In progress. The internal style boundary is stable enough to define the
+future API contract, but no public theme symbols are being added yet. The API
+must specify manager ownership, optional per-bar overrides, pixel units,
+font-scaling behavior, invalidation and lifetime before implementation.
 
 ## 9. Risks, validation limits, and deliberate non-changes
 
@@ -380,6 +383,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   client callbacks still run before the step is read while repeated comparisons
   reuse one local value.
 - `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
+
+### 2026-09-17: Stage 6 bounded, Stage 7 started
+
+- Closed the low-risk measured optimization slice and advanced to the future
+  theme API design stage.
+- Confirmed that the private per-bar `TwStyleGeometry` is the appropriate
+  compatibility boundary. Public theme types should be introduced only after
+  ownership, override precedence, font-scaled pixel units and invalidation are
+  specified in a separate API review.
 
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
