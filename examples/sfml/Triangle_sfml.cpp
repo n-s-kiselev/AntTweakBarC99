@@ -317,11 +317,11 @@ int main()
     };
     TwType pointType = TwDefineStruct("POINT", pointMembers, 2, sizeof(Point), NULL, NULL);
 
-    TwAddVarRW(bar, "Color0", TW_TYPE_COLOR4F, &g_Colors[0], " Alpha HLS Group='Vertex 0' Label=Color ");
+    TwAddVarRW(bar, "Color0", TW_TYPE_COLOR4F, &g_Colors[0], " coloralpha=true colormode=hls Group='Vertex 0' Label=Color ");
     TwAddVarRW(bar, "Pos0", pointType, &g_Positions[0], " Group='Vertex 0' Label='Position' ");
-    TwAddVarRW(bar, "Color1", TW_TYPE_COLOR4F, &g_Colors[1], " Alpha HLS Group='Vertex 1' Label=Color ");
+    TwAddVarRW(bar, "Color1", TW_TYPE_COLOR4F, &g_Colors[1], " coloralpha=true colormode=hls Group='Vertex 1' Label=Color ");
     TwAddVarRW(bar, "Pos1", pointType, &g_Positions[1], " Group='Vertex 1' Label='Position' ");
-    TwAddVarRW(bar, "Color2", TW_TYPE_COLOR4F, &g_Colors[2], " Alpha HLS Group='Vertex 2' Label=Color ");
+    TwAddVarRW(bar, "Color2", TW_TYPE_COLOR4F, &g_Colors[2], " coloralpha=true colormode=hls Group='Vertex 2' Label=Color ");
     TwAddVarRW(bar, "Pos2", pointType, &g_Positions[2], " Group='Vertex 2' Label='Position' ");
 
     TwAddSeparator(bar, NULL, "");

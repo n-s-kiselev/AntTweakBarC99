@@ -88,13 +88,30 @@ static void test_parameters(void)
     set_int(bar, "choice", "full_width", 1);
     set_int(bar, "action", "full_width", 1);
     set_int(bar, "number", "readonly", 1);
-    CHECK(TwDefine("Params/number readwrite"));
+    CHECK(TwDefine("Params/number readonly=false"));
     expect_param(bar, "number", "readonly", 0);
     reject_definition("Params/text lines=1");
     expect_param(bar, "text", "lines", 4);
     reject_definition("Params/number lines=3");
     reject_definition("Params/number full_width=invalid");
     expect_param(bar, "number", "full_width", 0);
+    // The AntTweakBar backward-compatibility spellings were removed: they must
+    // now be reported as unknown attributes and must not change anything.
+    set_int(bar, "number", "readonly", 1);
+    reject_definition("Params/number readwrite");
+    reject_definition("Params/number decimal");
+    reject_definition("Params/number hide");
+    reject_definition("Params/number show");
+    reject_definition("Params/choice val='0 {Zero}'");
+    reject_definition("Params/Nested open");
+    reject_definition("Params/Nested close");
+    reject_definition("Params show");
+    reject_definition("Params hide");
+    reject_definition("Params iconify");
+    expect_param(bar, "number", "readonly", 1);
+    expect_param(bar, "Nested", "opened", 1);
+    expect_param(bar, NULL, "visible", 1);
+    set_int(bar, "number", "readonly", 0);
     CHECK(TwDraw());
     CHECK(TwRemoveVar(bar, "text"));
     CHECK(TwRemoveAllVars(bar));

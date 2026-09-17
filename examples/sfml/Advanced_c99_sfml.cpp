@@ -508,7 +508,7 @@ static void Scene_CreateBar(Scene *scene)
     TwStructMember lightMembers[] =
     {
         { "Active",    TW_TYPE_BOOL32,  offsetof(Light, Active),    " help='Enable/disable the light.' " },
-        { "Color",     TW_TYPE_COLOR4F, offsetof(Light, Color),     " noalpha help='Light color.' " },
+        { "Color",     TW_TYPE_COLOR4F, offsetof(Light, Color),     " coloralpha=false help='Light color.' " },
         { "Radius",    TW_TYPE_FLOAT,   offsetof(Light, Radius),    " min=0 max=4 step=0.02 help='Light radius.' " },
         { "Animation", modeType,        offsetof(Light, Animation), " help='Change the animation mode.' " },
         { "Speed",     TW_TYPE_FLOAT,   offsetof(Light, Speed0),    " readonly=true help='Light moving speed.' " }

@@ -430,11 +430,11 @@ void CColorExt_CreateTypes(void)
     TwStructMember ColorExtMembers[] = { { "Red", TW_TYPE_INT32, offsetof(CColorExt, R), "min=0 max=255" },
                                          { "Green", TW_TYPE_INT32, offsetof(CColorExt, G), "min=0 max=255" },
                                          { "Blue", TW_TYPE_INT32, offsetof(CColorExt, B), "min=0 max=255" },
-                                         { "Hue", TW_TYPE_INT32, offsetof(CColorExt, H), "hide min=0 max=359" },
-                                         { "Lightness", TW_TYPE_INT32, offsetof(CColorExt, L), "hide min=0 max=255" },
-                                         { "Saturation", TW_TYPE_INT32, offsetof(CColorExt, S), "hide min=0 max=255" },
-                                         { "Alpha", TW_TYPE_INT32, offsetof(CColorExt, A), "hide min=0 max=255" },
-                                         { "Mode", TW_TYPE_BOOLCPP, offsetof(CColorExt, m_HLS), "true='HLS' false='RGB' readwrite" } };
+                                         { "Hue", TW_TYPE_INT32, offsetof(CColorExt, H), "visible=false min=0 max=359" },
+                                         { "Lightness", TW_TYPE_INT32, offsetof(CColorExt, L), "visible=false min=0 max=255" },
+                                         { "Saturation", TW_TYPE_INT32, offsetof(CColorExt, S), "visible=false min=0 max=255" },
+                                         { "Alpha", TW_TYPE_INT32, offsetof(CColorExt, A), "visible=false min=0 max=255" },
+                                         { "Mode", TW_TYPE_BOOLCPP, offsetof(CColorExt, m_HLS), "true='HLS' false='RGB' readonly=false" } };
     g_TwMgr->m_TypeColor32 = TwDefineStructExt("COLOR32", ColorExtMembers, 8, sizeof(unsigned int), sizeof(CColorExt), CColorExt_InitColor32CB, CColorExt_CopyVarFromExtCB, CColorExt_CopyVarToExtCB, CColorExt_SummaryCB, g_PassProxyAsClientData, "A 32-bit-encoded color.");
     g_TwMgr->m_TypeColor3F = TwDefineStructExt("COLOR3F", ColorExtMembers, 8, 3*sizeof(float), sizeof(CColorExt), CColorExt_InitColor3FCB, CColorExt_CopyVarFromExtCB, CColorExt_CopyVarToExtCB, CColorExt_SummaryCB, g_PassProxyAsClientData, "A 3-floats-encoded RGB color.");
     g_TwMgr->m_TypeColor4F = TwDefineStructExt("COLOR4F", ColorExtMembers, 8, 4*sizeof(float), sizeof(CColorExt), CColorExt_InitColor4FCB, CColorExt_CopyVarFromExtCB, CColorExt_CopyVarToExtCB, CColorExt_SummaryCB, g_PassProxyAsClientData, "A 4-floats-encoded RGBA color.");
@@ -861,11 +861,11 @@ void CQuaternionExt_CreateTypes(void)
 
     for(int pass=0; pass<2; pass++) // pass 0: create quat types; pass 1: create dir types
     {
-        const char *quatDefPass0 = "step=0.01 hide";
-        const char *quatDefPass1 = "step=0.01 hide";
-        const char *quatSDefPass0 = "step=0.01 min=-1 max=1 hide";
-        const char *quatSDefPass1 = "step=0.01 min=-1 max=1 hide";
-        const char *dirDefPass0 = "step=0.01 hide";
+        const char *quatDefPass0 = "step=0.01 visible=false";
+        const char *quatDefPass1 = "step=0.01 visible=false";
+        const char *quatSDefPass0 = "step=0.01 min=-1 max=1 visible=false";
+        const char *quatSDefPass1 = "step=0.01 min=-1 max=1 visible=false";
+        const char *dirDefPass0 = "step=0.01 visible=false";
         const char *dirDefPass1 = "step=0.01";
         const char *quatDef = (pass==0) ? quatDefPass0 : quatDefPass1;
         const char *quatSDef = (pass==0) ? quatSDefPass0 : quatSDefPass1;
@@ -879,11 +879,11 @@ void CQuaternionExt_CreateTypes(void)
                                             { "Quat Y", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Qy), quatDef },
                                             { "Quat Z", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Qz), quatDef },
                                             { "Quat S", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Qs), quatSDef },
-                                            { "Axis X", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vx), "step=0.01 hide" }, // axis and angle conversion -> Mode hidden because it is not equivalent to a quat (would have required vector renormalization)
-                                            { "Axis Y", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vy), "step=0.01 hide" },
-                                            { "Axis Z", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vz), "step=0.01 hide" },
-                                            { "Angle (degree)",  TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Angle), "step=1 min=-360 max=360 hide" },
-                                            { "Mode", TW_TYPE_BOOLCPP, offsetof(CQuaternionExt, m_AAMode), "true='Axis Angle' false='Quaternion' readwrite hide" },
+                                            { "Axis X", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vx), "step=0.01 visible=false" }, // axis and angle conversion -> Mode hidden because it is not equivalent to a quat (would have required vector renormalization)
+                                            { "Axis Y", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vy), "step=0.01 visible=false" },
+                                            { "Axis Z", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Vz), "step=0.01 visible=false" },
+                                            { "Angle (degree)",  TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Angle), "step=1 min=-360 max=360 visible=false" },
+                                            { "Mode", TW_TYPE_BOOLCPP, offsetof(CQuaternionExt, m_AAMode), "true='Axis Angle' false='Quaternion' readonly=false visible=false" },
                                             { "Dir X", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Dx), dirDef },      // copy of the source direction
                                             { "Dir Y", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Dy), dirDef },
                                             { "Dir Z", TW_TYPE_DOUBLE, offsetof(CQuaternionExt, Dz), dirDef } };
@@ -4145,8 +4145,8 @@ static int AddVar(TwBar *_Bar, const char *_Name, ETwType _Type, void *_VarPtr, 
                     sProxy->m_CustomIndexLast = i;
             }
         }
-        char structInfo[64];
-        sprintf(structInfo, "typeid=%d valptr=%p close ", _Type, vPtr);
+        char structInfo[80];
+        sprintf(structInfo, "typeid=%d valptr=%p opened=false ", _Type, vPtr);
         sds grpDef = sdscatprintf(sdsempty(), "`%s`/`%s` %s", _Bar->m_Name, _Name, structInfo);
         if( _Def!=NULL && strlen(_Def)>0 )
             grpDef = sdscat(grpDef, _Def);

@@ -537,7 +537,7 @@ void Scene::CreateBar()
     TwStructMember lightMembers[] = // array used to describe tweakable variables of the Light structure
     {
         { "Active",    TW_TYPE_BOOLCPP, offsetof(Light, Active),    " help='Enable/disable the light.' " },   // Light::Active is a C++ boolean value
-        { "Color",     TW_TYPE_COLOR4F, offsetof(Light, Color),     " noalpha help='Light color.' " },        // Light::Color is represented by 4 floats, but alpha channel should be ignored
+        { "Color",     TW_TYPE_COLOR4F, offsetof(Light, Color),     " coloralpha=false help='Light color.' " }, // Light::Color is represented by 4 floats, but alpha channel should be ignored
         { "Radius",    TW_TYPE_FLOAT,   offsetof(Light, Radius),    " min=0 max=4 step=0.02 help='Light radius.' " },
         { "Animation", modeType,        offsetof(Light, Animation), " help='Change the animation mode.' " },  // use the enum 'modeType' created before to tweak the Light::Animation variable
         { "Speed",     TW_TYPE_FLOAT,   offsetof(Light, Speed0),    " readonly=true help='Light moving speed.' " } // Light::Speed is made read-only

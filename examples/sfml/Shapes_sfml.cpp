@@ -373,7 +373,7 @@ void TW_CALL SetAutoRotateCB(const void *value, void *clientData)
     }
     else
         // make Rotation variable read-write
-        TwDefine(" TweakBar/ObjRotation readwrite ");
+        TwDefine(" TweakBar/ObjRotation readonly=false ");
 }
 
 

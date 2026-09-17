@@ -960,10 +960,7 @@ enum EVarAttribs
     V_LABEL = 1,
     V_HELP,
     V_GROUP,
-    V_SHOW,
-    V_HIDE,
     V_READONLY,
-    V_READWRITE,
     V_ORDER,
     V_VISIBLE,
     V_FULL_WIDTH,
@@ -993,17 +990,6 @@ int CTwVar_HasCommonAttrib(const char *_Attrib, bool *_HasValue)
         return V_ALIGN_RIGHT;
     else if( _stricmp(_Attrib, "align_left")==0 )
         return V_ALIGN_LEFT;
-
-    // for backward compatibility
-    *_HasValue = false;
-    if( _stricmp(_Attrib, "show")==0 )
-        return V_SHOW;
-    else if( _stricmp(_Attrib, "hide")==0 )
-        return V_HIDE;
-    if( _stricmp(_Attrib, "readonly")==0 )
-        return V_READONLY;
-    else if( _stricmp(_Attrib, "readwrite")==0 )
-        return V_READWRITE;
 
     return 0; // not found
 }
@@ -1129,24 +1115,6 @@ int CTwVar_SetCommonAttrib(CTwVar *_Var, int _AttribID, const char *_Value, TwBa
             CTwBar_NotUpToDate(_Bar);
             return 1;
         }
-    case V_SHOW: // for backward compatibility
-        if( !_Var->m_Visible )
-        {
-            _Var->m_Visible = true;
-            CTwBar_NotUpToDate(_Bar);
-        }
-        return 1;
-    case V_HIDE: // for backward compatibility
-        if( _Var->m_Visible )
-        {
-            _Var->m_Visible = false;
-            CTwBar_NotUpToDate(_Bar);
-        }
-        return 1;
-    case V_READWRITE: // for backward compatibility
-        CTwVar_SetReadOnly(_Var, false);
-        CTwBar_NotUpToDate(_Bar);
-        return 1;
     case V_ORDER:
         // a special case for compatibility with deprecated command 'option=ogl/dx'
         if( CTwVar_IsGroup(_Var) && _Value!=NULL && ((CTwVarGroup *)_Var)->m_SummaryCallback==CColorExt_SummaryCB && ((CTwVarGroup *)_Var)->m_StructValuePtr!=NULL ) // is tw_type_color?
@@ -1255,7 +1223,6 @@ enum EVarAtomAttribs
     VA_STEP,
     VA_PRECISION,
     VA_HEXA,
-    VA_DECIMAL, // for backward compatibility
     VA_TRUE,
     VA_FALSE,
     VA_ENUM,
@@ -1281,17 +1248,11 @@ int CTwVarAtom_HasAttrib(const CTwVarAtom *_Atom, const char *_Attrib, bool *_Ha
         return VA_PRECISION;
     else if( _stricmp(_Attrib, "hexa")==0 )
         return VA_HEXA;
-    else if( _stricmp(_Attrib, "decimal")==0 ) // for backward compatibility
-    {
-        *_HasValue = false;
-        return VA_DECIMAL;
-    }
     else if( _stricmp(_Attrib, "true")==0 )
         return VA_TRUE;
     else if( _stricmp(_Attrib, "false")==0 )
         return VA_FALSE;
-    else if( _stricmp(_Attrib, "enum")==0 
-             || _stricmp(_Attrib, "val")==0 ) // for backward compatibility
+    else if( _stricmp(_Attrib, "enum")==0 )
         return VA_ENUM;
     else if( _stricmp(_Attrib, "value")==0 )
         return VA_VALUE;
@@ -1490,15 +1451,11 @@ int CTwVarAtom_SetAttrib(CTwVarAtom *_Atom, int _AttribID, const char *_Value, T
             return 0;
         }
     case VA_HEXA:
-    case VA_DECIMAL:
         {
             bool hexa = false;
-            if (_AttribID==VA_HEXA) 
-            {
-                if( _Value==NULL || strlen(_Value)==0 // no value is acceptable (for backward compatibility)
-                    || _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
-                    hexa = true;
-            }
+            if( _Value==NULL || strlen(_Value)==0 // no value is acceptable (for backward compatibility)
+                || _stricmp(_Value, "true")==0 || _stricmp(_Value, "1")==0 )
+                hexa = true;
 
             switch( _Atom->m_Type )
             {
@@ -2300,16 +2257,10 @@ void CTwVarAtom_SetDefaults(CTwVarAtom *_Atom)
 
 enum EVarGroupAttribs
 {
-    VG_OPEN = V_ENDTAG+1, // for backward compatibility
-    VG_CLOSE,       // for backward compatibility
-    VG_OPENED,
+    VG_OPENED = V_ENDTAG+1,
     VG_TYPEID,      // used internally for structs
     VG_VALPTR,      // used internally for structs
-    VG_ALPHA,       // for backward compatibility
-    VG_NOALPHA,     // for backward compatibility
     VG_COLORALPHA,  // tw_type_color* only
-    VG_HLS,         // for backward compatibility
-    VG_RGB,         // for backward compatibility
     VG_COLORMODE,   // tw_type_color* only
     VG_COLORORDER,  // tw_type_color* only
     VG_ARROW,       // tw_type_quat* only
@@ -2324,11 +2275,7 @@ int CTwVarGroup_HasAttrib(const CTwVarGroup *_Grp, const char *_Attrib, bool *_H
 {
     (void)_Grp;
     *_HasValue = false;
-    if( _stricmp(_Attrib, "open")==0 ) // for backward compatibility
-        return VG_OPEN;
-    else if( _stricmp(_Attrib, "close")==0 ) // for backward compatibility
-        return VG_CLOSE;
-    else if( _stricmp(_Attrib, "opened")==0 )
+    if( _stricmp(_Attrib, "opened")==0 )
     {
         *_HasValue = true;
         return VG_OPENED;
@@ -2343,19 +2290,11 @@ int CTwVarGroup_HasAttrib(const CTwVarGroup *_Grp, const char *_Attrib, bool *_H
         *_HasValue = true;
         return VG_VALPTR;
     }
-    else if( _stricmp(_Attrib, "alpha")==0 ) // for backward compatibility
-        return VG_ALPHA;
-    else if( _stricmp(_Attrib, "noalpha")==0 ) // for backward compatibility
-        return VG_NOALPHA;
     else if( _stricmp(_Attrib, "coloralpha")==0 )
     {
         *_HasValue = true;
         return VG_COLORALPHA;
     }
-    else if( _stricmp(_Attrib, "hls")==0 ) // for backward compatibility
-        return VG_HLS;
-    else if( _stricmp(_Attrib, "rgb")==0 ) // for backward compatibility
-        return VG_RGB;
     else if( _stricmp(_Attrib, "colormode")==0 )
     {
         *_HasValue = true;
@@ -2404,20 +2343,6 @@ int CTwVarGroup_SetAttrib(CTwVarGroup *_Grp, int _AttribID, const char *_Value, 
 {
     switch( _AttribID )
     {
-    case VG_OPEN: // for backward compatibility
-        if( !_Grp->m_Open )
-        {
-            _Grp->m_Open = true;
-            CTwBar_NotUpToDate(_Bar);
-        }
-        return 1;
-    case VG_CLOSE: // for backward compatibility
-        if( _Grp->m_Open )
-        {
-            _Grp->m_Open = false;
-            CTwBar_NotUpToDate(_Bar);
-        }
-        return 1;
     case VG_OPENED:
         if( _Value!=NULL && strlen(_Value)>0 )
         {
@@ -2477,24 +2402,6 @@ int CTwVarGroup_SetAttrib(CTwVarGroup *_Grp, int _AttribID, const char *_Value, 
             }
             return 0;
         }
-    case VG_ALPHA: // for backward compatibility
-        if( _Grp->m_SummaryCallback==CColorExt_SummaryCB && _Grp->m_StructValuePtr!=NULL ) // is tw_type_color?
-            if( ((CColorExt *)(_Grp->m_StructValuePtr))->m_CanHaveAlpha )
-            {
-                ((CColorExt *)(_Grp->m_StructValuePtr))->m_HasAlpha = true;
-                CTwBar_NotUpToDate(_Bar);
-                return 1;
-            }
-        return 0;
-    case VG_NOALPHA: // for backward compatibility
-        if( _Grp->m_SummaryCallback==CColorExt_SummaryCB && _Grp->m_StructValuePtr!=NULL ) // is tw_type_color?
-        {
-            ((CColorExt *)(_Grp->m_StructValuePtr))->m_HasAlpha = false;
-            CTwBar_NotUpToDate(_Bar);
-            return 1;
-        }
-        else
-            return 0;
     case VG_COLORALPHA:
         if( _Value!=NULL && strlen(_Value)>0 )
         {
@@ -2524,24 +2431,6 @@ int CTwVarGroup_SetAttrib(CTwVarGroup *_Grp, int _AttribID, const char *_Value, 
             }
         }
         return 0;
-    case VG_HLS: // for backward compatibility
-        if( _Grp->m_SummaryCallback==CColorExt_SummaryCB && _Grp->m_StructValuePtr!=NULL ) // is tw_type_color?
-        {
-            ((CColorExt *)(_Grp->m_StructValuePtr))->m_HLS = true;
-            CTwBar_NotUpToDate(_Bar);
-            return 1;
-        }
-        else
-            return 0;
-    case VG_RGB: // for backward compatibility
-        if( _Grp->m_SummaryCallback==CColorExt_SummaryCB && _Grp->m_StructValuePtr!=NULL ) // is tw_type_color?
-        {
-            ((CColorExt *)(_Grp->m_StructValuePtr))->m_HLS = false;
-            CTwBar_NotUpToDate(_Bar);
-            return 1;
-        }
-        else
-            return 0;
     case VG_COLORMODE:
         if( _Value!=NULL && strlen(_Value)>0 )
         {
@@ -3071,9 +2960,6 @@ enum EBarAttribs
     BAR_COLOR,
     BAR_ALPHA,
     BAR_TEXT,
-    BAR_SHOW,    // deprecated, used BAR_VISIBLE instead
-    BAR_HIDE,    // deprecated, used BAR_VISIBLE instead
-    BAR_ICONIFY, // deprecated, used BAR_ICONIFIED instead
     BAR_VISIBLE,
     BAR_ICONIFIED,
     BAR_SIZE,
@@ -3150,14 +3036,6 @@ int CTwBar_HasAttrib(const CTwBar *_Bar, const char *_Attrib, bool *_HasValue)
         return BAR_CONTAINED;
     else if( _stricmp(_Attrib, "buttonalign")==0 )
         return BAR_BUTTON_ALIGN;
-
-    *_HasValue = false;
-    if( _stricmp(_Attrib, "show")==0 ) // for backward compatibility
-        return BAR_SHOW;
-    else if( _stricmp(_Attrib, "hide")==0 ) // for backward compatibility
-        return BAR_HIDE;
-    else if( _stricmp(_Attrib, "iconify")==0 ) // for backward compatibility
-        return BAR_ICONIFY;
 
     return 0; // not found
 }
@@ -3363,15 +3241,6 @@ int CTwBar_SetAttrib(CTwBar *_Bar, int _AttribID, const char *_Value)
         return CTwMgr_SetAttrib(g_TwMgr, MGR_ICON_ALIGN, _Value);
     case BAR_ICON_MARGIN:
         return CTwMgr_SetAttrib(g_TwMgr, MGR_ICON_MARGIN, _Value);
-    case BAR_SHOW:    // deprecated
-        TwSetBarState(_Bar, TW_STATE_SHOWN);
-        return 1;
-    case BAR_HIDE:    // deprecated
-        TwSetBarState(_Bar, TW_STATE_HIDDEN);
-        return 1;
-    case BAR_ICONIFY: // deprecated
-        TwSetBarState(_Bar, TW_STATE_ICONIFIED);
-        return 1;
     case BAR_RESIZABLE:
         if( _Value && strlen(_Value)>0 )
         {
