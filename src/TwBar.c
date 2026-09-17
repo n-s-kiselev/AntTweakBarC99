@@ -7833,6 +7833,8 @@ void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
         /* Query the step once per motion event. SetRotoSliderValue above may
            invoke client code, so this intentionally stays afterward. */
         const double step = CTwBar_GetRotoSliderStep(_Bar);
+        const double min_value = CTwBar_GetRotoSliderMin(_Bar);
+        const double max_value = CTwBar_GetRotoSliderMax(_Bar);
         //DrawManip();
 
         double t = 0;
@@ -7852,21 +7854,21 @@ void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
                 if( preciseInc>step || preciseInc<-step )
                 {
                     _Bar->m_Roto.m_PreciseValue += preciseInc;
-                    if( _Bar->m_Roto.m_PreciseValue>CTwBar_GetRotoSliderMax(_Bar) )
+                    if( _Bar->m_Roto.m_PreciseValue>max_value )
                     {
-                        _Bar->m_Roto.m_PreciseValue = CTwBar_GetRotoSliderMax(_Bar);
-                        _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderMax(_Bar);
+                        _Bar->m_Roto.m_PreciseValue = max_value;
+                        _Bar->m_Roto.m_Value0 = max_value;
 
-                        double da = 360*(CTwBar_GetRotoSliderMax(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_GetRotoSliderStep(_Bar));
+                        double da = 360*(max_value-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*step);
                         _Bar->m_Roto.m_Angle0 = (((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360) - da;
                         _Bar->m_Roto.m_AngleDT = da;
                     }
-                    else if( _Bar->m_Roto.m_PreciseValue<CTwBar_GetRotoSliderMin(_Bar) )
+                    else if( _Bar->m_Roto.m_PreciseValue<min_value )
                     {
-                        _Bar->m_Roto.m_PreciseValue = CTwBar_GetRotoSliderMin(_Bar);
-                        _Bar->m_Roto.m_Value0 = CTwBar_GetRotoSliderMin(_Bar);
+                        _Bar->m_Roto.m_PreciseValue = min_value;
+                        _Bar->m_Roto.m_Value0 = min_value;
 
-                        double da = 360*(CTwBar_GetRotoSliderMin(_Bar)-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*CTwBar_GetRotoSliderStep(_Bar));
+                        double da = 360*(min_value-_Bar->m_Roto.m_ValueAngle0)/((double)(_Bar->m_Roto.m_Subdiv)*step);
                         _Bar->m_Roto.m_Angle0 = (((int)((t/(2.0*M_PI)+1.0)*360.0+0.5)) % 360) - da;
                         _Bar->m_Roto.m_AngleDT = da;
                     }

@@ -474,6 +474,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   the column constraint from the remaining text space and state their units.
 - `./nob -test` passes with the unchanged fixture.
 
+### 2026-09-17: Stage 6, RotoSlider bounds query cleanup
+
+- Reused the minimum and maximum RotoSlider bounds during one pointer-motion
+  update, alongside the already hoisted step value. The queries remain after
+  the value update so client callbacks retain their existing opportunity to
+  change the bounds before the drag calculation reads them.
+- `./nob -test`, `./nob -test-record`, and `./nob` pass. The recorded fixture
+  remains unchanged.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
