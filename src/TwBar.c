@@ -7681,6 +7681,15 @@ void CRotoSlider_Init(CRotoSlider *_Roto)
     _Roto->m_Subdiv = 256; // will be recalculated in RotoSliderOnLButtonDown
 }
 
+static void CRotoSlider_ClearInteraction(CRotoSlider *_Roto)
+{
+    _Roto->m_Var = NULL;
+    _Roto->m_Active = false;
+    _Roto->m_ActiveMiddle = false;
+    _Roto->m_HasPrevious = false;
+    _Roto->m_AngleDT = 0;
+}
+
 void CTwBar_DrawRotoSlider(CTwBar *_Bar)
 {
     ITwGraph *Gr = g_TwMgr->m_Graph;
@@ -7938,8 +7947,7 @@ void CTwBar_RotoSliderOnLButtonUp(CTwBar *_Bar, int _X, int _Y)
         //if( _Bar->m_Roto.m_Var )
         //  CTwBar_SetRotoSliderValue(_Bar, CTwBar_GetRotoSliderSteppedValue(_Bar));
 
-        _Bar->m_Roto.m_Var = NULL;
-        _Bar->m_Roto.m_Active = false;
+        CRotoSlider_ClearInteraction(&_Bar->m_Roto);
         ANT_SET_CURSOR(Arrow);
     }
 }

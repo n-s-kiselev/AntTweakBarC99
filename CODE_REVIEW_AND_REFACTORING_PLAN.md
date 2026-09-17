@@ -369,3 +369,12 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - Acceptance checks pass: `./nob -test` and `./nob` on macOS arm64 with Apple
   clang. The project remains buildable with all pre-existing local changes
   preserved.
+
+### 2026-09-17: Stage 5, RotoSlider state cleanup
+
+- Added `CRotoSlider_ClearInteraction` to consolidate repeated active,
+  middle-button, variable, previous-angle and drag-state reset fields when a
+  RotoSlider interaction ends.
+- Value accumulation and callback timing remain unchanged; the helper only
+  clears interaction ownership and transient drag state.
+- `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
