@@ -217,6 +217,26 @@ future API contract, but no public theme symbols are being added yet. The API
 must specify manager ownership, optional per-bar overrides, pixel units,
 font-scaling behavior, invalidation and lifetime before implementation.
 
+#### Stage 7 API contract to review before implementation
+
+- The manager owns the default theme and remains responsible for its lifetime;
+  bars store either a resolved copy or an explicitly owned override, never a
+  borrowed pointer to caller memory.
+- Resolution precedence is fixed: library defaults, manager theme, then a
+  bar-specific override. Runtime state such as bar position, value width,
+  scroll offset, hover state and client colors remains outside the theme.
+- Geometry fields are integer screen pixels after font resolution. Font-relative
+  defaults are resolved once when the bar font or theme changes; theme authors
+  do not provide hidden scale factors.
+- Applying a theme invalidates affected bars once, rebuilds derived layout and
+  text objects on the next update, and does not allocate during drawing.
+- The first public API should expose an opaque theme handle plus create/copy,
+  set/get and apply operations rather than exposing `TwStyleGeometry` or the
+  internal row model. Defaults must reproduce the current captures exactly.
+- Compatibility tests must cover normal/help/popup bars, all three fonts,
+  1x/2x scaling, light/dark text, hit testing and callback-driven updates before
+  any public declarations are added to `include/AntTweakBar.h`.
+
 ## 9. Risks, validation limits, and deliberate non-changes
 
 The highest migration risk is visual drift from integer rounding, inclusive GL rectangle endpoints, font scaling, and bar/help/popup special cases. A second risk is stale client data: callbacks can change or destroy manager state while an update or event is in progress (`TwBar.c:1590+,6588+`), so caching must obey those lifetimes. A third is platform variation in font/raster/GL behavior; exact captures should be compared within the same platform, not across unrelated GPUs. No automated test suite or benchmark currently ships, and this review did not execute GUI examples or collect measurements.
@@ -392,6 +412,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   compatibility boundary. Public theme types should be introduced only after
   ownership, override precedence, font-scaled pixel units and invalidation are
   specified in a separate API review.
+
+### 2026-09-17: Stage 7, API contract defined
+
+- Added the implementation contract for a future public theme API, covering
+  ownership, override precedence, font-resolved pixel units, invalidation and
+  ABI-safe opaque handles.
+- Deliberately kept `include/AntTweakBar.h` unchanged. The contract must be
+  reviewed against the complete visual capture matrix before public symbols are
+  introduced.
 
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
