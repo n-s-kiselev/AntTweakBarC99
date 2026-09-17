@@ -514,6 +514,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - The clean build and all 29 headless regression checks passed, confirming the
   current results do not depend on stale objects.
 
+### 2026-09-17: Shared-library API export check
+
+- Compared the 43 `TW_API` function declarations in
+  `include/AntTweakBar.h` with the exported symbols from the cleanly rebuilt
+  `libAntTweakBarC99.dylib` using `nm`.
+- All 43 public functions are present; no public symbol was lost by the
+  refactoring. This check normalizes the leading Mach-O underscore and does
+  not alter the library or header.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
