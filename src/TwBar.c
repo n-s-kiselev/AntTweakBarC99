@@ -3924,6 +3924,11 @@ static inline CTwVarAtom *CTwBar_MultilineAtomAtLine(const CTwBar *_Bar, int _Li
     return (CTwVarAtom *)Tag->m_Var;
 }
 
+static inline int CTwBar_LayoutRowY(const CTwBar *_Bar, int _Line)
+{
+    return _Bar->m_Layout.content_y0 + _Line*_Bar->m_Layout.row_height_px;
+}
+
 // Screen Y range [*_Y0,*_Y1) of the block reserved by the multiline-text atom whose
 // first row (m_SubLine==0) is HierTag row _Line, clamped to the bar's visible variable
 // area since the block may be partly scrolled out of it - its text and background
@@ -3931,10 +3936,9 @@ static inline CTwVarAtom *CTwBar_MultilineAtomAtLine(const CTwBar *_Bar, int _Li
 static inline void CTwBar_MultilineBlockY(const CTwBar *_Bar, int _Line, int *_Y0, int *_Y1)
 {
     const CTwVarAtom *Atom = (const CTwVarAtom *)_Bar->m_HierTags.items[_Line].m_Var;
-    int RowH = _Bar->m_Font->m_CharHeight+_Bar->m_LineSep;
-    int MaxY1 = _Bar->m_PosY+_Bar->m_VarY1+1;
-    *_Y0 = _Bar->m_PosY+_Bar->m_VarY0+_Line*RowH;
-    *_Y1 = *_Y0+Atom->m_Val.m_Multiline.m_NbLines*RowH;
+    int MaxY1 = _Bar->m_Layout.content_y1;
+    *_Y0 = CTwBar_LayoutRowY(_Bar, _Line);
+    *_Y1 = *_Y0+Atom->m_Val.m_Multiline.m_NbLines*_Bar->m_Layout.row_height_px;
     if( *_Y1>MaxY1 )
         *_Y1 = MaxY1;
 }
@@ -4964,6 +4968,12 @@ void CTwBar_Update(CTwBar *_Bar)
     int NbLines = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
     if( NbLines<= 0 )
         NbLines = 1;
+    _Bar->m_Layout.content_x0 = _Bar->m_PosX + _Bar->m_VarX0;
+    _Bar->m_Layout.content_x1 = _Bar->m_PosX + _Bar->m_VarX2 + 1;
+    _Bar->m_Layout.content_y0 = _Bar->m_PosY + _Bar->m_VarY0;
+    _Bar->m_Layout.content_y1 = _Bar->m_PosY + _Bar->m_VarY1 + 1;
+    _Bar->m_Layout.row_height_px = _Bar->m_Font->m_CharHeight + _Bar->m_LineSep;
+    _Bar->m_Layout.visible_row_count = NbLines;
     if( !_Bar->m_IsMinimized )
     {
         int LineNum = 0;

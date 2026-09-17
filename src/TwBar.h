@@ -400,6 +400,19 @@ typedef struct TwStyle
     TwStyleGeometry geometry;
 } TwStyle;
 
+/* Derived screen-space layout shared by drawing, hit testing and multiline
+   helpers. Bounds use half-open extents; legacy inclusive draw endpoints are
+   formed at the call site. */
+typedef struct TwBarLayout
+{
+    int content_x0;
+    int content_x1;
+    int content_y0;
+    int content_y1;
+    int row_height_px;
+    int visible_row_count;
+} TwBarLayout;
+
 static inline void TwStyle_Init(TwStyle *_Style, const CTexFont *_Font)
 {
     int h = _Font->m_CharHeight;
@@ -459,6 +472,7 @@ struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a point
     bool                    m_Iconifiable;
     bool                    m_Contained;
     TwStyle                 m_Style;
+    TwBarLayout             m_Layout;
 
     CTwVarGroup             m_VarRoot;
 

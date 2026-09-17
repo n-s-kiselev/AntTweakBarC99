@@ -182,7 +182,10 @@ existing geometry except the requested active-font RotoSlider scaling.
 
 ### Stage 3: Derived layout and row model
 
-Status: Pending. Build a per-bar `TwBarLayout` and compact `TwRowLayout` for visible rows only, containing consistent half-open screen-space bounds and text origins. Derive popup width and placement from these bounds; share scroll/thumb geometry. Preserve existing integer rounding and clipped multiline behavior. Move cohesive layout helpers to a file only when dependencies are simple; register it in `nob.c`. Gate: layout probes and full visual matrix match baseline.
+Status: In progress. The first slice adds a per-bar `TwBarLayout` with half-open
+content bounds, resolved row height and visible row count. Multiline block bounds
+now use this shared row origin. Remaining row rectangles, popup placement and
+scroll/thumb sharing are pending.
 
 ### Stage 4: Widget and property extension points
 
@@ -299,6 +302,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   regular bar layout bounds to use them. Defaults reproduce the existing
   expressions exactly while retaining the separator adjustment.
 - `./nob -test` passes with the updated RotoSlider drawing fixture.
+
+### 2026-09-17: Stage 3 started
+
+- Added internal `TwBarLayout` storage to `CTwBar`, resolved during update from
+  the existing bar bounds and font row spacing.
+- Added `CTwBar_LayoutRowY` and migrated multiline block Y ranges to shared
+  half-open content bounds, preserving clipped paragraph behavior.
+- `./nob -test` passes with the unchanged drawing fixture. Row highlight, input,
+  popup and scrollbar consumers still need migration before Stage 3 is complete.
 
 ### 2026-09-17: Stage 2, title geometry
 
