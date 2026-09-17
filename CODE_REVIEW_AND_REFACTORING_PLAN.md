@@ -492,6 +492,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   require those environments and are deliberately left as external follow-up
   validation rather than guessed from this host.
 
+### 2026-09-17: SDL3 and SFML3 example validation
+
+- Built all 13 SDL3 examples with `./nob -examples-sdl` and all 13 SFML3
+  examples with `./nob -examples-sfml`. Both vendored backend builds and
+  static example links pass on macOS.
+- No production source or public API changes were needed for these checks.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
