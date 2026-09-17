@@ -190,7 +190,9 @@ multiline scrollbars have intentionally different policies.
 
 ### Stage 4: Widget and property extension points
 
-Status: Pending. Keep static explicit C dispatch. Factor row count, display text, supported attributes, interaction eligibility, and invalidation into small widget-class helpers; separate base, atom, group, and built-in custom ownership. Introduce typed property metadata only for common parsing/lookup/get semantics, with special behavior in named functions. Use a small new widget/property as a proof exercise and count phase sites; do not ship speculative public API. Gate: legacy attribute strings, error values and callbacks unchanged; extension touches only its owner plus intentional render/input functions.
+Status: In progress. The common property boundary is now named explicitly;
+typed metadata and widget-specific capability helpers remain pending. Keep
+static C dispatch and all public attribute strings unchanged.
 
 ### Stage 5: Rendering and input cleanup where shared geometry helps
 
@@ -324,6 +326,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   and built-in custom properties. Public attribute strings and dispatch entry
   points remain unchanged while the common property boundary is isolated.
 - `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
+
+### 2026-09-17: Stage 4, common property boundary
+
+- Renamed the internal `CTwVar_*AttribBase` helpers to
+  `CTwVar_*CommonAttrib` in `TwBar.c` and `TwBar.h`. “Common” identifies that
+  these functions own properties shared by atoms and groups, while concrete
+  dispatchers retain atom-only and group-only behavior.
+- No public symbols, attribute spellings, numeric IDs, error paths or callback
+  behavior changed. `./nob -test` passes with the unchanged fixture.
 
 ### 2026-09-17: Stage 2, title geometry
 

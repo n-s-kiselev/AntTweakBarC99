@@ -972,7 +972,7 @@ enum EVarAttribs
     V_ENDTAG
 };
 
-int CTwVar_HasAttribBase(const char *_Attrib, bool *_HasValue)
+int CTwVar_HasCommonAttrib(const char *_Attrib, bool *_HasValue)
 {
     *_HasValue = true;
     if( _stricmp(_Attrib, "label")==0 )
@@ -1038,7 +1038,7 @@ static int SetBoolAttrib(bool *_Field, const char *_Value, TwBar *_Bar, bool _In
     return 1;
 }
 
-int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex)
+int CTwVar_SetCommonAttrib(CTwVar *_Var, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex)
 {
     switch( _AttribID )
     {
@@ -1204,7 +1204,7 @@ int CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar 
 }
 
 
-ERetType CTwVar_GetAttribBase(const CTwVar *_Var, int _AttribID, TwBar *_Bar, CTwVarGroup *_VarParent, int _VarIndex, CDoubleArray *outDoubles, sds *outString)
+ERetType CTwVar_GetCommonAttrib(const CTwVar *_Var, int _AttribID, TwBar *_Bar, CTwVarGroup *_VarParent, int _VarIndex, CDoubleArray *outDoubles, sds *outString)
 {
     (void)_Bar, (void)_VarIndex;
     outDoubles->count = 0;
@@ -1298,7 +1298,7 @@ int CTwVarAtom_HasAttrib(const CTwVarAtom *_Atom, const char *_Attrib, bool *_Ha
     else if( _stricmp(_Attrib, "lines")==0 )
         return VA_LINES;
 
-    return CTwVar_HasAttribBase(_Attrib, _HasValue);
+    return CTwVar_HasCommonAttrib(_Attrib, _HasValue);
 }
 
 int CTwVarAtom_SetAttrib(CTwVarAtom *_Atom, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex)
@@ -1687,7 +1687,7 @@ int CTwVarAtom_SetAttrib(CTwVarAtom *_Atom, int _AttribID, const char *_Value, T
             return 1;
         }
     default:
-        return CTwVar_SetAttribBase(&_Atom->m_Base, _AttribID, _Value, _Bar, _VarParent, _VarIndex);
+        return CTwVar_SetCommonAttrib(&_Atom->m_Base, _AttribID, _Value, _Bar, _VarParent, _VarIndex);
     }
 }
 
@@ -1875,7 +1875,7 @@ ERetType CTwVarAtom_GetAttrib(const CTwVarAtom *_Atom, int _AttribID, TwBar *_Ba
             return RET_ERROR;
         }
     default:
-        return CTwVar_GetAttribBase(&_Atom->m_Base, _AttribID, _Bar, _VarParent, _VarIndex, outDoubles, outString);
+        return CTwVar_GetCommonAttrib(&_Atom->m_Base, _AttribID, _Bar, _VarParent, _VarIndex, outDoubles, outString);
     }
 }
 
@@ -2397,7 +2397,7 @@ int CTwVarGroup_HasAttrib(const CTwVarGroup *_Grp, const char *_Attrib, bool *_H
         return VG_SHOWVAL;
     }
 
-    return CTwVar_HasAttribBase(_Attrib, _HasValue);
+    return CTwVar_HasCommonAttrib(_Attrib, _HasValue);
 }
 
 int CTwVarGroup_SetAttrib(CTwVarGroup *_Grp, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex)
@@ -2679,7 +2679,7 @@ int CTwVarGroup_SetAttrib(CTwVarGroup *_Grp, int _AttribID, const char *_Value, 
         else
             return 0;
     default:
-        return CTwVar_SetAttribBase(&_Grp->m_Base, _AttribID, _Value, _Bar, _VarParent, _VarIndex);
+        return CTwVar_SetCommonAttrib(&_Grp->m_Base, _AttribID, _Value, _Bar, _VarParent, _VarIndex);
     }
 }
 
@@ -2783,7 +2783,7 @@ ERetType CTwVarGroup_GetAttrib(const CTwVarGroup *_Grp, int _AttribID, TwBar *_B
         CTwMgr_SetLastError(g_TwMgr, g_ErrInvalidAttrib);
         return RET_ERROR;
     default:
-        return CTwVar_GetAttribBase(&_Grp->m_Base, _AttribID, _Bar, _VarParent, _VarIndex, outDoubles, outString);
+        return CTwVar_GetCommonAttrib(&_Grp->m_Base, _AttribID, _Bar, _VarParent, _VarIndex, outDoubles, outString);
     }
 }
 

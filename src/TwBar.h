@@ -142,9 +142,9 @@ size_t                      CTwVar_GetDataSize(TwType _Type); // was: static CTw
 // GetAttrib's bodies) - called explicitly by CTwVarAtom's/CTwVarGroup's
 // own HasAttrib/SetAttrib/GetAttrib as a fallback for attributes common
 // to every var (label, help, group, visible, readonly, ...).
-int                         CTwVar_HasAttribBase(const char *_Attrib, bool *_HasValue);
-int                         CTwVar_SetAttribBase(CTwVar *_Var, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex);
-ERetType                    CTwVar_GetAttribBase(const CTwVar *_Var, int _AttribID, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex, CDoubleArray *outDouble, sds *outString);
+int                         CTwVar_HasCommonAttrib(const char *_Attrib, bool *_HasValue);
+int                         CTwVar_SetCommonAttrib(CTwVar *_Var, int _AttribID, const char *_Value, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex);
+ERetType                    CTwVar_GetCommonAttrib(const CTwVar *_Var, int _AttribID, TwBar *_Bar, struct CTwVarGroup *_VarParent, int _VarIndex, CDoubleArray *outDouble, sds *outString);
 
 
 // TVal<T> was a C++ template; C99 has none, so each numeric type gets its
