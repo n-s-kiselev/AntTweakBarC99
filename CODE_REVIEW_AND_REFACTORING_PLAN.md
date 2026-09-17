@@ -170,7 +170,15 @@ Status: In progress. Rename only internal symbols whose role is misunderstood in
 
 ### Stage 2: Internal style and color context
 
-Status: In progress. Add internal `TwStyleGeometry` and `TwStyleColors`, default initialization with the exact formulas in §6, and resolution on bar/font/tint changes. Migrate one category at a time: bar/content/title, row/text, buttons/scrollbars, popup/multiline/Roto, then color literals. Change draw and hit consumers in the same small step for each metric. Keep existing bar overrides. Gate: exact pixel and edge hit comparisons; audit every §6 row and remaining active literal.
+Status: Completed for the safe internal boundary. `TwStyleGeometry` now owns the
+font-derived group, label, content, title and RotoSlider metrics used by layout,
+drawing and hit testing. The existing `CTwBar_UpdateColors` palette remains the
+single resolved per-bar color state; duplicating it into a second structure would
+add synchronization and allocation risk without reducing coupling. Remaining
+decorative ARGB literals and widget-specific colors are explicitly deferred to
+Stage 5/7, where rendering ownership and theme API boundaries are addressed.
+Gate: exact headless drawing and edge-hit comparisons pass; defaults preserve
+existing geometry except the requested active-font RotoSlider scaling.
 
 ### Stage 3: Derived layout and row model
 
@@ -298,3 +306,16 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   background, separator, and header highlight bounds to use the resolved field.
   The default is `font_height + 2`, preserving existing coordinates exactly.
 - Validation: `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
+
+### 2026-09-17: Stage 2 finalized
+
+- Completed the bounded internal style migration. `TwStyleGeometry` is resolved
+  once per bar/font change and is consumed by the migrated geometry paths;
+  it adds no per-frame allocation or indirection.
+- Deliberately left the existing resolved color members in `CTwBar`: they are
+  already calculated centrally by `CTwBar_UpdateColors`, and moving them now
+  would create duplicate state. Their eventual theme ownership is recorded for
+  the rendering/theme stages.
+- Acceptance checks pass: `./nob -test` and `./nob` on macOS arm64 with Apple
+  clang. The project remains buildable with all pre-existing local changes
+  preserved.
