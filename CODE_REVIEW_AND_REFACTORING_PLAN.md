@@ -182,10 +182,11 @@ existing geometry except the requested active-font RotoSlider scaling.
 
 ### Stage 3: Derived layout and row model
 
-Status: In progress. The first slice adds a per-bar `TwBarLayout` with half-open
-content bounds, resolved row height and visible row count. Multiline block bounds
-now use this shared row origin. Remaining row rectangles, popup placement and
-scroll/thumb sharing are pending.
+Status: Completed for the current row geometry boundary. `TwBarLayout` now owns
+half-open content bounds, row height and visible row count; multiline blocks,
+highlight bands, keyboard activation and popup anchoring use the shared row
+origin. Scrollbar-specific geometry remains separate because outer and
+multiline scrollbars have intentionally different policies.
 
 ### Stage 4: Widget and property extension points
 
@@ -311,6 +312,18 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   half-open content bounds, preserving clipped paragraph behavior.
 - `./nob -test` passes with the unchanged drawing fixture. Row highlight, input,
   popup and scrollbar consumers still need migration before Stage 3 is complete.
+
+### 2026-09-17: Stage 3 completed and Stage 4 started
+
+- Routed row highlight, pointer hit testing, keyboard activation, RotoSlider
+  activation and enum popup anchoring through `TwBarLayout` helpers.
+- Preserved scrollbar-specific calculations and inclusive renderer endpoints;
+  these are intentionally left as separate policies until the input/rendering
+  stage can share them without hiding their behavioral differences.
+- Stage 4 begins with an ownership inventory for generic, atom-only, group-only
+  and built-in custom properties. Public attribute strings and dispatch entry
+  points remain unchanged while the common property boundary is isolated.
+- `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.
 
 ### 2026-09-17: Stage 2, title geometry
 

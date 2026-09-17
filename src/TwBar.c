@@ -3929,6 +3929,11 @@ static inline int CTwBar_LayoutRowY(const CTwBar *_Bar, int _Line)
     return _Bar->m_Layout.content_y0 + _Line*_Bar->m_Layout.row_height_px;
 }
 
+static inline int CTwBar_LayoutRowAtY(const CTwBar *_Bar, int _Y)
+{
+    return (_Y-_Bar->m_Layout.content_y0)/_Bar->m_Layout.row_height_px;
+}
+
 // Screen Y range [*_Y0,*_Y1) of the block reserved by the multiline-text atom whose
 // first row (m_SubLine==0) is HierTag row _Line, clamped to the bar's visible variable
 // area since the block may be partly scrolled out of it - its text and background
@@ -5464,7 +5469,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     || (!((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var)->m_ReadOnly && !_Bar->m_IsHelpBar
                         && !CTwVar_IsCustom(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) ) ) )
             {
-                int y0 = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+                int y0 = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine);
                 Gr->DrawRect(Gr, _Bar->m_PosX+LevelSpace+_Bar->m_Style.geometry.label_origin_after_indent_px+LevelSpace*_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level, y0+1, _Bar->m_PosX+_Bar->m_VarX2, y0+_Bar->m_Font->m_CharHeight-1+_Bar->m_LineSep-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
                 int eps = (g_TwMgr->m_GraphAPI==TW_OPENGL || g_TwMgr->m_GraphAPI==TW_OPENGL_CORE) ? 1 : 0;
                 if( !_Bar->m_EditInPlace.m_Active )
@@ -5472,7 +5477,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
             }
             else if( HasHighlightedLine && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
-                int y0 = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+                int y0 = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine);
                 color32 col = ColorBlend(_Bar->m_ColHighBg0, _Bar->m_ColHighBg1, 0.5f);
                 CTwVarAtom *Atom = ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var);
                 if( !IsCustomType(Atom->m_Type)
@@ -5682,7 +5687,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                 // Draw -/+/o/click/v buttons
                 if( (_Bar->m_DrawIncrDecrBtn || _Bar->m_DrawClickBtn || _Bar->m_DrawListBtn || _Bar->m_DrawBoolBtn || _Bar->m_DrawRotoBtn) && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count )
                 {
-                    int y0 = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+                    int y0 = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine);
                     if( _Bar->m_DrawIncrDecrBtn )
                     {
                         bool IsMin = false;
@@ -6086,7 +6091,7 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
             }
             else if( InBar && _X>_Bar->m_PosX+2 && _X<_Bar->m_PosX+_Bar->m_VarX2 && _Y>=_Bar->m_PosY+_Bar->m_VarY0 && _Y<_Bar->m_PosY+_Bar->m_VarY1 )
             {   // mouse over var line
-                _Bar->m_HighlightedLine = (_Y-_Bar->m_PosY-_Bar->m_VarY0)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+                _Bar->m_HighlightedLine = CTwBar_LayoutRowAtY(_Bar, _Y);
                 if( _Bar->m_HighlightedLine>=(int)_Bar->m_HierTags.count )
                     _Bar->m_HighlightedLine = -1;
                 else if(_Bar->m_HighlightedLine>=0)
@@ -6614,7 +6619,7 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
         Handled = (_X>=_Bar->m_PosX && _X<_Bar->m_PosX+_Bar->m_Width && _Y>=_Bar->m_PosY && _Y<_Bar->m_PosY+_Bar->m_Height);
         if( _Button==TW_MOUSE_LEFT && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var )
         {
-            bool OnFocus = (_Bar->m_HighlightedLine==(_Y-_Bar->m_PosY-_Bar->m_VarY0)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep) && Handled);
+            bool OnFocus = (_Bar->m_HighlightedLine==CTwBar_LayoutRowAtY(_Bar, _Y) && Handled);
             if( CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
             {
                 if( _Pressed && !g_TwMgr->m_IsRepeatingMousePressed && OnFocus )
@@ -6717,7 +6722,7 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     g_TwMgr->m_PopupBar->m_Color = _Bar->m_Color;
                     g_TwMgr->m_PopupBar->m_DarkText = _Bar->m_DarkText;
                     g_TwMgr->m_PopupBar->m_PosX = CTwBar_RowWidgetX0(_Bar, &Var->m_Base, _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Level) - 2;
-                    g_TwMgr->m_PopupBar->m_PosY = _Bar->m_PosY + _Bar->m_VarY0 + (_Bar->m_HighlightedLine+1)*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+                    g_TwMgr->m_PopupBar->m_PosY = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine+1);
                     // CTwBar_Update() gives a popup list m_VarX0=2 and clips labels to
                     // m_VarX2-m_VarX0 = m_Width-CharHeight-Sep-4, but CTwBar_Draw() always draws
                     // the label text itself starting at PosX+LevelSpace+6 (LevelSpace = max
@@ -7354,7 +7359,7 @@ bool CTwBar_KeyPressed(CTwBar *_Bar, int _Key, int _Modifiers)
                             else // if( IsEnumType(Atom->m_Type) )
                             {
                                 // simulate a mouse click
-                                int y = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep) + _Bar->m_Font->m_CharHeight/2;
+                                int y = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine) + _Bar->m_Font->m_CharHeight/2;
                                 int x = _Bar->m_PosX + _Bar->m_VarX1 + 2;
                                 if( x>_Bar->m_PosX+_Bar->m_VarX2-2 ) 
                                     x = _Bar->m_PosX + _Bar->m_VarX2 - 2;
@@ -7894,7 +7899,7 @@ void CTwBar_RotoSliderOnLButtonDown(CTwBar *_Bar, int _X, int _Y)
     if( !_Bar->m_Roto.m_Active && _Bar->m_HighlightedLine>=0 && _Bar->m_HighlightedLine<(int)_Bar->m_HierTags.count && _Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var && !CTwVar_IsGroup(_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var) )
     {
         _Bar->m_Roto.m_Var = ((CTwVarAtom *)_Bar->m_HierTags.items[_Bar->m_HighlightedLine].m_Var);
-        int y = _Bar->m_PosY + _Bar->m_VarY0 + _Bar->m_HighlightedLine*(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep) + _Bar->m_Font->m_CharHeight/2;
+        int y = CTwBar_LayoutRowY(_Bar, _Bar->m_HighlightedLine) + _Bar->m_Font->m_CharHeight/2;
         _Bar->m_Roto.m_Origin = CPoint_Make(p.x, y); //r.CenterPoint().y);
         _Bar->m_Roto.m_Current = p;
         _Bar->m_Roto.m_Active = true;
