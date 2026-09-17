@@ -483,6 +483,15 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - `./nob -test`, `./nob -test-record`, and `./nob` pass. The recorded fixture
   remains unchanged.
 
+### 2026-09-17: Validation scope extended
+
+- Built all 13 GLFW3 examples with `./nob -examples-glfw` after the Stage 6
+  change. The static library and example link steps pass on the current macOS
+  environment.
+- Interactive window capture, Linux/MinGW builds, and runtime profiling still
+  require those environments and are deliberately left as external follow-up
+  validation rather than guessed from this host.
+
 ### 2026-09-17: Stage 1, measured and truncated label widths
 
 - Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
