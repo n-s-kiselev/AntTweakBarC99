@@ -291,3 +291,10 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   regular bar layout bounds to use them. Defaults reproduce the existing
   expressions exactly while retaining the separator adjustment.
 - `./nob -test` passes with the updated RotoSlider drawing fixture.
+
+### 2026-09-17: Stage 2, title geometry
+
+- Added `title_height_px` to the internal style geometry and migrated title
+  background, separator, and header highlight bounds to use the resolved field.
+  The default is `font_height + 2`, preserving existing coordinates exactly.
+- Validation: `./nob -test` and `./nob` pass on macOS arm64 with Apple clang.

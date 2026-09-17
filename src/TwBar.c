@@ -5409,13 +5409,13 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
             PERF( Timer.Reset(); )
             if( _DrawPart&DRAW_BG )
             {
-                //Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+1, (_Bar->m_HighlightTitle||_Bar->m_MouseDragTitle) ? _Bar->m_ColTitleHighBg : (_Bar->m_DrawHandles ? _Bar->m_ColTitleBg : _Bar->m_ColTitleUnactiveBg), (_Bar->m_HighlightTitle||_Bar->m_MouseDragTitle) ? _Bar->m_ColTitleHighBg : (_Bar->m_DrawHandles ? _Bar->m_ColTitleBg : _Bar->m_ColTitleUnactiveBg), (_Bar->m_HighlightTitle||_Bar->m_MouseDragTitle) ? _Bar->m_ColTitleHighBg : (_Bar->m_DrawHandles ? _Bar->m_ColTitleBg : _Bar->m_ColTitleUnactiveBg), (_Bar->m_HighlightTitle||_Bar->m_MouseDragTitle) ? _Bar->m_ColTitleHighBg : (_Bar->m_DrawHandles ? _Bar->m_ColTitleBg : _Bar->m_ColTitleUnactiveBg));
+                // Title background uses the resolved title height below.
                 if( _Bar->m_HighlightTitle || _Bar->m_MouseDragTitle )
-                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+1, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg);
+                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px-1, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg, _Bar->m_ColTitleHighBg);
                 else if (_Bar->m_DrawHandles)
-                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+1, _Bar->m_ColTitleBg, _Bar->m_ColTitleBg, colBg2, colBg1);
+                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px-1, _Bar->m_ColTitleBg, _Bar->m_ColTitleBg, colBg2, colBg1);
                 else
-                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+1, _Bar->m_ColTitleBg, _Bar->m_ColTitleBg, colBg2, colBg1);
+                    Gr->DrawRect(Gr, _Bar->m_PosX, _Bar->m_PosY, _Bar->m_PosX+_Bar->m_Width-1, _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px-1, _Bar->m_ColTitleBg, _Bar->m_ColTitleBg, colBg2, colBg1);
             }
             if( _DrawPart&DRAW_CONTENT )
             {
@@ -5426,7 +5426,7 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                     Gr->DrawText(Gr, _Bar->m_TitleTextObj, _Bar->m_PosX+(_Bar->m_Width-_Bar->m_TitleWidth)/2+1, _Bar->m_PosY+1, _Bar->m_ColTitleShadow, 0);
                 Gr->DrawText(Gr, _Bar->m_TitleTextObj, _Bar->m_PosX+(_Bar->m_Width-_Bar->m_TitleWidth)/2, _Bar->m_PosY, _Bar->m_ColTitleText, 0);
             }
-            y = _Bar->m_PosY+_Bar->m_Font->m_CharHeight+1;
+            y = _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px-1;
             if( _DrawPart&DRAW_CONTENT && _Bar->m_DrawHandles )
                 Gr->DrawLine(Gr, _Bar->m_PosX, y, _Bar->m_PosX+_Bar->m_Width-1, y, 0x30ffffff, 0x30ffffff, false); // 0x80afafaf);
             y++;
@@ -5776,11 +5776,11 @@ void CTwBar_Draw(CTwBar *_Bar, int _DrawPart)
                 // Draw labels & values headers
                 if (_Bar->m_HighlightLabelsHeader) 
                 {
-                    Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+2, _Bar->m_PosX+_Bar->m_VarX1-4, _Bar->m_PosY+_Bar->m_VarY0-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
+                    Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX0, _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px, _Bar->m_PosX+_Bar->m_VarX1-4, _Bar->m_PosY+_Bar->m_VarY0-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
                 }
                 if (_Bar->m_HighlightValuesHeader) 
                 {
-                    Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX1+2, _Bar->m_PosY+_Bar->m_Font->m_CharHeight+2, _Bar->m_PosX+_Bar->m_VarX2, _Bar->m_PosY+_Bar->m_VarY0-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
+                    Gr->DrawRect(Gr, _Bar->m_PosX+_Bar->m_VarX1+2, _Bar->m_PosY+_Bar->m_Style.geometry.title_height_px, _Bar->m_PosX+_Bar->m_VarX2, _Bar->m_PosY+_Bar->m_VarY0-1, _Bar->m_ColHighBg0, _Bar->m_ColHighBg0, _Bar->m_ColHighBg1, _Bar->m_ColHighBg1);
                 }
             }
 
