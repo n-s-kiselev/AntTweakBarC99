@@ -34,10 +34,13 @@ line 45 210 46 210 ffffffff ffffffff 0
 rect 47 220 51 224 3319242f 3319242f 3319242f 3319242f
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 52 180 726 203 46191919 46191919 46191919 46191919
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -52,8 +55,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -68,6 +72,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -148,6 +153,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -232,7 +246,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -247,8 +261,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -263,6 +278,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -349,6 +365,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -433,7 +458,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -448,8 +473,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -464,6 +490,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -548,6 +575,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -632,7 +668,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -647,8 +683,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -663,6 +700,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -744,6 +782,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -828,7 +875,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -843,8 +890,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -859,6 +907,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -940,6 +989,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -1024,7 +1082,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1039,8 +1097,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -1055,6 +1114,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1136,6 +1196,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -1220,7 +1289,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1235,8 +1304,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -1251,6 +1321,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1355,6 +1426,15 @@ line 51 224 47 224 99ffffff 99ffffff 0
 line 47 224 47 220 99ffffff 99ffffff 0
 line 49 222 50 222 ffffffff ffffffff 0
 line 49 222 49 223 ffffffff ffffffff 0
+line 52 233 52 237 99000000 99000000 0
+line 48 237 53 237 99000000 99000000 0
+rect 47 232 51 236 3319242f 3319242f 3319242f 3319242f
+line 47 232 51 232 99ffffff 99ffffff 0
+line 51 232 51 237 99ffffff 99ffffff 0
+line 51 236 47 236 99ffffff 99ffffff 0
+line 47 236 47 232 99ffffff 99ffffff 0
+line 49 234 50 234 ffffffff ffffffff 0
+line 49 234 49 235 ffffffff ffffffff 0
 rect 416 144 726 179 46191919 46191919 46191919 46191919
 rect 717 144 724 179 40466482 40466482 40466482 40466482
 rect 719 151 722 172 11466482 11466482 11466482 11466482
@@ -1439,7 +1519,7 @@ line 55 45 58 45 ffffffff ffffffff 0
 line 55 45 55 48 ffffffff ffffffff 0
 line 55 46 57 46 ffffffff ffffffff 0
 text 51 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -1454,8 +1534,9 @@ text 51 60 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 416 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -1470,6 +1551,7 @@ text 416 60 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 55 105 726 106 7f000000 7f000000 7f000000 7f000000
 rect 725 101 726 104 7f000000 7f000000 7f000000 7f000000
 rect 53 99 724 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1828,10 +1910,13 @@ line -15 210 -14 210 ff000000 ff000000 0
 rect -13 220 -9 224 3319242f 3319242f 3319242f 3319242f
 line -11 222 -10 222 ff000000 ff000000 0
 line -11 222 -11 223 ff000000 ff000000 0
+rect -13 232 -9 236 3319242f 3319242f 3319242f 3319242f
+line -11 234 -10 234 ff000000 ff000000 0
+line -11 234 -11 235 ff000000 ff000000 0
 rect 356 144 666 179 46ffffff 46ffffff 46ffffff 46ffffff
 rect -8 180 666 203 46ffffff 46ffffff 46ffffff 46ffffff
 text -9 60 00000000 00000000
-  font-height 11 gap 1 background-width 0 lines 14
+  font-height 11 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 " ..ned number with a deliberately long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -1846,8 +1931,9 @@ text -9 60 00000000 00000000
   color ff000000 background 00000000 "Second line."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "  Accent color"
+  color ff303000 background 00000000 "  Orientation"
 text 356 60 00000000 00000000
-  font-height 11 gap 1 background-width 310 lines 14
+  font-height 11 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -1862,6 +1948,7 @@ text 356 60 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect -5 105 666 106 7f000000 7f000000 7f000000 7f000000
 rect 665 101 666 104 7f000000 7f000000 7f000000 7f000000
 rect -7 99 664 104 4c587da3 4c587da3 4c587da3 4c587da3
@@ -1907,7 +1994,7 @@ rect -6 133 666 143 1c000000 1c000000 1c000000 1c000000
 rect -13 136 -9 140 3319242f 3319242f 3319242f 3319242f
 line -11 138 -10 138 ff000000 ff000000 0
 rect 672 69 676 176 11466482 11466482 11466482 11466482
-rect 673 70 675 145 4c587da3 4c587da3 4c587da3 4c587da3
+rect 673 70 675 140 4c587da3 4c587da3 4c587da3 4c587da3
 rect 356 144 666 179 46ffffff 46ffffff 46ffffff 46ffffff
 text -9 60 00000000 00000000
   font-height 11 gap 1 background-width 0 lines 10
@@ -2028,10 +2115,13 @@ line 45 250 50 250 ffffffff ffffffff 0
 rect 51 261 59 269 3319242f 3319242f 3319242f 3319242f
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 55 213 723 242 46191919 46191919 46191919 46191919
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2046,8 +2136,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -2062,6 +2153,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2142,6 +2234,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2242,7 +2343,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2257,8 +2358,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -2273,6 +2375,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2359,6 +2462,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2459,7 +2571,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2474,8 +2586,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2490,6 +2603,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2574,6 +2688,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2674,7 +2797,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2689,8 +2812,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2705,6 +2829,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2786,6 +2911,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -2886,7 +3020,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -2901,8 +3035,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -2917,6 +3052,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -2998,6 +3134,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -3098,7 +3243,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3113,8 +3258,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -3129,6 +3275,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3210,6 +3357,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -3310,7 +3466,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3325,8 +3481,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -3341,6 +3498,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -3445,6 +3603,15 @@ line 59 269 51 269 99ffffff 99ffffff 0
 line 51 269 51 261 99ffffff 99ffffff 0
 line 53 265 58 265 ffffffff ffffffff 0
 line 55 263 55 268 ffffffff ffffffff 0
+line 60 277 60 285 99000000 99000000 0
+line 52 285 61 285 99000000 99000000 0
+rect 51 276 59 284 3319242f 3319242f 3319242f 3319242f
+line 51 276 59 276 99ffffff 99ffffff 0
+line 59 276 59 285 99ffffff 99ffffff 0
+line 59 284 51 284 99ffffff 99ffffff 0
+line 51 284 51 276 99ffffff 99ffffff 0
+line 53 280 58 280 ffffffff ffffffff 0
+line 55 278 55 283 ffffffff ffffffff 0
 rect 413 168 723 212 46191919 46191919 46191919 46191919
 rect 711 168 721 212 40466482 40466482 40466482 40466482
 rect 713 178 719 202 11466482 11466482 11466482 11466482
@@ -3545,7 +3712,7 @@ line 59 45 62 45 ffffffff ffffffff 0
 line 59 45 59 50 ffffffff ffffffff 0
 line 59 47 61 47 ffffffff ffffffff 0
 text 54 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..rately long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -3560,8 +3727,9 @@ text 54 63 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 413 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -3576,6 +3744,7 @@ text 413 63 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 58 120 723 121 7f000000 7f000000 7f000000 7f000000
 rect 722 113 723 119 7f000000 7f000000 7f000000 7f000000
 rect 56 111 721 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4000,10 +4169,13 @@ line -15 250 -10 250 ff000000 ff000000 0
 rect -9 261 -1 269 3319242f 3319242f 3319242f 3319242f
 line -7 265 -2 265 ff000000 ff000000 0
 line -5 263 -5 268 ff000000 ff000000 0
+rect -9 276 -1 284 3319242f 3319242f 3319242f 3319242f
+line -7 280 -2 280 ff000000 ff000000 0
+line -5 278 -5 283 ff000000 ff000000 0
 rect 353 168 663 212 46ffffff 46ffffff 46ffffff 46ffffff
 rect -5 213 663 242 46ffffff 46ffffff 46ffffff 46ffffff
 text -6 63 00000000 00000000
-  font-height 14 gap 1 background-width 0 lines 14
+  font-height 14 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 "..rately long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -4018,8 +4190,9 @@ text -6 63 00000000 00000000
   color ff000000 background 00000000 "Second line."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "  Accent color"
+  color ff303000 background 00000000 "  Orientation"
 text 353 63 00000000 00000000
-  font-height 14 gap 1 background-width 310 lines 14
+  font-height 14 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -4034,6 +4207,7 @@ text 353 63 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect -2 120 663 121 7f000000 7f000000 7f000000 7f000000
 rect 662 113 663 119 7f000000 7f000000 7f000000 7f000000
 rect -4 111 661 119 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4079,7 +4253,7 @@ rect 2 154 663 167 1c000000 1c000000 1c000000 1c000000
 rect -9 156 -1 164 3319242f 3319242f 3319242f 3319242f
 line -7 160 -2 160 ff000000 ff000000 0
 rect 669 74 675 171 11466482 11466482 11466482 11466482
-rect 670 75 674 129 4c587da3 4c587da3 4c587da3 4c587da3
+rect 670 75 674 125 4c587da3 4c587da3 4c587da3 4c587da3
 rect 353 168 663 183 46ffffff 46ffffff 46ffffff 46ffffff
 text -6 63 00000000 00000000
   font-height 14 gap 1 background-width 0 lines 8
@@ -4196,10 +4370,13 @@ line 45 277 52 277 ffffffff ffffffff 0
 rect 53 289 63 299 3319242f 3319242f 3319242f 3319242f
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 57 235 721 268 46191919 46191919 46191919 46191919
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4214,8 +4391,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -4230,6 +4408,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4310,6 +4489,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4418,7 +4606,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4433,8 +4621,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -4449,6 +4638,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4535,6 +4725,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4643,7 +4842,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4658,8 +4857,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4674,6 +4874,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4758,6 +4959,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -4866,7 +5076,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -4881,8 +5091,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -4897,6 +5108,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -4978,6 +5190,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -5086,7 +5307,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5101,8 +5322,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -5117,6 +5339,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5198,6 +5421,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -5306,7 +5538,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5321,8 +5553,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -5337,6 +5570,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5418,6 +5652,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -5526,7 +5769,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5541,8 +5784,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -5557,6 +5801,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -5661,6 +5906,15 @@ line 63 299 53 299 99ffffff 99ffffff 0
 line 53 299 53 289 99ffffff 99ffffff 0
 line 55 294 62 294 ffffffff ffffffff 0
 line 58 291 58 298 ffffffff ffffffff 0
+line 64 307 64 317 99000000 99000000 0
+line 54 317 65 317 99000000 99000000 0
+rect 53 306 63 316 3319242f 3319242f 3319242f 3319242f
+line 53 306 63 306 99ffffff 99ffffff 0
+line 63 306 63 317 99ffffff 99ffffff 0
+line 63 316 53 316 99ffffff 99ffffff 0
+line 53 316 53 306 99ffffff 99ffffff 0
+line 55 311 62 311 ffffffff ffffffff 0
+line 58 308 58 315 ffffffff ffffffff 0
 rect 411 184 721 234 46191919 46191919 46191919 46191919
 rect 707 184 719 234 40466482 40466482 40466482 40466482
 rect 709 196 717 222 11466482 11466482 11466482 11466482
@@ -5769,7 +6023,7 @@ line 62 46 65 46 ffffffff ffffffff 0
 line 62 46 62 51 ffffffff ffffffff 0
 line 62 48 64 48 ffffffff ffffffff 0
 text 56 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..ly long label that exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -5784,8 +6038,9 @@ text 56 65 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 411 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup option"
@@ -5800,6 +6055,7 @@ text 411 65 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 60 130 721 131 7f000000 7f000000 7f000000 7f000000
 rect 720 121 721 129 7f000000 7f000000 7f000000 7f000000
 rect 58 119 719 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6272,10 +6528,13 @@ line -15 277 -8 277 ff000000 ff000000 0
 rect -7 289 3 299 3319242f 3319242f 3319242f 3319242f
 line -5 294 2 294 ff000000 ff000000 0
 line -2 291 -2 298 ff000000 ff000000 0
+rect -7 306 3 316 3319242f 3319242f 3319242f 3319242f
+line -5 311 2 311 ff000000 ff000000 0
+line -2 308 -2 315 ff000000 ff000000 0
 rect 351 184 661 234 46ffffff 46ffffff 46ffffff 46ffffff
 rect -3 235 661 268 46ffffff 46ffffff 46ffffff 46ffffff
 text -4 65 00000000 00000000
-  font-height 16 gap 1 background-width 0 lines 14
+  font-height 16 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 "..ly long label that exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -6290,8 +6549,9 @@ text -4 65 00000000 00000000
   color ff000000 background 00000000 "Second line."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "   Accent color"
+  color ff303000 background 00000000 "   Orientation"
 text 351 65 00000000 00000000
-  font-height 16 gap 1 background-width 310 lines 14
+  font-height 16 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup option"
@@ -6306,6 +6566,7 @@ text 351 65 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 0 130 661 131 7f000000 7f000000 7f000000 7f000000
 rect 660 121 661 129 7f000000 7f000000 7f000000 7f000000
 rect -2 119 659 129 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6348,7 +6609,7 @@ rect -4 151 661 166 1c000000 1c000000 1c000000 1c000000
 rect -17 153 -7 163 3319242f 3319242f 3319242f 3319242f
 line -15 158 -8 158 ff000000 ff000000 0
 rect 667 78 675 167 11466482 11466482 11466482 11466482
-rect 668 79 674 115 4c587da3 4c587da3 4c587da3 4c587da3
+rect 668 79 674 113 4c587da3 4c587da3 4c587da3 4c587da3
 text -4 65 00000000 00000000
   font-height 16 gap 1 background-width 0 lines 6
   color ff000000 background 00000000 "..ly long label that exceeds the available label column"
@@ -6460,10 +6721,13 @@ line 45 358 58 358 ffffffff ffffffff 0
 rect 59 373 75 389 3319242f 3319242f 3319242f 3319242f
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 63 301 715 346 46191919 46191919 46191919 46191919
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6478,8 +6742,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -6494,6 +6759,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6574,6 +6840,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6706,7 +6981,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6721,8 +6996,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -6737,6 +7013,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -6823,6 +7100,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -6955,7 +7241,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -6970,8 +7256,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -6986,6 +7273,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7070,6 +7358,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -7202,7 +7499,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -7217,8 +7514,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -7233,6 +7531,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7314,6 +7613,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -7446,7 +7754,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -7461,8 +7769,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -7477,6 +7786,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7558,6 +7868,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -7690,7 +8009,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -7705,8 +8024,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -7721,6 +8041,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -7825,6 +8146,15 @@ line 75 389 59 389 99ffffff 99ffffff 0
 line 59 389 59 373 99ffffff 99ffffff 0
 line 61 381 74 381 ffffffff ffffffff 0
 line 67 375 67 388 ffffffff ffffffff 0
+line 76 397 76 413 99000000 99000000 0
+line 60 413 77 413 99000000 99000000 0
+rect 59 396 75 412 3319242f 3319242f 3319242f 3319242f
+line 59 396 75 396 99ffffff 99ffffff 0
+line 75 396 75 413 99ffffff 99ffffff 0
+line 75 412 59 412 99ffffff 99ffffff 0
+line 59 412 59 396 99ffffff 99ffffff 0
+line 61 404 74 404 ffffffff ffffffff 0
+line 67 398 67 411 ffffffff ffffffff 0
 rect 405 232 715 300 46191919 46191919 46191919 46191919
 rect 695 232 713 300 40466482 40466482 40466482 40466482
 rect 697 250 711 282 11466482 11466482 11466482 11466482
@@ -7957,7 +8287,7 @@ line 70 48 75 48 ffffffff ffffffff 0
 line 70 48 70 56 ffffffff ffffffff 0
 line 70 52 74 52 ffffffff ffffffff 0
 text 62 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 " ..t exceeds the available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -7972,8 +8302,9 @@ text 62 71 00000000 00000000
   color ffffffff background 00000000 "Second line."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "  Accent color"
+  color ffefef00 background 00000000 "  Orientation"
 text 405 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably wide popup .."
@@ -7988,6 +8319,7 @@ text 405 71 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 66 160 715 161 7f000000 7f000000 7f000000 7f000000
 rect 714 145 715 159 7f000000 7f000000 7f000000 7f000000
 rect 64 143 713 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8606,10 +8938,13 @@ line -15 358 -2 358 ff000000 ff000000 0
 rect -1 373 15 389 3319242f 3319242f 3319242f 3319242f
 line 1 381 14 381 ff000000 ff000000 0
 line 7 375 7 388 ff000000 ff000000 0
+rect -1 396 15 412 3319242f 3319242f 3319242f 3319242f
+line 1 404 14 404 ff000000 ff000000 0
+line 7 398 7 411 ff000000 ff000000 0
 rect 345 232 655 300 46ffffff 46ffffff 46ffffff 46ffffff
 rect 3 301 655 346 46ffffff 46ffffff 46ffffff 46ffffff
 text 2 71 00000000 00000000
-  font-height 22 gap 1 background-width 0 lines 14
+  font-height 22 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 " ..t exceeds the available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -8624,8 +8959,9 @@ text 2 71 00000000 00000000
   color ff000000 background 00000000 "Second line."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "  Accent color"
+  color ff303000 background 00000000 "  Orientation"
 text 345 71 00000000 00000000
-  font-height 22 gap 1 background-width 310 lines 14
+  font-height 22 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably wide popup .."
@@ -8640,6 +8976,7 @@ text 345 71 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0.00,s:1.00}"
 rect 6 160 655 161 7f000000 7f000000 7f000000 7f000000
 rect 654 145 655 159 7f000000 7f000000 7f000000 7f000000
 rect 4 143 653 159 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8679,7 +9016,7 @@ rect 680 200 683 203 20000000 00000000 00000000 00000000
 rect 680 40 683 43 00000000 00000000 20000000 00000000
 rect 680 44 683 199 20000000 00000000 20000000 00000000
 rect 661 90 675 155 11466482 11466482 11466482 11466482
-rect 662 91 674 107 4c587da3 4c587da3 4c587da3 4c587da3
+rect 662 91 674 106 4c587da3 4c587da3 4c587da3 4c587da3
 text 2 71 00000000 00000000
   font-height 22 gap 1 background-width 0 lines 4
   color ff000000 background 00000000 " ..t exceeds the available label column"
@@ -8786,10 +9123,13 @@ line 45 439 64 439 ffffffff ffffffff 0
 rect 65 457 87 479 3319242f 3319242f 3319242f 3319242f
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 69 367 709 424 46191919 46191919 46191919 46191919
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -8804,8 +9144,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -8820,6 +9161,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -8900,6 +9242,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -9056,7 +9407,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -9071,8 +9422,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -9087,6 +9439,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -9173,6 +9526,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -9329,7 +9691,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -9344,8 +9706,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -9360,6 +9723,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -9444,6 +9808,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -9600,7 +9973,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -9615,8 +9988,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -9631,6 +10005,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -9712,6 +10087,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -9868,7 +10252,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -9883,8 +10267,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -9899,6 +10284,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -9980,6 +10366,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -10136,7 +10531,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10151,8 +10546,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -10167,6 +10563,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -10271,6 +10668,15 @@ line 87 479 65 479 99ffffff 99ffffff 0
 line 65 479 65 457 99ffffff 99ffffff 0
 line 67 468 86 468 ffffffff ffffffff 0
 line 76 459 76 478 ffffffff ffffffff 0
+line 88 487 88 509 99000000 99000000 0
+line 66 509 89 509 99000000 99000000 0
+rect 65 486 87 508 3319242f 3319242f 3319242f 3319242f
+line 65 486 87 486 99ffffff 99ffffff 0
+line 87 486 87 509 99ffffff 99ffffff 0
+line 87 508 65 508 99ffffff 99ffffff 0
+line 65 508 65 486 99ffffff 99ffffff 0
+line 67 497 86 497 ffffffff ffffffff 0
+line 76 488 76 507 ffffffff ffffffff 0
 rect 399 280 709 366 46191919 46191919 46191919 46191919
 rect 683 280 707 366 40466482 40466482 40466482 40466482
 rect 685 304 705 342 11466482 11466482 11466482 11466482
@@ -10427,7 +10833,7 @@ line 78 50 85 50 ffffffff ffffffff 0
 line 78 50 78 60 ffffffff ffffffff 0
 line 78 55 84 55 ffffffff ffffffff 0
 text 68 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..e available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -10442,8 +10848,9 @@ text 68 77 00000000 00000000
   color ffffffff background 00000000 "column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "   Accent color"
+  color ffefef00 background 00000000 "   Orientation"
 text 399 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably w.."
@@ -10458,6 +10865,7 @@ text 399 77 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0.0.."
 rect 72 190 709 191 7f000000 7f000000 7f000000 7f000000
 rect 708 169 709 189 7f000000 7f000000 7f000000 7f000000
 rect 70 167 707 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11214,10 +11622,13 @@ line -15 439 4 439 ff000000 ff000000 0
 rect 5 457 27 479 3319242f 3319242f 3319242f 3319242f
 line 7 468 26 468 ff000000 ff000000 0
 line 16 459 16 478 ff000000 ff000000 0
+rect 5 486 27 508 3319242f 3319242f 3319242f 3319242f
+line 7 497 26 497 ff000000 ff000000 0
+line 16 488 16 507 ff000000 ff000000 0
 rect 339 280 649 366 46ffffff 46ffffff 46ffffff 46ffffff
 rect 9 367 649 424 46ffffff 46ffffff 46ffffff 46ffffff
 text 8 77 00000000 00000000
-  font-height 28 gap 1 background-width 0 lines 14
+  font-height 28 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 "..e available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -11232,8 +11643,9 @@ text 8 77 00000000 00000000
   color ff000000 background 00000000 "column boundary."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "   Accent color"
+  color ff303000 background 00000000 "   Orientation"
 text 339 77 00000000 00000000
-  font-height 28 gap 1 background-width 310 lines 14
+  font-height 28 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably w.."
@@ -11248,6 +11660,7 @@ text 339 77 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0.0.."
 rect 12 190 649 191 7f000000 7f000000 7f000000 7f000000
 rect 648 169 649 189 7f000000 7f000000 7f000000 7f000000
 rect 10 167 647 189 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11287,7 +11700,7 @@ rect 680 200 683 203 20000000 00000000 00000000 00000000
 rect 680 40 683 43 00000000 00000000 20000000 00000000
 rect 680 44 683 199 20000000 00000000 20000000 00000000
 rect 655 102 675 143 11466482 11466482 11466482 11466482
-rect 656 103 674 110 4c587da3 4c587da3 4c587da3 4c587da3
+rect 656 103 674 109 4c587da3 4c587da3 4c587da3 4c587da3
 text 8 77 00000000 00000000
   font-height 28 gap 1 background-width 0 lines 3
   color ff000000 background 00000000 "..e available label column"
@@ -11385,10 +11798,13 @@ line 45 493 68 493 ffffffff ffffffff 0
 rect 69 513 95 539 3319242f 3319242f 3319242f 3319242f
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 73 411 705 476 46191919 46191919 46191919 46191919
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11403,8 +11819,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -11419,6 +11836,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11499,6 +11917,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -11671,7 +12098,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11686,8 +12113,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 " -"
   color ff97f797 background 46191919 "Short"
@@ -11702,6 +12130,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -11788,6 +12217,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -11960,7 +12398,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -11975,8 +12413,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -11991,6 +12430,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -12075,6 +12515,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -12247,7 +12696,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -12262,8 +12711,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -12278,6 +12728,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -12359,6 +12810,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -12531,7 +12991,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -12546,8 +13006,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -12562,6 +13023,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -12643,6 +13105,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -12815,7 +13286,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -12830,8 +13301,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "Short"
@@ -12846,6 +13318,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -12950,6 +13423,15 @@ line 95 539 69 539 99ffffff 99ffffff 0
 line 69 539 69 513 99ffffff 99ffffff 0
 line 71 526 94 526 ffffffff ffffffff 0
 line 82 515 82 538 ffffffff ffffffff 0
+line 96 547 96 573 99000000 99000000 0
+line 70 573 97 573 99000000 99000000 0
+rect 69 546 95 572 3319242f 3319242f 3319242f 3319242f
+line 69 546 95 546 99ffffff 99ffffff 0
+line 95 546 95 573 99ffffff 99ffffff 0
+line 95 572 69 572 99ffffff 99ffffff 0
+line 69 572 69 546 99ffffff 99ffffff 0
+line 71 559 94 559 ffffffff ffffffff 0
+line 82 548 82 571 ffffffff ffffffff 0
 rect 395 312 705 410 46191919 46191919 46191919 46191919
 rect 675 312 703 410 40466482 40466482 40466482 40466482
 rect 677 340 701 382 11466482 11466482 11466482 11466482
@@ -13122,7 +13604,7 @@ line 83 51 92 51 ffffffff ffffffff 0
 line 83 51 83 63 ffffffff ffffffff 0
 line 83 57 91 57 ffffffff ffffffff 0
 text 72 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ffffffff background 00000000 "..available label column"
   color ffffffff background 00000000 "Enabled"
   color ffffffff background 00000000 "Choice"
@@ -13137,8 +13619,9 @@ text 72 81 00000000 00000000
   color ffffffff background 00000000 "the column boundary."
   color ffffff80 background 00000000 "Appearance"
   color ffefef00 background 00000000 "    Accent color"
+  color ffefef00 background 00000000 "    Orientation"
 text 395 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ffc7d7ff background 46191919 "3"
   color ff97f797 background 46191919 "\x7f"
   color ff97f797 background 46191919 "WWWW a reasonably .."
@@ -13153,6 +13636,7 @@ text 395 81 00000000 00000000
   color ffb7b7b7 background 00000000 ""
   color ff000000 background 00000000 ""
   color ffb7b7b7 background ff000000 " "
+  color ffb7b7b7 background 19000000 "Q={x:0.00,y:0.00,z:0..."
 rect 76 210 705 211 7f000000 7f000000 7f000000 7f000000
 rect 704 185 705 209 7f000000 7f000000 7f000000 7f000000
 rect 74 183 703 209 4c587da3 4c587da3 4c587da3 4c587da3
@@ -13900,10 +14384,13 @@ line -15 493 8 493 ff000000 ff000000 0
 rect 9 513 35 539 3319242f 3319242f 3319242f 3319242f
 line 11 526 34 526 ff000000 ff000000 0
 line 22 515 22 538 ff000000 ff000000 0
+rect 9 546 35 572 3319242f 3319242f 3319242f 3319242f
+line 11 559 34 559 ff000000 ff000000 0
+line 22 548 22 571 ff000000 ff000000 0
 rect 335 312 645 410 46ffffff 46ffffff 46ffffff 46ffffff
 rect 13 411 645 476 46ffffff 46ffffff 46ffffff 46ffffff
 text 12 81 00000000 00000000
-  font-height 32 gap 1 background-width 0 lines 14
+  font-height 32 gap 1 background-width 0 lines 15
   color ff000000 background 00000000 "..available label column"
   color ff000000 background 00000000 "Enabled"
   color ff000000 background 00000000 "Choice"
@@ -13918,8 +14405,9 @@ text 12 81 00000000 00000000
   color ff000000 background 00000000 "the column boundary."
   color ff000000 background 00000000 "Appearance"
   color ff303000 background 00000000 "    Accent color"
+  color ff303000 background 00000000 "    Orientation"
 text 335 81 00000000 00000000
-  font-height 32 gap 1 background-width 310 lines 14
+  font-height 32 gap 1 background-width 310 lines 15
   color ff000080 background 46ffffff "3"
   color ff004000 background 46ffffff "\x7f"
   color ff004000 background 46ffffff "WWWW a reasonably .."
@@ -13934,6 +14422,7 @@ text 335 81 00000000 00000000
   color ff505050 background 00000000 ""
   color ff000000 background 00000000 ""
   color ff505050 background ff000000 " "
+  color ff505050 background 19ffffff "Q={x:0.00,y:0.00,z:0..."
 rect 16 210 645 211 7f000000 7f000000 7f000000 7f000000
 rect 644 185 645 209 7f000000 7f000000 7f000000 7f000000
 rect 14 183 643 209 4c587da3 4c587da3 4c587da3 4c587da3

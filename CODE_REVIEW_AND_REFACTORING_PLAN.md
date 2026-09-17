@@ -516,3 +516,11 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   swatch drawing through the recording renderer.
 - Regenerated the fixture and verified all 29 parameter/scene checks pass with
   `./nob -test-record` followed by `./nob -test`.
+
+### 2026-09-17: Stage 0 quaternion widget coverage
+
+- Added a `TW_TYPE_QUAT4F` variable to the same deterministic scene. This
+  exercises quaternion custom registration, generated controls and triangle
+  drawing in the recording renderer.
+- Regenerated the fixture; `./nob -test-record` and `./nob -test` pass with all
+  29 parameter/scene checks.
