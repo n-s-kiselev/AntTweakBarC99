@@ -165,6 +165,8 @@ static void test_scene(FILE *output, int font_size, int scale)
     CHECK(TwAddVarRW(bar, "accent", TW_TYPE_COLOR3F, accent_color, "label='Accent color' group=Appearance"));
     CHECK(TwAddVarRW(bar, "orientation", TW_TYPE_QUAT4F, orientation, "label='Orientation' group=Appearance"));
     CHECK(TwDraw());
+    CHECK(row_index(bar, "accent", 0) >= 0);
+    CHECK(row_index(bar, "orientation", 0) >= 0);
     CHECK(fprintf(output, "\nCASE font=%d scale=%d\n", font_size, scale) > 0);
     capture(output, "unfocused");
 

@@ -524,3 +524,10 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   drawing in the recording renderer.
 - Regenerated the fixture; `./nob -test-record` and `./nob -test` pass with all
   29 parameter/scene checks.
+
+### 2026-09-17: Stage 0 custom hierarchy assertions
+
+- Added explicit row-presence assertions for the built-in color and quaternion
+  variables. The baseline now verifies that both custom widgets are registered
+  and placed in the visible hierarchy, in addition to recording their drawing.
+- `./nob -test` passes; no fixture output changed.
