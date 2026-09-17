@@ -64,6 +64,16 @@ static/shared library works with any backend's examples:
 ./nob -help   # list all flags
 ```
 
+Run the headless API, widget input and drawing regression tests:
+
+```sh
+./nob -test
+```
+
+This builds its own test executable and needs no OpenGL window or prebuilt
+library. See [tests/README.md](tests/README.md) for coverage, drawing baselines
+and the separate real-window validation requirements.
+
 Then build a backend's 13 examples against that library:
 
 ```sh

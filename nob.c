@@ -6,6 +6,7 @@
 #define BUILD_FOLDER         "build/"
 #define BUILD_STATIC_FOLDER  "build/static/"
 #define BUILD_SHARED_FOLDER  "build/shared/"
+#define TEST_BUILD_FOLDER    "build/tests/"
 // Every build artifact - including the final libraries and the copy of the
 // public header consuming code would build against - lives under
 // BUILD_FOLDER, keeping the repository root free of anything but source.
@@ -1081,6 +1082,46 @@ static bool build_examples(const char *nob_exe, bool dynamic, Backend backend)
     return true;
 }
 
+static bool build_tests(const char *nob_exe, bool record)
+{
+    if (!nob_mkdir_if_not_exists(BUILD_FOLDER)
+        || !nob_mkdir_if_not_exists(TEST_BUILD_FOLDER)) return false;
+
+    Nob_File_Paths deps = {0};
+    if (!collect_tree_files(&deps, SRC_FOLDER)
+        || !collect_tree_files(&deps, INCLUDE_FOLDER)
+        || !collect_tree_files(&deps, SDS_INCLUDE)) return false;
+    nob_da_append(&deps, "tests/record_graph.h");
+    add_common_build_deps(&deps, nob_exe);
+
+    Nob_File_Paths sources = {0};
+    for (size_t i = 0; i < NOB_ARRAY_LEN(common_sources); ++i) {
+        const char *source = common_sources[i];
+        // Use the real core with test implementations of its renderer factories.
+        if (is_glad_source(source) || strcmp(source, SRC_FOLDER "TwOpenGL.c") == 0
+            || strcmp(source, SRC_FOLDER "TwOpenGLCore.c") == 0) continue;
+        nob_da_append(&sources, source);
+    }
+    nob_da_append(&sources, "tests/record_graph.c");
+    nob_da_append(&sources, "tests/regression.c");
+    Nob_File_Paths objects = {0};
+    for (size_t i = 0; i < sources.count; ++i) {
+        if (!build_object(sources.items[i], TEST_BUILD_FOLDER, "-DTW_STATIC", &deps)) return false;
+        nob_da_append(&objects, object_path(TEST_BUILD_FOLDER, sources.items[i]));
+    }
+    const char *output = TEST_BUILD_FOLDER "regression" EXE_EXT;
+    Nob_Cmd cmd = {0};
+    if (build_needed(output, objects.items, objects.count)) {
+        nob_cmd_append(&cmd, "cc", "-o", output);
+        for (size_t i = 0; i < objects.count; ++i) nob_cmd_append(&cmd, objects.items[i]);
+        nob_cmd_append(&cmd, "-lm");
+        if (!nob_cmd_run(&cmd)) return false;
+    }
+    nob_cmd_append(&cmd, output);
+    if (record) nob_cmd_append(&cmd, "--record");
+    return nob_cmd_run(&cmd);
+}
+
 static bool clean(void)
 {
     bool ok = true;
@@ -1124,6 +1165,8 @@ static bool clean(void)
     ok = delete_if_exists(BUILD_STATIC_FOLDER) && ok;
     ok = clear_directory(BUILD_SHARED_FOLDER) && ok;
     ok = delete_if_exists(BUILD_SHARED_FOLDER) && ok;
+    ok = clear_directory(TEST_BUILD_FOLDER) && ok;
+    ok = delete_if_exists(TEST_BUILD_FOLDER) && ok;
     ok = clear_directory(BUILD_FOLDER) && ok; // e.g. a stray .DS_Store
     ok = delete_if_exists(BUILD_FOLDER) && ok;
 
@@ -1133,7 +1176,7 @@ static bool clean(void)
 static void usage(const char *program)
 {
     printf("usage: %s [-examples-glfw | -examples-sdl | -examples-sfml]\n", program);
-    printf("             [-dynamic] [-clean] [-help]\n");
+    printf("             [-dynamic] [-test | -test-record] [-clean] [-help]\n");
     printf("  (no flags)     build the library only - the library links against none of\n");
     printf("                 GLFW3/SDL3/SFML3, so this single build serves all three\n");
     printf("                 -examples-* flags below\n");
@@ -1146,6 +1189,8 @@ static void usage(const char *program)
     printf("  -dynamic       with any of the -examples-* flags above, link the examples\n");
     printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
     printf("                 instead of the static one (the default)\n");
+    printf("  -test          build and run headless API, input and drawing regression tests\n");
+    printf("  -test-record   run those tests and replace the drawing baseline for review\n");
     printf("  -clean         remove generated build files and exit\n");
     printf("  -help          print this help and exit\n");
 }
@@ -1160,6 +1205,8 @@ int main(int argc, char **argv)
     bool examples_sdl_requested = false;
     bool examples_sfml_requested = false;
     bool dynamic_requested = false;
+    bool tests_requested = false;
+    bool record_tests = false;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-clean") == 0) {
@@ -1170,6 +1217,11 @@ int main(int argc, char **argv)
             examples_sdl_requested = true;
         } else if (strcmp(argv[i], "-examples-sfml") == 0) {
             examples_sfml_requested = true;
+        } else if (strcmp(argv[i], "-test") == 0) {
+            tests_requested = true;
+        } else if (strcmp(argv[i], "-test-record") == 0) {
+            tests_requested = true;
+            record_tests = true;
         } else if (strcmp(argv[i], "-dynamic") == 0) {
             dynamic_requested = true;
         } else if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -1188,6 +1240,11 @@ int main(int argc, char **argv)
     }
 
     bool examples_requested = examples_glfw_requested || examples_sdl_requested || examples_sfml_requested;
+    if (tests_requested && (examples_requested || dynamic_requested || clean_requested)) {
+        nob_log(NOB_ERROR, "-test/-test-record cannot be combined with example, dynamic or clean flags");
+        return 1;
+    }
+    if (tests_requested) return build_tests(nob_exe, record_tests) ? 0 : 1;
     if (dynamic_requested && !examples_requested) {
         nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml");
     }
