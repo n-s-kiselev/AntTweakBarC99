@@ -4509,30 +4509,30 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                 int available_text_width_px = label_width_limit_px-3*space_glyph_width_px-x;
                 if( available_text_width_px<0 )
                     available_text_width_px = 0;
-                int ContentWidth = 0;
+                int measured_label_width_px = 0;
                 for( i=0; i<Len; ++i )
-                    ContentWidth += _Font->m_CharWidth[(int)Text[i]];
+                    measured_label_width_px += _Font->m_CharWidth[(int)Text[i]];
                 // Mirror image of the forward scan below: keep the trailing characters that
                 // still fit alongside the ellipsis dots, and emit the dots first so an
                 // oversized label reads "..end of label" instead of "start of label..".
                 int FirstKept = 0;
-                bool Truncated = ( ContentWidth>available_text_width_px && !ClipBypass );
+                bool Truncated = ( measured_label_width_px>available_text_width_px && !ClipBypass );
                 if( Truncated )
                 {
-                    int KeptWidth = 0;
+                    int truncated_label_width_px = 0;
                     FirstKept = Len;
                     for( i=Len-1; i>=0; --i )
                     {
                         int cw = _Font->m_CharWidth[(int)Text[i]];
-                        if( KeptWidth+cw+NbEtc*DotWidth>available_text_width_px )
+                        if( truncated_label_width_px+cw+NbEtc*DotWidth>available_text_width_px )
                             break;
-                        KeptWidth += cw;
+                        truncated_label_width_px += cw;
                         FirstKept = i;
                     }
-                    ContentWidth = NbEtc*DotWidth+KeptWidth;
+                    measured_label_width_px = NbEtc*DotWidth+truncated_label_width_px;
                 }
                 if( space_glyph_width_px>0 )
-                    for( s=0; s<available_text_width_px-ContentWidth; s+=space_glyph_width_px )
+                    for( s=0; s<available_text_width_px-measured_label_width_px; s+=space_glyph_width_px )
                         *CurrentLabel = sdscatlen(*CurrentLabel, " ", 1);
                 if( Truncated )
                     for( int d=0; d<NbEtc; ++d )
@@ -6701,16 +6701,16 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     for( int c=32; c<256; ++c )
                         if( _Bar->m_Font->m_CharWidth[c]>MaxCharWidth )
                             MaxCharWidth = _Bar->m_Font->m_CharWidth[c];
-                    int ContentWidth = 0;
+                    int popup_content_width_px = 0;
                     for( size_t k=0; k<e->m_Entries.count; ++k )
                     {
                         sds Label = e->m_Entries.items[k].Label;
                         int LabelWidth = CTwBar_MultilineRowPixelX(_Bar->m_Font, Label, 0, (int)sdslen(Label));
-                        if( LabelWidth>ContentWidth )
-                            ContentWidth = LabelWidth;
+                        if( LabelWidth>popup_content_width_px )
+                            popup_content_width_px = LabelWidth;
                     }
-                    if( ContentWidth>32*MaxCharWidth )
-                        ContentWidth = 32*MaxCharWidth;
+                    if( popup_content_width_px>32*MaxCharWidth )
+                        popup_content_width_px = 32*MaxCharWidth;
 
                     g_TwMgr->m_PopupBar = TwNewBar("~ Enum Popup ~");
                     g_TwMgr->m_PopupBar->m_IsPopupList = true;
@@ -6731,7 +6731,7 @@ bool CTwBar_MouseButton(CTwBar *_Bar, ETwMouseButtonID _Button, bool _Pressed, i
                     // than the clipping column width above. Pad by that much extra so the widest
                     // label's full pixel width still lands inside the border once drawn.
                     int group_indent_px = _Bar->m_Style.geometry.group_indent_step_px;
-                    g_TwMgr->m_PopupBar->m_Width = ContentWidth + _Bar->m_Font->m_CharHeight + g_TwMgr->m_PopupBar->m_Sep + group_indent_px + 8;
+                    g_TwMgr->m_PopupBar->m_Width = popup_content_width_px + _Bar->m_Font->m_CharHeight + g_TwMgr->m_PopupBar->m_Sep + group_indent_px + 8;
                     g_TwMgr->m_PopupBar->m_LineSep = g_TwMgr->m_PopupBar->m_Sep;
                     int popHeight0 = (int)e->m_Entries.count*(_Bar->m_Font->m_CharHeight+_Bar->m_Sep) + _Bar->m_Font->m_CharHeight/2+2;
                     int popHeight = popHeight0;

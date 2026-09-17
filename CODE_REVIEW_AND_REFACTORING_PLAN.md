@@ -467,6 +467,13 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   the column constraint from the remaining text space and state their units.
 - `./nob -test` passes with the unchanged fixture.
 
+### 2026-09-17: Stage 1, measured and truncated label widths
+
+- Renamed `ContentWidth` to `measured_label_width_px` and `KeptWidth` to
+  `truncated_label_width_px` in label rendering. Enum popup sizing now calls its
+  equivalent `popup_content_width_px`.
+- `./nob -test` passes; no public names or visual output changed.
+
 ### 2026-09-17: Stage 5, RotoSlider state cleanup
 
 - Added `CRotoSlider_ClearInteraction` to consolidate repeated active,
