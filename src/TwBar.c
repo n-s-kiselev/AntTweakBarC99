@@ -4970,21 +4970,21 @@ void CTwBar_Update(CTwBar *_Bar)
         _Bar->m_VarY2 = _Bar->m_Height-1;
     }
 
-    int NbLines = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
-    if( NbLines<= 0 )
-        NbLines = 1;
+    int visible_row_count = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+    if( visible_row_count<= 0 )
+        visible_row_count = 1;
     _Bar->m_Layout.content_x0 = _Bar->m_PosX + _Bar->m_VarX0;
     _Bar->m_Layout.content_x1 = _Bar->m_PosX + _Bar->m_VarX2 + 1;
     _Bar->m_Layout.content_y0 = _Bar->m_PosY + _Bar->m_VarY0;
     _Bar->m_Layout.content_y1 = _Bar->m_PosY + _Bar->m_VarY1 + 1;
     _Bar->m_Layout.row_height_px = _Bar->m_Font->m_CharHeight + _Bar->m_LineSep;
-    _Bar->m_Layout.visible_row_count = NbLines;
+    _Bar->m_Layout.visible_row_count = visible_row_count;
     if( !_Bar->m_IsMinimized )
     {
         int LineNum = 0;
-        CTwBar_BrowseHierarchy(_Bar, &LineNum, 0, &_Bar->m_VarRoot.m_Base, _Bar->m_FirstLine, _Bar->m_FirstLine+NbLines); // add a dummy tag at the end to avoid wrong 'tag-closing' problems
-        if( (int)_Bar->m_HierTags.count>NbLines )
-            tw_da_resize(&_Bar->m_HierTags, (size_t)NbLines); // remove the last dummy tag
+        CTwBar_BrowseHierarchy(_Bar, &LineNum, 0, &_Bar->m_VarRoot.m_Base, _Bar->m_FirstLine, _Bar->m_FirstLine+visible_row_count); // add a dummy tag at the end to avoid wrong 'tag-closing' problems
+        if( (int)_Bar->m_HierTags.count>visible_row_count )
+            tw_da_resize(&_Bar->m_HierTags, (size_t)visible_row_count); // remove the last dummy tag
         _Bar->m_NbHierLines = LineNum;
         _Bar->m_NbDisplayedLines = (int)_Bar->m_HierTags.count;
 
@@ -7492,19 +7492,19 @@ bool CTwBar_Show(CTwBar *_Bar, CTwVar *_Var)
         int l = CTwBar_LineInHier(_Bar, &_Bar->m_VarRoot, _Var);
         if( l>=0 )
         {
-            int NbLines = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
-            if( NbLines<= 0 )
-                NbLines = 1;
-            if( l<_Bar->m_FirstLine || l>=_Bar->m_FirstLine+NbLines )
+            int visible_line_count = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
+            if( visible_line_count<= 0 )
+                visible_line_count = 1;
+            if( l<_Bar->m_FirstLine || l>=_Bar->m_FirstLine+visible_line_count )
             {
-                _Bar->m_FirstLine = l-NbLines/2;
+                _Bar->m_FirstLine = l-visible_line_count/2;
                 if( _Bar->m_FirstLine<0 )
                     _Bar->m_FirstLine = 0;
                 CTwBar_NotUpToDate(_Bar);
                 CTwBar_Update(_Bar);
-                if( _Bar->m_NbDisplayedLines<NbLines )
+                if( _Bar->m_NbDisplayedLines<visible_line_count )
                 {
-                    _Bar->m_FirstLine -= NbLines-_Bar->m_NbDisplayedLines;
+                    _Bar->m_FirstLine -= visible_line_count-_Bar->m_NbDisplayedLines;
                     if( _Bar->m_FirstLine<0 )
                         _Bar->m_FirstLine = 0;                    
                     CTwBar_NotUpToDate(_Bar);
