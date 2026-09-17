@@ -4361,9 +4361,9 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             // value in CTwBar_ListValues, but sourced from m_Base.m_Name and rendered through
             // the label column. m_WrapWidth was fixed at generation time, so this re-wraps
             // identically to the line count AppendHelpString based m_NbLines on.
-            static CTwMultilineWrapCache HelpWrap = {0};
+            static CTwMultilineWrapCache help_wrap_cache = {0};
             CTwVarAtom *HAtom = (CTwVarAtom *)_Bar->m_HierTags.items[h].m_Var;
-            const CSdsArray *Lines = CTwBar_MultilineWrapText(&HelpWrap, HAtom, HAtom->m_Base.m_Name, HAtom->m_Val.m_Multiline.m_WrapWidth, _Font);
+            const CSdsArray *Lines = CTwBar_MultilineWrapText(&help_wrap_cache, HAtom, HAtom->m_Base.m_Name, HAtom->m_Val.m_Multiline.m_WrapWidth, _Font);
             // Reconstructs AppendHelpString's original per-line decal (_Level literal leading
             // spaces) from m_LeftMargin=(_Level+1)*Space, so every wrapped line is indented
             // as much as each of its former per-line atoms was, not just the block's first.
@@ -4399,18 +4399,18 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
             Len = 0;
             if( !CTwVar_IsGroup(FWVar) )
             {
-                static sds FullWidthValStr = NULL;
-                if( FullWidthValStr==NULL )
-                    FullWidthValStr = sdsempty();
+                static sds full_width_value_string = NULL;
+                if( full_width_value_string==NULL )
+                    full_width_value_string = sdsempty();
                 CTwVarAtom *FWAtom = (CTwVarAtom *)FWVar;
-                CTwVarAtom_ValueToString(FWAtom, &FullWidthValStr);
+                CTwVarAtom_ValueToString(FWAtom, &full_width_value_string);
                 if( IsMultilineTextVar(FWVar) )
                 {
                     // Unlike the help bar's text, this value and the bar width can both change
                     // between frames, so there is no one-time wrap width to cache against.
-                    static CTwMultilineWrapCache FullWidthWrap = {0};
+                    static CTwMultilineWrapCache full_width_wrap_cache = {0};
                     int WrapWidth = CTwMultilineWrapWidth(_Font, _GroupWidthMax - _Bar->m_HierTags.items[h].m_Level*LevelSpace);
-                    const CSdsArray *Lines = CTwBar_MultilineWrapText(&FullWidthWrap, FWAtom, FullWidthValStr, WrapWidth, _Font);
+                    const CSdsArray *Lines = CTwBar_MultilineWrapText(&full_width_wrap_cache, FWAtom, full_width_value_string, WrapWidth, _Font);
                     sds WrappedLine = CTwBar_MultilineLineAt(_Bar, FWAtom, Lines, h);
                     if( WrappedLine!=NULL )
                     {
@@ -4420,8 +4420,8 @@ void CTwBar_ListLabels(CTwBar *_Bar, CSdsArray *_Labels, CColor32Array *_Colors,
                 }
                 else
                 {
-                    Text = (const unsigned char *)FullWidthValStr;
-                    Len = (int)sdslen(FullWidthValStr);
+                    Text = (const unsigned char *)full_width_value_string;
+                    Len = (int)sdslen(full_width_value_string);
                 }
             }
         }
@@ -4567,8 +4567,8 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
     bool HasBgColor;
     bool AcceptEdit;
     size_t SummaryMaxLength = max(_WidthMax/_Font->m_CharWidth[(int)'I'], 4);
-    static CCharArray Summary = {0};
-    tw_da_resize(&Summary, SummaryMaxLength+32);
+    static CCharArray summary_scratch = {0};
+    tw_da_resize(&summary_scratch, SummaryMaxLength+32);
 
     int nh = (int)_Bar->m_HierTags.count;
     for( int h=0; h<nh; ++h )
@@ -4595,9 +4595,9 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
                 // m_NbTextLines/m_FirstTextLine fields on the atom.
                 if( IsMultilineValueVar(_Bar->m_HierTags.items[h].m_Var) && !Atom->m_Base.m_FullWidth )
                 {
-                    static CTwMultilineWrapCache ValueWrap = {0}; // persistent scratch, like Summary above
+                    static CTwMultilineWrapCache value_wrap_cache = {0}; // persistent scratch, like summary_scratch above
                     CTwVarAtom *MLAtom = (CTwVarAtom *)Atom; // cached fields only, no value change
-                    const CSdsArray *Lines = CTwBar_MultilineWrapText(&ValueWrap, MLAtom, ValStr, CTwMultilineWrapWidth(_Font, _WidthMax), _Font);
+                    const CSdsArray *Lines = CTwBar_MultilineWrapText(&value_wrap_cache, MLAtom, ValStr, CTwMultilineWrapWidth(_Font, _WidthMax), _Font);
                     sds WrappedLine = CTwBar_MultilineLineAt(_Bar, MLAtom, Lines, h);
                     if( WrappedLine!=NULL )
                         ValStr = sdscpy(ValStr, WrappedLine);
@@ -4635,12 +4635,12 @@ void CTwBar_ListValues(CTwBar *_Bar, CSdsArray *_Values, CColor32Array *_Colors,
                     if( Grp->m_Vars.items[v]!=NULL && !CTwVar_IsGroup(Grp->m_Vars.items[v]) && Grp->m_Vars.items[v]->m_Visible )
                         CTwVarAtom_ValueToDouble((CTwVarAtom *)Grp->m_Vars.items[v]);
 
-                Summary.items[0] = '\0';
+                summary_scratch.items[0] = '\0';
                 if( Grp->m_SummaryCallback==CStruct_DefaultSummary )
-                    Grp->m_SummaryCallback(&Summary.items[0], SummaryMaxLength, Grp, Grp->m_SummaryClientData);
+                    Grp->m_SummaryCallback(&summary_scratch.items[0], SummaryMaxLength, Grp, Grp->m_SummaryClientData);
                 else
-                    Grp->m_SummaryCallback(&Summary.items[0], SummaryMaxLength, Grp->m_StructValuePtr, Grp->m_SummaryClientData);
-                ValStr = sdscpy(ValStr, (const char *)(&Summary.items[0]));
+                    Grp->m_SummaryCallback(&summary_scratch.items[0], SummaryMaxLength, Grp->m_StructValuePtr, Grp->m_SummaryClientData);
+                ValStr = sdscpy(ValStr, (const char *)(&summary_scratch.items[0]));
             }
             else
             {
@@ -7998,16 +7998,16 @@ bool CTwBar_EditInPlaceIsReadOnly(CTwBar *_Bar)
 // wrap-and-cache machinery, and the atom's own m_NbTextLines/m_FirstTextLine scroll state, the
 // read-only display uses - so the widget's scrollbar stays meaningful while typing and the text
 // never re-wraps differently once the edit commits. Its own cache, since the display path's
-// ValueWrap/FullWidthWrap/HelpWrap all hold the committed value instead. Cache-backed, hence
+// value_wrap_cache/full_width_wrap_cache/help_wrap_cache all hold the committed value instead. Cache-backed, hence
 // cheap to call again per frame or per keystroke. Only the row ranges are of interest: the rows
 // themselves are cut straight out of m_String, which the caller already has.
 static void CTwBar_EditInPlaceMultilineWrap(CTwBar *_Bar, const CIntArray **_OutStarts, const CIntArray **_OutEnds)
 {
-    static CTwMultilineWrapCache EditWrap = {0};
+    static CTwMultilineWrapCache edit_wrap_cache = {0};
     int WrapWidth = CTwMultilineWrapWidth(_Bar->m_Font, _Bar->m_EditInPlace.m_Width);
-    CTwBar_MultilineWrapText(&EditWrap, _Bar->m_EditInPlace.m_Var, _Bar->m_EditInPlace.m_String, WrapWidth, _Bar->m_Font);
-    *_OutStarts = &EditWrap.m_LineStarts;
-    *_OutEnds = &EditWrap.m_LineEnds;
+    CTwBar_MultilineWrapText(&edit_wrap_cache, _Bar->m_EditInPlace.m_Var, _Bar->m_EditInPlace.m_String, WrapWidth, _Bar->m_Font);
+    *_OutStarts = &edit_wrap_cache.m_LineStarts;
+    *_OutEnds = &edit_wrap_cache.m_LineEnds;
 }
 
 // CTwBar_EditInPlaceDraw's multiline branch: the same text/selection/caret drawing as the

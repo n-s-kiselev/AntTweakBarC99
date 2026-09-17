@@ -166,7 +166,7 @@ Status: In progress. Headless API/input checks and drawing-command fixtures are 
 
 ### Stage 1: Targeted naming and ownership cleanup
 
-Status: Pending. Rename only internal symbols whose role is misunderstood in touched functions; first clarify row/column/scroll coordinate names and cache ownership. Preserve the opaque `CTwBar` tag and all exported names/parameter strings. Update active comments and the relevant documentation. Gate: no behavior/pixel changes; compile and tests identical.
+Status: In progress. Rename only internal symbols whose role is misunderstood in touched functions; first clarify row/column/scroll coordinate names and cache ownership. Preserve the opaque `CTwBar` tag and all exported names/parameter strings. Update active comments and the relevant documentation. Gate: no behavior/pixel changes; compile and tests identical.
 
 ### Stage 2: Internal style and color context
 
@@ -242,3 +242,17 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   was performed. A local execution record also lives at
   `docs/plans/refactoring-regression-baseline.md` (under the existing ignored
   `docs/` directory).
+
+### 2026-09-17: Stage 1, multiline scratch names
+
+- Renamed the internal static scratch objects in `CTwBar_ListLabels`,
+  `CTwBar_ListValues`, and `CTwBar_EditInPlaceMultilineWrap` to expose their
+  ownership and data role: `help_wrap_cache`, `full_width_wrap_cache`,
+  `value_wrap_cache`, `edit_wrap_cache`, `full_width_value_string`, and
+  `summary_scratch`.
+- No public symbols, definition-string names, struct layouts, cache algorithms,
+  or allocation behavior changed. The names remain local to the existing
+  functions, so this is a low-risk first naming increment.
+- `./nob -test` passes with the unchanged drawing fixture. Stage 1 remains in
+  progress for later focused coordinate and row names; broad repository-wide
+  renaming is intentionally deferred.
