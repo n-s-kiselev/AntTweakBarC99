@@ -166,7 +166,10 @@ Status: In progress. Headless API/input checks and drawing-command fixtures are 
 
 ### Stage 1: Targeted naming and ownership cleanup
 
-Status: In progress. Rename only internal symbols whose role is misunderstood in touched functions; first clarify row/column/scroll coordinate names and cache ownership. Preserve the opaque `CTwBar` tag and all exported names/parameter strings. Update active comments and the relevant documentation. Gate: no behavior/pixel changes; compile and tests identical.
+Status: Completed for the reviewed internal layout and widget paths. Ambiguous
+indentation, glyph-width, row-height, visible-row and label-width locals were
+renamed without changing public symbols or parameter strings. Additional names
+can be handled opportunistically when later stages touch those functions.
 
 ### Stage 2: Internal style and color context
 
@@ -490,3 +493,11 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   and keeps the text buffer, selection and renderer objects intact for reuse.
 - Callback ordering and commit behavior are unchanged. `./nob -test` and
   `./nob` pass on macOS arm64 with Apple clang.
+
+### 2026-09-17: Stage 1 completed, Stage 0 validation resumed
+
+- Closed the planned focused naming pass; broad mechanical renaming remains
+  intentionally excluded.
+- Rebuilt all 13 GLFW examples with `./nob -examples-glfw` successfully on
+  macOS arm64. GUI execution and pixel capture remain unavailable in this
+  headless session, so Stage 0 stays active for that external validation.
