@@ -377,6 +377,17 @@ typedef struct TwStyleGeometry
 {
     int group_indent_step_px;
     int label_origin_after_indent_px;
+    int roto_activation_radius_px;
+    int roto_ring_inner_radius_px;
+    int roto_ring_middle_radius_px;
+    int roto_ring_outer_radius_px;
+    int roto_bound_spoke_length_px;
+    int roto_max_bound_dot_radius_px;
+    int roto_min_bound_dot_radius_px;
+    int roto_stroke_offset_px;
+    int roto_tail_outline_px;
+    int roto_tail_arc_offset_px[6];
+    int roto_tail_dot_radius_px[6];
 } TwStyleGeometry;
 
 typedef struct TwStyle
@@ -386,8 +397,28 @@ typedef struct TwStyle
 
 static inline void TwStyle_Init(TwStyle *_Style, const CTexFont *_Font)
 {
+    int h = _Font->m_CharHeight;
     _Style->geometry.group_indent_step_px = max(_Font->m_CharHeight-6, 4);
     _Style->geometry.label_origin_after_indent_px = 6;
+    /* RotoSlider artwork was authored for the normal 14 px font. */
+    _Style->geometry.roto_activation_radius_px = (24*h+7)/14;
+    _Style->geometry.roto_ring_inner_radius_px = (31*h+7)/14;
+    _Style->geometry.roto_ring_middle_radius_px = (32*h+7)/14;
+    _Style->geometry.roto_ring_outer_radius_px = (33*h+7)/14;
+    _Style->geometry.roto_bound_spoke_length_px = (40*h+7)/14;
+    _Style->geometry.roto_max_bound_dot_radius_px = (7*h+7)/14;
+    _Style->geometry.roto_min_bound_dot_radius_px = (4*h+7)/14;
+    _Style->geometry.roto_stroke_offset_px = max((h+7)/14, 1);
+    _Style->geometry.roto_tail_outline_px = max((h+7)/14, 1);
+    {
+        static const int arc_offsets[6] = { 36, 17, 0, -16, -30, -43 };
+        static const int dot_radii[6] = { 8, 7, 6, 5, 4, 3 };
+        for( int i=0; i<6; ++i )
+        {
+            _Style->geometry.roto_tail_arc_offset_px[i] = (arc_offsets[i]*h+(arc_offsets[i]>=0?7:-7))/14;
+            _Style->geometry.roto_tail_dot_radius_px[i] = max((dot_radii[i]*h+7)/14, 1);
+        }
+    }
 }
 
 struct CTwBar // typedef'd in TwMgr.h (forward-declared there, needed as a pointer type before this full definition loads)

@@ -2998,7 +2998,7 @@ CTwBar *CTwBar_Create(const char *_Name)
     Bar->m_HeadersTextObj = g_TwMgr->m_Graph->NewTextObj(g_TwMgr->m_Graph);
     Bar->m_ShortcutLine = -1;
 
-    Bar->m_RotoMinRadius = 24;
+    Bar->m_RotoMinRadius = Bar->m_Style.geometry.roto_activation_radius_px;
     Bar->m_RotoNbSubdiv = 256;   // number of steps for one turn
 
     Bar->m_HierTags.items = NULL;
@@ -7637,21 +7637,21 @@ static bool RotoCursorPolar(const CRotoSlider *_Roto, float *_OutRadius, float *
 }
 
 // Bold stroke: the same line drawn three times, offset by a pixel in x and in y.
-static void RotoDrawThickLine(ITwGraph *_Gr, int _X0, int _Y0, int _X1, int _Y1, color32 _Color)
+static void RotoDrawThickLine(ITwGraph *_Gr, int _X0, int _Y0, int _X1, int _Y1, int _Offset, color32 _Color)
 {
     _Gr->DrawLine(_Gr, _X0,   _Y0,   _X1,   _Y1,   _Color, _Color, true);
-    _Gr->DrawLine(_Gr, _X0+1, _Y0,   _X1+1, _Y1,   _Color, _Color, true);
+    _Gr->DrawLine(_Gr, _X0+_Offset, _Y0,   _X1+_Offset, _Y1,   _Color, _Color, true);
     _Gr->DrawLine(_Gr, _X0,   _Y0+1, _X1,   _Y1+1, _Color, _Color, true);
 }
 
 // One of the two bound markers (min/max): a thick spoke from the roto origin
 // out to the bound angle, capped by a filled dot with a thin white contrast
 // ring, echoing GLFW3's own high-contrast cursor style.
-static void RotoDrawBound(ITwGraph *_Gr, CPoint _Origin, double _AngleRad, color32 _Color, int _DotRadius, bool _AntiAliased)
+static void RotoDrawBound(ITwGraph *_Gr, CPoint _Origin, double _AngleRad, color32 _Color, int _SpokeLength, int _StrokeOffset, int _DotRadius, bool _AntiAliased)
 {
-    int x1 = _Origin.x + (int)(40*cos(_AngleRad));
-    int y1 = _Origin.y + (int)(40*sin(_AngleRad)+0.5);
-    RotoDrawThickLine(_Gr, _Origin.x, _Origin.y, x1, y1, _Color);
+    int x1 = _Origin.x + (int)(_SpokeLength*cos(_AngleRad));
+    int y1 = _Origin.y + (int)(_SpokeLength*sin(_AngleRad)+0.5);
+    RotoDrawThickLine(_Gr, _Origin.x, _Origin.y, x1, y1, _StrokeOffset, _Color);
     DrawFilledCircle(x1, y1, _DotRadius, _Color, _AntiAliased);
     DrawArc(x1, y1, _DotRadius, 0, 360, COLOR32_WHITE);
 }
@@ -7674,11 +7674,12 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
 
     if( _Bar->m_Roto.m_Active )
     {
+        const TwStyleGeometry *style = &_Bar->m_Style.geometry;
         const CPoint origin = _Bar->m_Roto.m_Origin;
 
-        DrawArc(origin.x, origin.y, 31, 0, 360, _Bar->m_ColRoto);
-        DrawArc(origin.x, origin.y, 32, 0, 360, _Bar->m_ColRoto);
-        DrawArc(origin.x, origin.y, 33, 0, 360, _Bar->m_ColRoto);
+        DrawArc(origin.x, origin.y, style->roto_ring_inner_radius_px, 0, 360, _Bar->m_ColRoto);
+        DrawArc(origin.x, origin.y, style->roto_ring_middle_radius_px, 0, 360, _Bar->m_ColRoto);
+        DrawArc(origin.x, origin.y, style->roto_ring_outer_radius_px, 0, 360, _Bar->m_ColRoto);
 
         if( _Bar->m_Roto.m_HasPrevious )
         {
@@ -7694,8 +7695,8 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
                 {
                     double da = 2.0*M_PI/_Bar->m_Roto.m_Subdiv;
 
-                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da, _Bar->m_ColRotoMax, 7, false);
-                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da, _Bar->m_ColRotoMin, 4, true);
+                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMax)/180-da, _Bar->m_ColRotoMax, style->roto_bound_spoke_length_px, style->roto_stroke_offset_px, style->roto_max_bound_dot_radius_px, false);
+                    RotoDrawBound(Gr, origin, -M_PI*(_Bar->m_Roto.m_Angle0+dtMin)/180+da, _Bar->m_ColRotoMin, style->roto_bound_spoke_length_px, style->roto_stroke_offset_px, style->roto_min_bound_dot_radius_px, true);
                 }
             }
         }
@@ -7708,24 +7709,16 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
             // length at any radius. The middle dot (offset 0) sits exactly at
             // the cursor angle; the others are purely decorative motion-trail
             // marks ahead of and behind it.
-            static const struct { float ArcOffset; int Radius; } tailDots[] = {
-                { 36.0f, 8 },
-                { 17.0f, 7 },
-                { 00.0f, 6 },
-                { -16.0f, 5 },
-                { -30.0f, 4 },
-                { -43.0f, 3 }
-            };
             const CPoint cursor = _Bar->m_Roto.m_Current;
-            RotoDrawThickLine(Gr, origin.x, origin.y, cursor.x, cursor.y, _Bar->m_ColRotoVal);
+            RotoDrawThickLine(Gr, origin.x, origin.y, cursor.x, cursor.y, style->roto_stroke_offset_px, _Bar->m_ColRotoVal);
 
-            for( size_t i=0; i<sizeof(tailDots)/sizeof(tailDots[0]); ++i )
+            for( int i=0; i<6; ++i )
             {
-                CPoint dot = RotoPointOnCircle(origin, radius, cursorAngle, tailDots[i].ArcOffset);
-                DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius+1, COLOR32_WHITE, true);
-                DrawFilledCircle(dot.x, dot.y, tailDots[i].Radius, _Bar->m_ColRotoVal, true);
+                CPoint dot = RotoPointOnCircle(origin, radius, cursorAngle, (float)style->roto_tail_arc_offset_px[i]);
+                DrawFilledCircle(dot.x, dot.y, style->roto_tail_dot_radius_px[i]+style->roto_tail_outline_px, COLOR32_WHITE, true);
+                DrawFilledCircle(dot.x, dot.y, style->roto_tail_dot_radius_px[i], _Bar->m_ColRotoVal, true);
                 // NSK commented:
-                // DrawArc(dot.x, dot.y, tailDots[i].Radius, 0, 360, COLOR32_WHITE);
+                // The white outline is already included in the style metrics.
             }
 
             // Sweep arc showing how far the value has turned from the anchor
@@ -7748,9 +7741,9 @@ void CTwBar_DrawRotoSlider(CTwBar *_Bar)
                     // lower-limit color.
                     float a1 = a0+diff;
                     color32 col = (diff>=0) ? _Bar->m_ColRotoMax : _Bar->m_ColRotoMin;
-                    DrawArc(origin.x, origin.y, 31, a0, a1, col);
-                    DrawArc(origin.x, origin.y, 32, a0, a1, col);
-                    DrawArc(origin.x, origin.y, 33, a0, a1, col);
+                    DrawArc(origin.x, origin.y, style->roto_ring_inner_radius_px, a0, a1, col);
+                    DrawArc(origin.x, origin.y, style->roto_ring_middle_radius_px, a0, a1, col);
+                    DrawArc(origin.x, origin.y, style->roto_ring_outer_radius_px, a0, a1, col);
                 }
             }
         }
@@ -7817,7 +7810,7 @@ void CTwBar_RotoSliderOnMouseMove(CTwBar *_Bar, int _X, int _Y)
         double t = 0;
         float r = sqrtf((float)(  (_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x)*(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x) 
                               + (_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)*(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y)));
-        if( r>_Bar->m_RotoMinRadius ){
+        if( r>_Bar->m_Style.geometry.roto_activation_radius_px ){
             t = - atan2((double)(_Bar->m_Roto.m_Current.y-_Bar->m_Roto.m_Origin.y), (double)(_Bar->m_Roto.m_Current.x-_Bar->m_Roto.m_Origin.x));
             if( _Bar->m_Roto.m_HasPrevious ){
                 CPoint v0 = CPoint_Sub(_Bar->m_Roto.m_Previous, _Bar->m_Roto.m_Origin);

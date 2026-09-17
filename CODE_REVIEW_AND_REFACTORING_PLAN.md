@@ -115,7 +115,7 @@ The next tables are a migration inventory. `H` means the active bar font's `m_Ch
 | `TwBar.c:5535-5540,5523` `checker=8`, `H-2` | Color swatch rows/checker pattern | `color_swatch_checker_cells=8`, `color_swatch_vertical_inset_px=1` (current height `H-2`) | Color group draw and swatch bounds. Color itself is runtime client value. |
 | `TwBar.c:5602-5604` `H/2`, custom bounds `5612-5615` `-2,+1` | Separator baseline and custom viewport inset | `separator_center_y_px=H/2`, `custom_right_inset_px=2`, `custom_top_inset_px=1` | Separator/custom draw and custom hit map. |
 | `TwBar.c:6680-6735` cap `32*max_glyph`, x `-2`, width `content+H+sep+indent+8`, height `entries*(H+sep)+H/2+2`, edge `2`, minimum `3` rows | Enum popup fit and viewport policy | `popup_max_label_glyphs=32`, `popup_anchor_left_shift_px=2`, `popup_extra_right_space_px=8`, `popup_bottom_extra_px=H/2+2`, `popup_viewport_gap_px=2`, `popup_min_visible_rows=3` | Popup creation plus shared label origin/clip. Derive width from resolved row metrics, preserving this exact formula first. |
-| `TwBar.c:3000,7668-7745` radius `24`, rings `31/32/33`, bounds dots `7/4`, tail `(36,8),(17,7),(0,6),(-16,5),(-30,4),(-43,3)` | RotoSlider visual scale and decoration | `roto_activation_radius_px=24`, `roto_ring_inner/middle/outer_radius_px=31/32/33`, `roto_max/min_dot_radius_px=7/4`, named tail-dot offsets (arc pixels) and radii in a six-entry style array | Roto drawing and drag boundary. `m_RotoNbSubdiv=256`, angle accumulation, step and current values are behavior/state, not theme geometry. |
+| `TwBar.c:3000,7668-7745` radius `24`, rings `31/32/33`, bounds dots `7/4`, tail `(36,8),(17,7),(0,6),(-16,5),(-30,4),(-43,3)` | RotoSlider visual scale and decoration; all drawing and hit geometry must scale with the active font like the other widgets | `roto_activation_radius_px=24`, `roto_ring_inner/middle/outer_radius_px=31/32/33`, `roto_max/min_dot_radius_px=7/4`, named tail-dot offsets (arc pixels) and radii in a six-entry style array, resolved from the normal 14 px font | Roto drawing and drag boundary. `m_RotoNbSubdiv=256`, angle accumulation, step and current values are behavior/state, not theme geometry. |
 | `TwBar.c:5456,5471,5478-5490` highlight inset `1`, marker width `4`, shadow `3`, outline 1 px; `TwMgr.c:2052` overlap margin `4` | Row highlight, bar border/shadow and overlap bleed | `row_highlight_top_inset_px=1`, `read_only_marker_width_px=4`, `bar_shadow_extent_px=3`, `bar_border_width_px=1`, `overlap_clip_bleed_px=4` | Draw and clip. Treat coordinate endpoint `-1` separately as raster convention. |
 | `TwBar.c:6027,6038,6100+` contained margin `32`, click movement `6`, column grip `±5`; `TwMgr.c:2182` icon margin `8` | Input tolerance versus appearance | `offscreen_drag_recovery_margin_px=32`, `button_click_slop_px=6`, `column_resize_hit_half_width_px=5`, `default_icon_margin_x/y_px=8` | Hit/drag/icon placement. Click slop is interaction policy; it may sit in `TwStyleInteraction`, not visual geometry. Existing `iconmargin` remains runtime user setting. |
 | `TwMgr.c:5932-5961,6036-6040,6201+` help indent via S, top margin `-sep`/`2`, clamp `H-3` | Help text padding and header offsets | `help_indent_space_glyphs` preserving `(level+1)` or `(level+2)` call-site formulas, `help_text_top_shift_px=-sep`, `help_header_top_inset_px=2`, `help_top_inset_limit_px=H-3` | Help generation, label draw. Replace encoded `m_LeftMargin` interpretation only after captures match. |
@@ -271,3 +271,16 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
 - `./nob -test` and `./nob` pass; the drawing-command fixture is unchanged.
   This is the first Stage 2 slice; colors and the remaining geometry inventory
   are intentionally still pending.
+
+### 2026-09-17: Stage 2, font-scaled RotoSlider geometry
+
+- Added resolved RotoSlider geometry to `TwStyleGeometry`, with defaults derived
+  from the active font height and preserving the existing artwork at 14 px.
+- RotoSlider rings, activation radius, bound markers, spoke length, tail arc
+  offsets and tail dot sizes now use the style context in drawing and hit
+  testing. This records the requirement that RotoSlider drawing scales with
+  the active font like the other drawing elements.
+- Validation: `./nob -test`, `./nob`, and `./nob -examples-glfw` all pass on
+  macOS arm64 with Apple clang. The drawing fixture was regenerated because
+  the requested scaling intentionally changes RotoSlider command geometry for
+  non-normal fonts; normal 14 px geometry remains unchanged.
