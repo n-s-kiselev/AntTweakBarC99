@@ -633,3 +633,22 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   occasionally exited at startup with `0xC0000139` (entry point not found),
   passing on rerun. Recheck outside a Dropbox-synced folder if either
   recurs.
+
+### 2026-10-01: Linux validation (GLFW3 and raylib PASSED)
+
+- Host: Linux 7.0 (x86_64), system gcc, X11 session (`DISPLAY=:0`).
+  Bootstrapped with `gcc nob.c -o nob`.
+- Fix: `./nob -examples-glfw` failed to link on Linux (undefined `round`,
+  `powf`, `fminf`, `fmaxf` from the vendored GLFW unity build). Added
+  `-lm` to the GLFW example link line in `nob.c`.
+- `./nob` builds the static and shared library with no warnings.
+- `./nob -test` passes all 44 parameter/scene checks and the drawing baseline.
+- `-examples-glfw` and `-examples-raylib`, static and `-dynamic`, all build:
+  28 executables (13 GLFW3 + 1 raylib, per variant). Only warnings: two
+  pre-existing `-Wformat-truncation` warnings in `Advanced_c99_glfw.c:403`
+  and `Advanced_cpp_glfw.cpp:366`.
+- Every executable was launched for 4 seconds (shared builds with
+  `LD_LIBRARY_PATH=build/lib`) and was still running at timeout, so window,
+  GL context and `TwInit` start up. Interaction was not exercised.
+- Not validated: `-examples-sdl` and `-examples-sfml` are blocked by `nob.c`
+  on Linux (macOS/Windows only so far).

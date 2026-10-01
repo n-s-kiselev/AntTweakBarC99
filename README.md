@@ -186,7 +186,7 @@ You do not need to install GLFW3, SDL3, or SFML3 on your system - all three are 
 ([vendor/glfw](vendor/glfw), [vendor/sdl](vendor/sdl), [vendor/sfml](vendor/sfml)) and built from
 source automatically, alongside [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)).
 
-GLFW3 is supported on Linux, macOS, and Windows (MinGW). SDL3 and SFML3 are currently validated on
+GLFW3 is supported on Linux, macOS, and Windows (MinGW); the Linux check of the GLFW3 and raylib examples passed (see CODE_REVIEW_AND_REFACTORING_PLAN.md). SDL3 and SFML3 are currently validated on
 macOS and Windows (MinGW) - Linux support for those two backends is planned but not yet built or
 tested. Legacy GLUT/X11-event-loop/SDL2/SFML2 event-translation sources from the original ATB have
 been removed rather than ported forward; DirectX9/10/11 remain out of scope for this fork.

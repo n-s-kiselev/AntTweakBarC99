@@ -1004,7 +1004,7 @@ static void append_glfw_libs(Nob_Cmd *cmd)
     // build on systems that lack one (e.g. the legacy Xxf86vm extension,
     // often not packaged on modern distros) without GLFW ever needing it
     // at link time.
-    nob_cmd_append(cmd, "-lGL", "-lX11", "-ldl", "-lpthread");
+    nob_cmd_append(cmd, "-lGL", "-lX11", "-ldl", "-lpthread", "-lm");
 #endif
 }
 
