@@ -1,11 +1,11 @@
 # AntTweakBarC99
 
 AntTweakBarC99 is a C99 library that adds a lightweight, cross-platform GUI
-to OpenGL applications, with three selectable, fully vendored windowing/event
-backends: [GLFW3](https://www.glfw.org/), [SDL3](https://www.libsdl.org/), and
-[SFML3](https://www.sfml-dev.org/). A fresh clone needs none of the three
-installed on your system - all three are vendored and built from source
-automatically (see "How to build" below).
+to OpenGL applications, with four selectable, fully vendored windowing/event
+backends: [GLFW3](https://www.glfw.org/), [SDL3](https://www.libsdl.org/),
+[SFML3](https://www.sfml-dev.org/) and [raylib](https://www.raylib.com/). A
+fresh clone needs none of them installed on your system - all four are
+vendored and built from source automatically (see "How to build" below).
 
 This version of the library is a C99 rewrite of[AntTweakBar](https://anttweakbar.sourceforge.io/doc) (**ATB**), the original C/C++ library and legacy [GLFW2](https://github.com/glfw/glfw-legacy), [SDL2](https://wiki.libsdl.org/SDL2/FrontPage), [SFML](https://www.sfml-dev.org/) by [Philippe Decaudin](https://phildec.users.sourceforge.net/).
 
@@ -56,8 +56,8 @@ Bootstrap the build tool once, from the repository root:
 gcc nob.c -o nob
 ```
 
-Build the library - it links against none of GLFW3/SDL3/SFML3, so this one
-static/shared library works with any backend's examples:
+Build the library - it links against none of GLFW3/SDL3/SFML3/raylib, so this
+one static/shared library works with any backend's examples:
 
 ```sh
 ./nob         # build the library only
@@ -74,20 +74,21 @@ This builds its own test executable and needs no OpenGL window or prebuilt
 library. See [tests/README.md](tests/README.md) for coverage, drawing baselines
 and the separate real-window validation requirements.
 
-Then build a backend's 13 examples against that library:
+Then build a backend's examples against that library:
 
 ```sh
-./nob -examples-glfw [-dynamic]   # build the GLFW3 examples (examples/glfw/)
-./nob -examples-sdl  [-dynamic]   # build the SDL3 examples (examples/sdl/)
-./nob -examples-sfml [-dynamic]   # build the SFML3 examples (examples/sfml/)
+./nob -examples-glfw   [-dynamic]   # build the GLFW3 examples (examples/glfw/)
+./nob -examples-sdl    [-dynamic]   # build the SDL3 examples (examples/sdl/)
+./nob -examples-sfml   [-dynamic]   # build the SFML3 examples (examples/sfml/)
+./nob -examples-raylib [-dynamic]   # build the raylib examples (examples/raylib/)
 ```
 
-All three demonstrate the same 13 demos, each adapted to that backend's own
-windowing/event API. GLFW3 and SDL3 examples are plain C99 except
-`Advanced_cpp_*.cpp`; SFML3 has no C API at all, so every SFML3 example is
-C++. Add `-dynamic` to any of the three to link the examples against the
-shared library instead of the static one, e.g. `./nob -examples-sdl -dynamic`.
-`./nob -examples-glfw`/`-examples-sdl`/`-examples-sfml` require the library
+GLFW3, SDL3 and SFML3 each demonstrate the same 13 demos, adapted to that
+backend's own windowing/event API; the raylib backend is newer and has one so
+far. GLFW3 and SDL3 examples are plain C99 except `Advanced_cpp_*.cpp`; SFML3
+has no C API at all, so every SFML3 example is C++. Add `-dynamic` to any of
+them to link against the shared library instead of the static one, e.g.
+`./nob -examples-sdl -dynamic`. Every `-examples-*` flag requires the library
 to already be built by a plain `./nob`.
 
 Each example folder has one shared glue header holding the backend's
@@ -99,8 +100,11 @@ example creates its own window and runs its own main loop, then calls
 after it, and `atb_<backend>_Detach()` after `TwTerminate()`; optional hooks
 receive the events AntTweakBar did not consume. The header is example
 scaffolding, not part of the library's API, and yours to copy.
-[`examples/glfw/atb_glfw.h`](examples/glfw/atb_glfw.h) exists today; the SDL3
-and SFML3 equivalents are still to come.
+[`examples/glfw/atb_glfw.h`](examples/glfw/atb_glfw.h) and
+[`examples/raylib/atb_raylib.h`](examples/raylib/atb_raylib.h) exist today; the
+SDL3 and SFML3 equivalents are still to come. raylib's differs in shape because
+raylib owns the event loop and exposes input only as per-frame state, so
+`atb_raylib_Update()` polls it once a frame instead of installing callbacks.
 
 To rebuild from scratch you have to clean the folder from artifacts:
 
@@ -112,7 +116,9 @@ To rebuild from scratch you have to clean the folder from artifacts:
 
 - `build/lib/libAntTweakBarC99.a` — static library, on every platform. This is
   the simplest option (no extra runtime files to ship) and is what the
-  examples link against by default.
+  examples link against by default. Its copy of GLAD is private (the symbols
+  are local to the archive), so linking it alongside another library that
+  embeds its own GLAD — raylib, for instance — does not collide.
 - `build/lib/libAntTweakBarC99.so` (Linux) / `build/lib/libAntTweakBarC99.dylib`
   (macOS) / `build/lib/libAntTweakBarC99.dll` (Windows/MinGW) — dynamic library,
   self-contained on every platform: the library loads its own private copy
@@ -126,10 +132,11 @@ To rebuild from scratch you have to clean the folder from artifacts:
 - `build/include/AntTweakBar.h` — a copy of [`include/AntTweakBar.h`](include/AntTweakBar.h)
   (the real, git-tracked source, unchanged) placed next to the libraries above, so `build/`
   is a self-contained `lib`+`include` pair for anything linking against it.
-- `build/examples/static-glfw/`, `static-sdl/`, `static-sfml/` (statically
-  linked) and `shared-glfw/`, `shared-sdl/`, `shared-sfml/` (`-dynamic`) —
-  one folder per backend and link mode, so switching between them never
-  overwrites another combination's executables.
+- `build/examples/static-glfw/`, `static-sdl/`, `static-sfml/`,
+  `static-raylib/` (statically linked) and `shared-glfw/`, `shared-sdl/`,
+  `shared-sfml/`, `shared-raylib/` (`-dynamic`) — one folder per backend and
+  link mode, so switching between them never overwrites another
+  combination's executables.
 
 ### Running dynamically linked examples
 

@@ -6,6 +6,9 @@
 #define BUILD_FOLDER         "build/"
 #define BUILD_STATIC_FOLDER  "build/static/"
 #define BUILD_SHARED_FOLDER  "build/shared/"
+// Single object holding glad.o + TwOpenGL.o + TwOpenGLCore.o with every GLAD
+// symbol made local - see prelink_renderers().
+#define RENDERERS_OBJ_NAME   "TwRenderers.o"
 #define TEST_BUILD_FOLDER    "build/tests/"
 // Every build artifact - including the final libraries and the copy of the
 // public header consuming code would build against - lives under
@@ -38,22 +41,31 @@ typedef enum {
     BACKEND_GLFW,
     BACKEND_SDL,
     BACKEND_SFML,
+    BACKEND_RAYLIB,
 } Backend;
 
 static const char *backend_name(Backend backend)
 {
     switch (backend) {
-    case BACKEND_GLFW: return "GLFW3";
-    case BACKEND_SDL:  return "SDL3";
-    case BACKEND_SFML: return "SFML3";
+    case BACKEND_GLFW:   return "GLFW3";
+    case BACKEND_SDL:    return "SDL3";
+    case BACKEND_SFML:   return "SFML3";
+    case BACKEND_RAYLIB: return "raylib";
     }
     return "";
 }
 
-#define EXAMPLES_FOLDER       "examples/"
-#define EXAMPLES_GLFW_FOLDER  EXAMPLES_FOLDER "glfw/"
-#define EXAMPLES_SDL_FOLDER   EXAMPLES_FOLDER "sdl/"
-#define EXAMPLES_SFML_FOLDER  EXAMPLES_FOLDER "sfml/"
+// raylib statically contains its own copy of GLAD (rcore.c pulls it in via
+// rlgl.h), with the same global glad_gl*/GLAD_GL_* symbol names this project's
+// own vendor/glad uses. That used to force the raylib examples to link the
+// shared library; prelink_renderers() now makes the library's GLAD private, so
+// the two copies coexist and raylib links statically like every other backend.
+
+#define EXAMPLES_FOLDER        "examples/"
+#define EXAMPLES_GLFW_FOLDER   EXAMPLES_FOLDER "glfw/"
+#define EXAMPLES_SDL_FOLDER    EXAMPLES_FOLDER "sdl/"
+#define EXAMPLES_SFML_FOLDER   EXAMPLES_FOLDER "sfml/"
+#define EXAMPLES_RAYLIB_FOLDER EXAMPLES_FOLDER "raylib/"
 #define EXAMPLES_BUILD_FOLDER "build/examples/"
 // Split by link mode AND backend, not just a shared EXAMPLES_BUILD_FOLDER,
 // so switching between `-examples-glfw`/`-examples-sdl`/`-examples-sfml` and
@@ -69,6 +81,8 @@ static const char *backend_name(Backend backend)
 #define EXAMPLES_SHARED_GLFW_FOLDER EXAMPLES_BUILD_FOLDER "shared-glfw/"
 #define EXAMPLES_SHARED_SDL_FOLDER  EXAMPLES_BUILD_FOLDER "shared-sdl/"
 #define EXAMPLES_SHARED_SFML_FOLDER EXAMPLES_BUILD_FOLDER "shared-sfml/"
+#define EXAMPLES_STATIC_RAYLIB_FOLDER EXAMPLES_BUILD_FOLDER "static-raylib/"
+#define EXAMPLES_SHARED_RAYLIB_FOLDER EXAMPLES_BUILD_FOLDER "shared-raylib/"
 
 // sds (Simple Dynamic Strings, vendored from https://github.com/antirez/sds,
 // BSD-2-Clause) replaces std::string for the library's own internal string
@@ -131,6 +145,30 @@ static const char *backend_name(Backend backend)
 #define SFML_SRC "vendor/sfml/sfml_unity.mm"
 #endif
 #define SFML_OBJ      EXAMPLES_BUILD_FOLDER "sfml.o"
+
+// raylib is vendored as upstream's src/ tree (vendor/raylib/src/, plus its
+// LICENSE and README), so examples need no system raylib install. Built the
+// way upstream's own Makefile does for PLATFORM_DESKTOP: one object per
+// module, archived into libraylib.a. Only src/ is vendored - upstream's
+// examples/, projects/, tools/, logo/ and cmake/ trees are build tooling and
+// sample code this project does not use (they are ~80% of the distribution).
+//
+// raylib brings its own GLFW (src/external/glfw, compiled by rglfw.c), so a
+// raylib example must NOT also link vendor/glfw's GLFW_OBJ, nor the examples'
+// own GLAD_OBJ - raylib's rcore.o already provides both.
+#define RAYLIB_SRC_FOLDER "vendor/raylib/src/"
+#define RAYLIB_OBJ_FOLDER EXAMPLES_BUILD_FOLDER "raylib_obj/"
+#define RAYLIB_LIB        EXAMPLES_BUILD_FOLDER "libraylib_vendored.a"
+
+static const char *raylib_sources[] = {
+    RAYLIB_SRC_FOLDER "rcore.c",
+    RAYLIB_SRC_FOLDER "rglfw.c",
+    RAYLIB_SRC_FOLDER "rshapes.c",
+    RAYLIB_SRC_FOLDER "rtextures.c",
+    RAYLIB_SRC_FOLDER "rtext.c",
+    RAYLIB_SRC_FOLDER "rmodels.c",
+    RAYLIB_SRC_FOLDER "raudio.c",
+};
 
 #if defined(_WIN32)
 #define EXE_EXT ".exe"
@@ -205,6 +243,12 @@ static const char *sfml_examples[] = {
     EXAMPLES_SFML_FOLDER "MultiWindow_sfml.cpp",
     EXAMPLES_SFML_FOLDER "Advanced_c99_sfml.cpp",
     EXAMPLES_SFML_FOLDER "Advanced_cpp_sfml.cpp",
+};
+
+// raylib port. Only one example so far - this backend is new; the remaining
+// twelve follow once its shape is settled.
+static const char *raylib_examples[] = {
+    EXAMPLES_RAYLIB_FOLDER "Simple_raylib.c",
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
@@ -514,6 +558,20 @@ static bool is_glad_source(const char *source)
     return strcmp(source, GLAD_SRC) == 0;
 }
 
+// The three sources that form the library's GLAD cluster, prelinked into a
+// single archive member by prelink_renderers() below: glad.c defines the ~1124
+// glad_*/GLAD_*/gladLoad*/GLVersion globals, and TwOpenGL.c (56 references) and
+// TwOpenGLCore.c (49) are the only objects in the whole library that use them.
+// Nothing else does, and their only reference back into the library is
+// TwSetLastError(), so these three - and only these three - can be merged and
+// have their GLAD symbols made local.
+static bool is_renderer_source(const char *source)
+{
+    return is_glad_source(source)
+        || strcmp(source, SRC_FOLDER "TwOpenGL.c") == 0
+        || strcmp(source, SRC_FOLDER "TwOpenGLCore.c") == 0;
+}
+
 static const char *compiler_for_source(const char *source)
 {
     if (is_sds_source(source)) return "cc";
@@ -583,6 +641,77 @@ static bool build_object(const char *source, const char *folder, const char *tw_
     append_platform_defines(&cmd);
     nob_cmd_append(&cmd, "-c", source, "-o", output);
     return nob_cmd_run(&cmd);
+}
+
+// Merges the three is_renderer_source() objects into one relocatable object
+// with every GLAD symbol demoted from global to local, and reports its path in
+// *output. The library then carries a genuinely private GLAD, as README.md and
+// docs/plans/self-contained-windows-dll.md already describe.
+//
+// Why this is needed: without it the library exports ~1124 glad_*/GLAD_*/
+// gladLoad*/GLVersion globals - accidentally, since on POSIX TW_API expands to
+// nothing (include/AntTweakBar.h) and nothing here ever set -fvisibility.
+// Anything else in the link that embeds its own GLAD then collides with them;
+// raylib (vendor/raylib/, whose rcore.o carries a whole glad2 copy) is the
+// case that forced the issue. Note -fvisibility=hidden is NOT an alternative:
+// it would hide the public Tw* API too, and it does not affect an archive's
+// symbol table at all.
+//
+// The three objects are a self-contained cluster - see is_renderer_source() -
+// so TwSetLastError() is the only symbol left undefined here, resolved against
+// TwMgr.o at final link.
+static bool prelink_renderers(const char *folder, Nob_File_Paths *renderers,
+                              const char *nob_exe, const char **output)
+{
+    *output = nob_temp_sprintf("%s%s", folder, RENDERERS_OBJ_NAME);
+
+    Nob_File_Paths inputs = {0};
+    for (size_t i = 0; i < renderers->count; ++i) nob_da_append(&inputs, renderers->items[i]);
+    add_common_build_deps(&inputs, nob_exe);
+
+    if (!build_needed(*output, inputs.items, inputs.count)) {
+        nob_log(NOB_INFO, "%s is up to date", *output);
+        return true;
+    }
+
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "ld", "-r", "-o", *output);
+    for (size_t i = 0; i < renderers->count; ++i) nob_cmd_append(&cmd, renderers->items[i]);
+#if defined(__APPLE__)
+    // ld64 documents wildcard support for -unexported_symbol, and demotes a
+    // matched global to private-extern; because -keep_private_externs is NOT
+    // passed, `ld -r` then takes it the rest of the way down to a plain local
+    // symbol. Mach-O prefixes C identifiers with an underscore.
+    nob_cmd_append(&cmd, "-unexported_symbol", "_glad_*");
+    nob_cmd_append(&cmd, "-unexported_symbol", "_GLAD_*");
+    nob_cmd_append(&cmd, "-unexported_symbol", "_gladLoad*");
+    nob_cmd_append(&cmd, "-unexported_symbol", "_GLVersion");
+#endif
+    if (!nob_cmd_run(&cmd)) return false;
+
+#if !defined(__APPLE__)
+    // GNU ld cannot localize while merging, so objcopy does it afterwards.
+    // It ships with the same binutils as `ar`, which this build already
+    // requires. ELF and 64-bit PE carry no leading underscore; 32-bit MinGW
+    // does, so both spellings are passed there - objcopy silently ignores a
+    // pattern that matches nothing.
+    Nob_Cmd localize = {0};
+    nob_cmd_append(&localize, "objcopy", "--wildcard");
+    nob_cmd_append(&localize, "--localize-symbol", "glad_*");
+    nob_cmd_append(&localize, "--localize-symbol", "GLAD_*");
+    nob_cmd_append(&localize, "--localize-symbol", "gladLoad*");
+    nob_cmd_append(&localize, "--localize-symbol", "GLVersion");
+#if defined(_WIN32)
+    nob_cmd_append(&localize, "--localize-symbol", "_glad_*");
+    nob_cmd_append(&localize, "--localize-symbol", "_GLAD_*");
+    nob_cmd_append(&localize, "--localize-symbol", "_gladLoad*");
+    nob_cmd_append(&localize, "--localize-symbol", "_GLVersion");
+#endif
+    nob_cmd_append(&localize, *output);
+    if (!nob_cmd_run(&localize)) return false;
+#endif
+
+    return true;
 }
 
 static bool build_static_archive(Nob_File_Paths *objects, const char *nob_exe)
@@ -675,16 +804,35 @@ static bool build_all(const char *nob_exe)
     if (!collect_tree_files(&common_deps, SDS_INCLUDE)) return false;
     add_common_build_deps(&common_deps, nob_exe);
 
-    Nob_File_Paths static_objects = {0};
-    Nob_File_Paths shared_objects = {0};
+    // *_objects are what gets archived/linked; the renderer sources are held
+    // back in *_renderers and enter as the single prelinked TwRenderers.o
+    // below, so the raw glad.o/TwOpenGL.o/TwOpenGLCore.o never reach the
+    // archive with their GLAD symbols still global. *_scratch is everything
+    // produced, for the cleanup at the end.
+    Nob_File_Paths static_objects = {0}, static_renderers = {0}, static_scratch = {0};
+    Nob_File_Paths shared_objects = {0}, shared_renderers = {0}, shared_scratch = {0};
 
     for (size_t i = 0; i < sources.count; ++i) {
+        bool renderer = is_renderer_source(sources.items[i]);
+
         if (!build_object(sources.items[i], BUILD_STATIC_FOLDER, "-DTW_STATIC", &common_deps)) return false;
-        nob_da_append(&static_objects, object_path(BUILD_STATIC_FOLDER, sources.items[i]));
+        const char *static_obj = object_path(BUILD_STATIC_FOLDER, sources.items[i]);
+        nob_da_append(&static_scratch, static_obj);
+        nob_da_append(renderer ? &static_renderers : &static_objects, static_obj);
 
         if (!build_object(sources.items[i], BUILD_SHARED_FOLDER, "-DTW_EXPORTS", &common_deps)) return false;
-        nob_da_append(&shared_objects, object_path(BUILD_SHARED_FOLDER, sources.items[i]));
+        const char *shared_obj = object_path(BUILD_SHARED_FOLDER, sources.items[i]);
+        nob_da_append(&shared_scratch, shared_obj);
+        nob_da_append(renderer ? &shared_renderers : &shared_objects, shared_obj);
     }
+
+    const char *static_renderers_obj = NULL, *shared_renderers_obj = NULL;
+    if (!prelink_renderers(BUILD_STATIC_FOLDER, &static_renderers, nob_exe, &static_renderers_obj)) return false;
+    nob_da_append(&static_objects, static_renderers_obj);
+    nob_da_append(&static_scratch, static_renderers_obj);
+    if (!prelink_renderers(BUILD_SHARED_FOLDER, &shared_renderers, nob_exe, &shared_renderers_obj)) return false;
+    nob_da_append(&shared_objects, shared_renderers_obj);
+    nob_da_append(&shared_scratch, shared_renderers_obj);
 
     if (!build_static_archive(&static_objects, nob_exe)) return false;
     if (!link_shared_library(&shared_objects, nob_exe)) return false;
@@ -696,8 +844,8 @@ static bool build_all(const char *nob_exe)
     // needing a rebuild, so every subsequent `./nob` always recompiles
     // every source from scratch - there is no longer an incremental/no-op
     // `./nob` re-run once this cleanup runs.
-    if (!delete_objects(&static_objects)) return false;
-    if (!delete_objects(&shared_objects)) return false;
+    if (!delete_objects(&static_scratch)) return false;
+    if (!delete_objects(&shared_scratch)) return false;
     // clear_directory() first, not just the delete_objects() above: sweeps up anything else
     // that ended up in these folders (a stray .DS_Store, an orphaned .o left over from a
     // since-renamed/removed source) so it doesn't silently block removing the folder itself -
@@ -725,6 +873,7 @@ static const char *example_output_folder(bool dynamic, Backend backend)
     switch (backend) {
     case BACKEND_SDL:  return dynamic ? EXAMPLES_SHARED_SDL_FOLDER  : EXAMPLES_STATIC_SDL_FOLDER;
     case BACKEND_SFML: return dynamic ? EXAMPLES_SHARED_SFML_FOLDER : EXAMPLES_STATIC_SFML_FOLDER;
+    case BACKEND_RAYLIB: return dynamic ? EXAMPLES_SHARED_RAYLIB_FOLDER : EXAMPLES_STATIC_RAYLIB_FOLDER;
     case BACKEND_GLFW: default:
         return dynamic ? EXAMPLES_SHARED_GLFW_FOLDER : EXAMPLES_STATIC_GLFW_FOLDER;
     }
@@ -1053,6 +1202,82 @@ static void append_sfml_libs(Nob_Cmd *cmd)
 #endif
 }
 
+// Compile flags for raylib's own sources, matching upstream src/Makefile's
+// PLATFORM_DESKTOP build: GRAPHICS_API_OPENGL_33 is what raylib's own
+// desktop default is, and is also the profile AntTweakBar's TW_OPENGL_CORE
+// renderer targets.
+static void append_raylib_build_flags(Nob_Cmd *cmd, const char *source)
+{
+    nob_cmd_append(cmd,
+        "-Wall", "-D_GNU_SOURCE", "-DPLATFORM_DESKTOP", "-DGRAPHICS_API_OPENGL_33",
+        "-Wno-missing-braces", "-Werror=pointer-arith", "-fno-strict-aliasing",
+        "-std=c99", "-O2",
+        "-I" RAYLIB_SRC_FOLDER,
+        "-I" RAYLIB_SRC_FOLDER "external/glfw/include");
+#if defined(_WIN32)
+    nob_cmd_append(cmd, "-DUNICODE");
+#elif defined(__APPLE__)
+    // rglfw.c is raylib's single-file build of GLFW, whose Cocoa backend is
+    // Objective-C - the same reason vendor/glfw's own unity build needs this.
+    if (strstr(source, "rglfw.c")) nob_cmd_append(cmd, "-x", "objective-c");
+#else
+    nob_cmd_append(cmd, "-fPIC", "-D_GLFW_X11", "-Werror=implicit-function-declaration");
+#endif
+}
+
+static bool build_raylib(const char *nob_exe)
+{
+    if (!nob_mkdir_if_not_exists(RAYLIB_OBJ_FOLDER)) return false;
+
+    Nob_File_Paths common_deps = {0};
+    if (!collect_tree_files(&common_deps, RAYLIB_SRC_FOLDER)) return false;
+    add_common_build_deps(&common_deps, nob_exe);
+
+    Nob_File_Paths objects = {0};
+    for (size_t i = 0; i < NOB_ARRAY_LEN(raylib_sources); ++i) {
+        const char *source = raylib_sources[i];
+        const char *object = object_path(RAYLIB_OBJ_FOLDER, source);
+        nob_da_append(&objects, object);
+        if (!build_needed(object, common_deps.items, common_deps.count)) {
+            nob_log(NOB_INFO, "%s is up to date", object);
+            continue;
+        }
+        Nob_Cmd cmd = {0};
+        nob_cmd_append(&cmd, "cc");
+        append_raylib_build_flags(&cmd, source);
+        nob_cmd_append(&cmd, "-c", source, "-o", object);
+        if (!nob_cmd_run(&cmd)) return false;
+    }
+
+    if (!build_needed(RAYLIB_LIB, objects.items, objects.count)) {
+        nob_log(NOB_INFO, "%s is up to date", RAYLIB_LIB);
+        return true;
+    }
+    Nob_Cmd cmd = {0};
+    nob_cmd_append(&cmd, "ar", "rcs", RAYLIB_LIB);
+    for (size_t i = 0; i < objects.count; ++i) nob_cmd_append(&cmd, objects.items[i]);
+    return nob_cmd_run(&cmd);
+}
+
+static void append_raylib_flags(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, "-I" RAYLIB_SRC_FOLDER);
+}
+
+static void append_raylib_libs(Nob_Cmd *cmd)
+{
+    nob_cmd_append(cmd, RAYLIB_LIB);
+#if defined(_WIN32)
+    nob_cmd_append(cmd, "-lopengl32", "-lgdi32", "-lwinmm");
+#elif defined(__APPLE__)
+    nob_cmd_append(cmd, "-framework", "OpenGL", "-framework", "Cocoa",
+                        "-framework", "IOKit", "-framework", "CoreVideo",
+                        "-framework", "CoreAudio", "-framework", "AudioToolbox");
+#else
+    nob_cmd_append(cmd, "-lGL", "-lm", "-lpthread", "-ldl", "-lrt", "-lX11");
+#endif
+}
+
 // dynamic links the example against the shared library (LIB_SHARED, plus
 // LIB_IMPORT on Windows) instead of LIB_STATIC; the caller is otherwise
 // identical either way. backend picks the compile/link flags and the
@@ -1067,13 +1292,19 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
 #if defined(_WIN32)
     if (dynamic) nob_da_append(&inputs, LIB_IMPORT);
 #endif
-    nob_da_append(&inputs, GLAD_OBJ);
+    // raylib's rcore.o already carries its own GLAD; linking the examples'
+    // GLAD_OBJ as well would define every glad_gl* symbol twice.
+    if (backend != BACKEND_RAYLIB) nob_da_append(&inputs, GLAD_OBJ);
     // Each example folder's shared glue header is a real dependency: editing it
     // must rebuild every example in that folder. Only list headers that exist -
     // build_needed() treats a missing input as a fatal error.
     switch (backend) {
     case BACKEND_SDL:  nob_da_append(&inputs, SDL_LIB);  break;
     case BACKEND_SFML: nob_da_append(&inputs, SFML_OBJ); break;
+    case BACKEND_RAYLIB:
+        nob_da_append(&inputs, RAYLIB_LIB);
+        nob_da_append(&inputs, EXAMPLES_RAYLIB_FOLDER "atb_raylib.h");
+        break;
     case BACKEND_GLFW: default:
         nob_da_append(&inputs, GLFW_OBJ);
         nob_da_append(&inputs, EXAMPLES_GLFW_FOLDER "atb_glfw.h");
@@ -1105,12 +1336,14 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
     // correct declaration for calling into libAntTweakBarC99.dll/.so/.dylib.
     if (!dynamic) nob_cmd_append(&cmd, "-DTW_STATIC");
     switch (backend) {
-    case BACKEND_SDL:  append_sdl_flags(&cmd);  break;
-    case BACKEND_SFML: append_sfml_flags(&cmd); break;
+    case BACKEND_SDL:    append_sdl_flags(&cmd);    break;
+    case BACKEND_SFML:   append_sfml_flags(&cmd);   break;
+    case BACKEND_RAYLIB: append_raylib_flags(&cmd); break;
     case BACKEND_GLFW: default: append_glfw_flags(&cmd); break;
     }
 
-    nob_cmd_append(&cmd, source, GLAD_OBJ);
+    nob_cmd_append(&cmd, source);
+    if (backend != BACKEND_RAYLIB) nob_cmd_append(&cmd, GLAD_OBJ);
 #if defined(_WIN32)
     nob_cmd_append(&cmd, dynamic ? LIB_IMPORT : LIB_STATIC);
 #else
@@ -1118,8 +1351,9 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
 #endif
     nob_cmd_append(&cmd, "-o", output);
     switch (backend) {
-    case BACKEND_SDL:  append_sdl_libs(&cmd);  break;
-    case BACKEND_SFML: append_sfml_libs(&cmd); break;
+    case BACKEND_SDL:    append_sdl_libs(&cmd);    break;
+    case BACKEND_SFML:   append_sfml_libs(&cmd);   break;
+    case BACKEND_RAYLIB: append_raylib_libs(&cmd); break;
     case BACKEND_GLFW: default: append_glfw_libs(&cmd); break;
     }
 
@@ -1151,11 +1385,16 @@ static bool build_examples(const char *nob_exe, bool dynamic, Backend backend)
     if (!check_examples_deps(dynamic)) return false;
     if (!nob_mkdir_if_not_exists(EXAMPLES_BUILD_FOLDER)) return false;
     if (!nob_mkdir_if_not_exists(example_output_folder(dynamic, backend))) return false;
-    if (!build_glad_for_examples(nob_exe)) return false;
+    if (backend != BACKEND_RAYLIB && !build_glad_for_examples(nob_exe)) return false;
 
     const char **backend_examples;
     size_t backend_examples_count;
     switch (backend) {
+    case BACKEND_RAYLIB:
+        if (!build_raylib(nob_exe)) return false;
+        backend_examples = raylib_examples;
+        backend_examples_count = NOB_ARRAY_LEN(raylib_examples);
+        break;
     case BACKEND_SDL:
         if (!build_sdl(nob_exe)) return false;
         backend_examples = sdl_examples;
@@ -1185,7 +1424,9 @@ static bool build_examples(const char *nob_exe, bool dynamic, Backend backend)
     // deliberately NOT deleted here - see build_sdl()'s own comment (SDL3's
     // ~140-file archive is too slow to rebuild every time; GLFW's and
     // SFML's single unity objects are cheap enough not to bother keeping).
-    if (!delete_if_exists(GLAD_OBJ)) return false;
+    // RAYLIB_LIB, like SDL_LIB, is kept: its seven objects (one of them the
+    // whole of GLFW) are too slow to rebuild on every invocation.
+    if (backend != BACKEND_RAYLIB && !delete_if_exists(GLAD_OBJ)) return false;
     if (backend == BACKEND_GLFW && !delete_if_exists(GLFW_OBJ)) return false;
     if (backend == BACKEND_SFML && !delete_if_exists(SFML_OBJ)) return false;
 
@@ -1213,8 +1454,7 @@ static bool build_tests(const char *nob_exe, bool record)
     for (size_t i = 0; i < NOB_ARRAY_LEN(common_sources); ++i) {
         const char *source = common_sources[i];
         // Use the real core with test implementations of its renderer factories.
-        if (is_glad_source(source) || strcmp(source, SRC_FOLDER "TwOpenGL.c") == 0
-            || strcmp(source, SRC_FOLDER "TwOpenGLCore.c") == 0) continue;
+        if (is_renderer_source(source)) continue;
         nob_da_append(&sources, source);
     }
     nob_da_append(&sources, "tests/record_graph.c");
@@ -1269,9 +1509,16 @@ static bool clean(void)
     ok = delete_if_exists(EXAMPLES_SHARED_SDL_FOLDER) && ok;
     ok = clear_directory(EXAMPLES_SHARED_SFML_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_SHARED_SFML_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_STATIC_RAYLIB_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_STATIC_RAYLIB_FOLDER) && ok;
+    ok = clear_directory(EXAMPLES_SHARED_RAYLIB_FOLDER) && ok;
+    ok = delete_if_exists(EXAMPLES_SHARED_RAYLIB_FOLDER) && ok;
     ok = clear_directory(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_OBJ_FOLDER) && ok;
     ok = delete_if_exists(SDL_LIB) && ok;
+    ok = clear_directory(RAYLIB_OBJ_FOLDER) && ok;
+    ok = delete_if_exists(RAYLIB_OBJ_FOLDER) && ok;
+    ok = delete_if_exists(RAYLIB_LIB) && ok;
     ok = delete_if_exists(SFML_OBJ) && ok;
     ok = clear_directory(EXAMPLES_BUILD_FOLDER) && ok;
     ok = delete_if_exists(EXAMPLES_BUILD_FOLDER) && ok;
@@ -1290,17 +1537,18 @@ static bool clean(void)
 
 static void usage(const char *program)
 {
-    printf("usage: %s [-examples-glfw | -examples-sdl | -examples-sfml]\n", program);
+    printf("usage: %s [-examples-glfw | -examples-sdl | -examples-sfml | -examples-raylib]\n", program);
     printf("             [-dynamic] [-test | -test-record] [-clean] [-help]\n");
     printf("  (no flags)     build the library only - the library links against none of\n");
-    printf("                 GLFW3/SDL3/SFML3, so this single build serves all three\n");
-    printf("                 -examples-* flags below\n");
+    printf("                 GLFW3/SDL3/SFML3/raylib, so this single build serves every\n");
+    printf("                 -examples-* flag below\n");
     printf("  -examples-glfw build the GLFW3 examples against build/lib/libAntTweakBarC99.a\n");
     printf("                 (requires the library to already be built with ./nob)\n");
     printf("  -examples-sdl  same as -examples-glfw, but for the SDL3 examples\n");
     printf("                 (SDL3 backend: macOS/Windows so far, see docs/plans/sdl3-backend.md)\n");
     printf("  -examples-sfml same as -examples-glfw, but for the SFML3 examples\n");
     printf("                 (SFML3 backend: macOS/Windows so far, see docs/plans/sfml3-backend.md)\n");
+    printf("  -examples-raylib same as -examples-glfw, but for the raylib examples\n");
     printf("  -dynamic       with any of the -examples-* flags above, link the examples\n");
     printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
     printf("                 instead of the static one (the default)\n");
@@ -1319,6 +1567,7 @@ int main(int argc, char **argv)
     bool examples_glfw_requested = false;
     bool examples_sdl_requested = false;
     bool examples_sfml_requested = false;
+    bool examples_raylib_requested = false;
     bool dynamic_requested = false;
     bool tests_requested = false;
     bool record_tests = false;
@@ -1332,6 +1581,8 @@ int main(int argc, char **argv)
             examples_sdl_requested = true;
         } else if (strcmp(argv[i], "-examples-sfml") == 0) {
             examples_sfml_requested = true;
+        } else if (strcmp(argv[i], "-examples-raylib") == 0) {
+            examples_raylib_requested = true;
         } else if (strcmp(argv[i], "-test") == 0) {
             tests_requested = true;
         } else if (strcmp(argv[i], "-test-record") == 0) {
@@ -1349,27 +1600,30 @@ int main(int argc, char **argv)
         }
     }
 
-    if ((examples_glfw_requested ? 1 : 0) + (examples_sdl_requested ? 1 : 0) + (examples_sfml_requested ? 1 : 0) > 1) {
-        nob_log(NOB_ERROR, "-examples-glfw, -examples-sdl and -examples-sfml are mutually exclusive");
+    if ((examples_glfw_requested ? 1 : 0) + (examples_sdl_requested ? 1 : 0)
+        + (examples_sfml_requested ? 1 : 0) + (examples_raylib_requested ? 1 : 0) > 1) {
+        nob_log(NOB_ERROR, "-examples-glfw, -examples-sdl, -examples-sfml and -examples-raylib are mutually exclusive");
         return 1;
     }
 
-    bool examples_requested = examples_glfw_requested || examples_sdl_requested || examples_sfml_requested;
+    bool examples_requested = examples_glfw_requested || examples_sdl_requested
+                              || examples_sfml_requested || examples_raylib_requested;
     if (tests_requested && (examples_requested || dynamic_requested || clean_requested)) {
         nob_log(NOB_ERROR, "-test/-test-record cannot be combined with example, dynamic or clean flags");
         return 1;
     }
     if (tests_requested) return build_tests(nob_exe, record_tests) ? 0 : 1;
     if (dynamic_requested && !examples_requested) {
-        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml");
+        nob_log(NOB_WARNING, "-dynamic has no effect without -examples-glfw/-examples-sdl/-examples-sfml/-examples-raylib");
     }
 
     if (clean_requested) return clean() ? 0 : 1;
 
-    if (examples_glfw_requested || examples_sdl_requested || examples_sfml_requested) {
+    if (examples_requested) {
         Backend backend = BACKEND_GLFW;
         if (examples_sdl_requested) backend = BACKEND_SDL;
         if (examples_sfml_requested) backend = BACKEND_SFML;
+        if (examples_raylib_requested) backend = BACKEND_RAYLIB;
         return build_examples(nob_exe, dynamic_requested, backend) ? 0 : 1;
     }
     return build_all(nob_exe) ? 0 : 1;
