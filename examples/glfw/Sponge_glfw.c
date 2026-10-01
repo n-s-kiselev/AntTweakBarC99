@@ -25,9 +25,9 @@
 //              32-bit boolean type, with its bound variables widened from
 //              bool to int to match TW_TYPE_BOOL32's expected storage size).
 //              Windowing/event handling was ported from GLFW2's
-//              implicit-context API to GLFW3, using the same integration
-//              pattern (cursor callback, key/mouse/scroll/resize callbacks,
-//              main loop) established in SimpleGL21.c.
+//              implicit-context API to GLFW3; the cursor, clipboard and
+//              key/mouse/scroll/resize glue now lives in atb_glfw.h, shared
+//              by every example in this folder.
 //
 //              AntTweakBar: http://anttweakbar.sourceforge.net/doc
 //              OpenGL:      http://www.opengl.org
@@ -38,105 +38,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <AntTweakBar.h>
+#include "atb_glfw.h"   // shared GLFW3 <-> AntTweakBar glue for these examples
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-// ----------------------------------------------------------------------
-// GLFW3 cursor binding (see docs/glfw3-cursor-integration.md and
-// SimpleGL21.c): AntTweakBar predates cursor-ownership models like
-// GLFW3's and sets the system cursor directly, which GLFW3 toolkits that
-// reassert their own cursor on every mouse move (e.g. macOS's Cocoa
-// backend) silently overwrite. Installing this as AntTweakBar's cursor
-// callback (TwSetCursorCallback, below) routes every cursor change through
-// glfwSetCursor() instead, so GLFW3 owns it.
-// ----------------------------------------------------------------------
-
-static GLFWcursor* g_StandardCursors[TW_CURSOR_CUSTOM] = { NULL };
-static GLFWcursor* g_LastCustomCursor = NULL;
-static int g_CursorHidden = 0;
-
-static int GLFWStandardCursorShape(ETwCursor _Cursor)
-{
-    switch (_Cursor) {
-    case TW_CURSOR_ARROW:        return GLFW_ARROW_CURSOR;
-    case TW_CURSOR_MOVE:         return GLFW_RESIZE_ALL_CURSOR;
-    case TW_CURSOR_RESIZE_WE:    return GLFW_RESIZE_EW_CURSOR;
-    case TW_CURSOR_RESIZE_NS:    return GLFW_RESIZE_NS_CURSOR;
-    case TW_CURSOR_RESIZE_NESW:  return GLFW_RESIZE_NESW_CURSOR;
-    case TW_CURSOR_RESIZE_NWSE:  return GLFW_RESIZE_NWSE_CURSOR;
-    case TW_CURSOR_HAND:         return GLFW_POINTING_HAND_CURSOR;
-    case TW_CURSOR_CROSS:        return GLFW_CROSSHAIR_CURSOR;
-    case TW_CURSOR_IBEAM:        return GLFW_IBEAM_CURSOR;
-    case TW_CURSOR_NO:           return GLFW_NOT_ALLOWED_CURSOR;
-    default:                     return GLFW_ARROW_CURSOR; // TW_CURSOR_HELP/UPARROW: no dedicated GLFW shape
-    }
-}
-
-static const char * TW_CALL ClipboardGetGLFW(void *_ClientData)
-{
-    (void)_ClientData;
-    return glfwGetClipboardString(NULL);
-}
-
-static void TW_CALL ClipboardSetGLFW(const char *_Text, void *_ClientData)
-{
-    (void)_ClientData;
-    glfwSetClipboardString(NULL, _Text);
-}
-
-static void TW_CALL GLFWCursorCB(ETwCursor _Cursor, const unsigned char *_RGBA32x32, int _HotX, int _HotY, void *_ClientData)
-{
-    GLFWwindow *window = (GLFWwindow *)_ClientData;
-    // TW_CURSOR_HIDDEN is an input mode, not a cursor shape: the roto slider
-    // hides the pointer while it is dragged. g_CursorHidden remembers that so
-    // the mode is restored once, on the next request for a visible cursor.
-    if (_Cursor == TW_CURSOR_HIDDEN) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        g_CursorHidden = 1;
-        return;
-    }
-    if (g_CursorHidden) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        g_CursorHidden = 0;
-    }
-    if (_Cursor == TW_CURSOR_CUSTOM && _RGBA32x32 != NULL) {
-        GLFWimage img;
-        img.width = 32; img.height = 32;
-        img.pixels = (unsigned char *)_RGBA32x32; // glfwCreateCursor only reads it
-        GLFWcursor *cur = glfwCreateCursor(&img, _HotX, _HotY);
-        if (cur != NULL) {
-            // Set the new cursor before destroying the old one: destroying
-            // a cursor still current for a window resets that window to
-            // the default arrow, which would undo this if done first.
-            glfwSetCursor(window, cur);
-            if (g_LastCustomCursor != NULL)
-                glfwDestroyCursor(g_LastCustomCursor);
-            g_LastCustomCursor = cur;
-        }
-        return;
-    }
-    if (g_StandardCursors[_Cursor] == NULL)
-        g_StandardCursors[_Cursor] = glfwCreateStandardCursor(GLFWStandardCursorShape(_Cursor));
-    if (g_StandardCursors[_Cursor] != NULL)
-        glfwSetCursor(window, g_StandardCursors[_Cursor]);
-}
-
-static void DestroyGLFWCursorCache(void)
-{
-    for (int i = 0; i < TW_CURSOR_CUSTOM; ++i) {
-        if (g_StandardCursors[i] != NULL) {
-            glfwDestroyCursor(g_StandardCursors[i]);
-            g_StandardCursors[i] = NULL;
-        }
-    }
-    if (g_LastCustomCursor != NULL) {
-        glfwDestroyCursor(g_LastCustomCursor);
-        g_LastCustomCursor = NULL;
-    }
-}
 
 // ----------------------------------------------------------------------
 // Geometry data structures and portable math (unchanged from the original
@@ -428,12 +335,6 @@ static void FillSpongeBuffers(int level, int levelMax, VertexArray *vertices, In
 
 static int g_Width = 640, g_Height = 480;
 
-// GLFW always reports cursor position in window points, but TwWindowSize()
-// is now fed framebuffer pixels (see windowSizeCallback), so mouse events
-// must be scaled by this window/framebuffer ratio before reaching
-// AntTweakBar, or its hit-testing/drawing (now in pixel space) would
-// misread a point-space cursor position - see docs/plans/examples-hidpi-scaling.md.
-static double g_MouseScaleX = 1.0, g_MouseScaleY = 1.0;
 static VertexArray g_Vertices = {0};
 static IndexArray g_Indices = {0};
 
@@ -602,96 +503,23 @@ static void Anim(void)
 // GLFW3 callbacks (same shape as SimpleGL21.c's GLFW3 integration pattern)
 // ----------------------------------------------------------------------
 
-static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+// Escape quits this demo. The hook runs only for keys AntTweakBar did not
+// consume, so an open popup or an active edit field still gets Escape first.
+static void keyHook(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-  (void)scancode;
-  if (action == GLFW_PRESS || action == GLFW_REPEAT)
-  {
-    if (key == GLFW_KEY_ESCAPE)
-    {
-      glfwSetWindowShouldClose(window, GLFW_TRUE);
-      return;
-    }
-
-    int twMod = 0;
-    if (mods & GLFW_MOD_SHIFT) twMod |= TW_KMOD_SHIFT;
-    if (mods & GLFW_MOD_CONTROL) twMod |= TW_KMOD_CTRL;
-    if (mods & GLFW_MOD_ALT) twMod |= TW_KMOD_ALT;
-
-    int twKey = 0;
-    switch (key)
-    {
-    case GLFW_KEY_BACKSPACE: twKey = TW_KEY_BACKSPACE; break;
-    case GLFW_KEY_TAB: twKey = TW_KEY_TAB; break;
-    case GLFW_KEY_ENTER: twKey = TW_KEY_RETURN; break;
-    case GLFW_KEY_PAUSE: twKey = TW_KEY_PAUSE; break;
-    case GLFW_KEY_SPACE: twKey = TW_KEY_SPACE; break;
-    case GLFW_KEY_DELETE: twKey = TW_KEY_DELETE; break;
-    case GLFW_KEY_UP: twKey = TW_KEY_UP; break;
-    case GLFW_KEY_DOWN: twKey = TW_KEY_DOWN; break;
-    case GLFW_KEY_RIGHT: twKey = TW_KEY_RIGHT; break;
-    case GLFW_KEY_LEFT: twKey = TW_KEY_LEFT; break;
-    case GLFW_KEY_INSERT: twKey = TW_KEY_INSERT; break;
-    case GLFW_KEY_HOME: twKey = TW_KEY_HOME; break;
-    case GLFW_KEY_END: twKey = TW_KEY_END; break;
-    case GLFW_KEY_PAGE_UP: twKey = TW_KEY_PAGE_UP; break;
-    case GLFW_KEY_PAGE_DOWN: twKey = TW_KEY_PAGE_DOWN; break;
-    case GLFW_KEY_F1: twKey = TW_KEY_F1; break;
-    case GLFW_KEY_F2: twKey = TW_KEY_F2; break;
-    case GLFW_KEY_F3: twKey = TW_KEY_F3; break;
-    case GLFW_KEY_F4: twKey = TW_KEY_F4; break;
-    case GLFW_KEY_F5: twKey = TW_KEY_F5; break;
-    case GLFW_KEY_F6: twKey = TW_KEY_F6; break;
-    case GLFW_KEY_F7: twKey = TW_KEY_F7; break;
-    case GLFW_KEY_F8: twKey = TW_KEY_F8; break;
-    case GLFW_KEY_F9: twKey = TW_KEY_F9; break;
-    case GLFW_KEY_F10: twKey = TW_KEY_F10; break;
-    case GLFW_KEY_F11: twKey = TW_KEY_F11; break;
-    case GLFW_KEY_F12: twKey = TW_KEY_F12; break;
-    case GLFW_KEY_F13: twKey = TW_KEY_F13; break;
-    case GLFW_KEY_F14: twKey = TW_KEY_F14; break;
-    case GLFW_KEY_F15: twKey = TW_KEY_F15; break;
-    }
-    if (twKey == 0 && (mods & GLFW_MOD_CONTROL) && key < 128)
-      twKey = key;
-    if (twKey != 0)
-      if (TwKeyPressed(twKey, twMod)) return;
-  }
+    (void)scancode; (void)mods;
+    if ((action == GLFW_PRESS || action == GLFW_REPEAT) && key == GLFW_KEY_ESCAPE)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-static void charCallback(GLFWwindow* window, unsigned int key)
+// Runs on every framebuffer resize, before TwWindowSize(). Size is in pixels.
+static void resizeHook(GLFWwindow *window, int width, int height)
 {
   (void)window;
-  if (TwKeyPressed(key, 0)) return;
-}
-
-static void mousebuttonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-  (void)window; (void)mods;
-  TwEventMouseButtonGLFW(button, action);
-}
-
-static void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
-{
-  (void)window;
-  TwEventMousePosGLFW((int)(xpos * g_MouseScaleX), (int)(ypos * g_MouseScaleY));
-}
-
-// Registered as the FRAMEBUFFER size callback (not the window size
-// callback): GLFW reports this in actual pixels, matching
-// glViewport/TwWindowSize.
-static void windowSizeCallback(GLFWwindow* window, int width, int height)
-{
   if (height == 0) height = 1;
   g_Width = width;
   g_Height = height;
   glViewport(0, 0, width, height);
-  TwWindowSize(width, height);
-
-  int winWidth = width, winHeight = height;
-  glfwGetWindowSize(window, &winWidth, &winHeight);
-  g_MouseScaleX = (winWidth > 0) ? (double)width / winWidth : 1.0;
-  g_MouseScaleY = (winHeight > 0) ? (double)height / winHeight : 1.0;
 }
 
 static void error_callback(int error, const char* description)
@@ -746,39 +574,31 @@ int main(void)
     g_SpongeRotation = RotationFromAxisAngle(axis, FLOAT_PI/4);
     BuildSponge(g_SpongeLevel, g_SpongeAO);
 
-    // AntTweakBar draws every widget at a fixed pixel size with no DPI
-    // awareness, so on a HiDPI/Retina display it looks too large/blurry
-    // relative to a standard display (see docs/plans/examples-hidpi-scaling.md).
-    // Scaling "fontscaling" (set via TwDefine, before TwInit) by the
-    // window's content scale keeps it a comparable physical size; on a
-    // standard display the content scale is 1.0, so this is a no-op there.
-    float contentScaleX = 1.0f, contentScaleY = 1.0f;
-    glfwGetWindowContentScale(window, &contentScaleX, &contentScaleY);
-    {
-        char fontScalingDef[64];
-        snprintf(fontScalingDef, sizeof(fontScalingDef), "GLOBAL fontscaling=%g", (double)contentScaleX);
-        TwDefine(fontScalingDef);
-    }
+    // AntTweakBar has no DPI awareness, so scale its font by the window content
+    // scale to keep a comparable physical size. Must precede TwInit(), which
+    // bakes the scale into the font atlases.
+    atb_glfw_SetFontScaling(window);
 
     if (!TwInit(TW_OPENGL, NULL)) {
         fprintf(stderr, "AntTweakBar initialization failed: %s\n", TwGetLastError());
         return 1;
     }
-    // Give GLFW3 authoritative cursor ownership (see GLFWCursorCB above).
-    TwSetCursorCallback(GLFWCursorCB, window);
-    TwSetClipboardCallback(ClipboardGetGLFW, ClipboardSetGLFW, NULL);
 
+    // Registers the GLFW callbacks, gives GLFW3 authoritative cursor
+    // ownership, routes the clipboard through it, and applies the current
+    // framebuffer size - see atb_glfw.h.
     {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        windowSizeCallback(window, width, height);
+        atb_glfw_Hooks hooks = { 0 };
+        hooks.key = keyHook;
+        hooks.resize = resizeHook;
+        atb_glfw_Attach(window, &hooks);
     }
 
     TwBar *bar = TwNewBar("TweakBar");
     {
         // Scaled by content scale so the panel keeps up with the
         // now-larger scaled contents.
-        int barSize[2] = { (int)(224 * contentScaleX + 0.5f), (int)(320 * contentScaleY + 0.5f) };
+        int barSize[2] = { (int)(224 * atb_glfw_ContentScaleX() + 0.5f), (int)(320 * atb_glfw_ContentScaleY() + 0.5f) };
         TwSetParam(bar, NULL, "size", TW_PARAM_INT32, 2, barSize);
     }
     TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW3 and OpenGL, drawing a recursively-generated Menger sponge.' ");
@@ -804,11 +624,6 @@ int main(void)
                " label='Full-width text' full_width=true lines=2 "
                "help='A full-width, wrapped multiline text field.' ");
 
-    glfwSetKeyCallback(window, keyCallback);
-    glfwSetCharCallback(window, charCallback);
-    glfwSetMouseButtonCallback(window, mousebuttonCallback);
-    glfwSetCursorPosCallback(window, mousePosCallback);
-    glfwSetFramebufferSizeCallback(window, windowSizeCallback);
 
     while (!glfwWindowShouldClose(window)) {
         Anim();
@@ -818,7 +633,7 @@ int main(void)
     }
 
     TwTerminate();
-    DestroyGLFWCursorCache();
+    atb_glfw_Detach(window);   // releases the cursors, after TwTerminate()
     glfwTerminate();
 
     free(g_Vertices.items);

@@ -90,6 +90,18 @@ shared library instead of the static one, e.g. `./nob -examples-sdl -dynamic`.
 `./nob -examples-glfw`/`-examples-sdl`/`-examples-sfml` require the library
 to already be built by a plain `./nob`.
 
+Each example folder has one shared glue header holding the backend's
+AntTweakBar integration - the key/modifier translation, mouse and wheel
+forwarding, the resize/HiDPI plumbing, the clipboard pair and the cursor
+cache - so it is written and corrected once instead of thirteen times. An
+example creates its own window and runs its own main loop, then calls
+`atb_<backend>_SetFontScaling()` before `TwInit()`, `atb_<backend>_Attach()`
+after it, and `atb_<backend>_Detach()` after `TwTerminate()`; optional hooks
+receive the events AntTweakBar did not consume. The header is example
+scaffolding, not part of the library's API, and yours to copy.
+[`examples/glfw/atb_glfw.h`](examples/glfw/atb_glfw.h) exists today; the SDL3
+and SFML3 equivalents are still to come.
+
 To rebuild from scratch you have to clean the folder from artifacts:
 
 ```
@@ -168,12 +180,12 @@ You do not need to install GLFW3, SDL3, or SFML3 on your system - all three are 
 source automatically, alongside [GLAD](https://glad.dav1d.de/) ([vendor/glad](vendor/glad)).
 
 GLFW3 is supported on Linux, macOS, and Windows (MinGW). SDL3 and SFML3 are currently validated on
-macOS only - Linux and Windows support for those two backends is planned but not yet built or
+macOS and Windows (MinGW) - Linux support for those two backends is planned but not yet built or
 tested. Legacy GLUT/X11-event-loop/SDL2/SFML2 event-translation sources from the original ATB have
 been removed rather than ported forward; DirectX9/10/11 remain out of scope for this fork.
 
-**Supported platforms:** Linux, macOS, and Windows (MinGW) for the GLFW3 backend; macOS only, so
-far, for the SDL3 and SFML3 backends.
+**Supported platforms:** Linux, macOS, and Windows (MinGW) for the GLFW3 backend; macOS and Windows
+(MinGW), so far, for the SDL3 and SFML3 backends (Linux not yet built or tested for those two).
 
 
 **License**

@@ -122,7 +122,14 @@ static const char *backend_name(Backend backend)
 // config header at all: include/SFML/Config.hpp detects the platform from
 // compiler-predefined macros on its own.
 #define SFML_INCLUDE  "vendor/sfml/include/"
-#define SFML_SRC      "vendor/sfml/sfml_unity.mm"
+// MinGW GCC has no Objective-C++ front end at all (confirmed directly - see
+// docs/plans/sfml3-backend.md Step 4/5), so the Windows build uses a
+// separate, plain-C++ unity file instead of sfml_unity.mm.
+#if defined(_WIN32)
+#define SFML_SRC "vendor/sfml/sfml_unity_windows.cpp"
+#else
+#define SFML_SRC "vendor/sfml/sfml_unity.mm"
+#endif
 #define SFML_OBJ      EXAMPLES_BUILD_FOLDER "sfml.o"
 
 #if defined(_WIN32)
@@ -201,16 +208,22 @@ static const char *sfml_examples[] = {
 };
 
 // The exact upstream vendor/sdl/src/ files needed for a working
-// Cocoa+OpenGL+events SDL3 build, validated by compiling and running a
-// real SDL_Init/CreateWindow/GL_CreateContext/PollEvent/GL_SwapWindow test
-// program (see docs/plans/sdl3-backend.md Step 1). Paths are relative to
-// SDL_SRC_ROOT. Audio/camera/joystick/haptic/sensor/GPU/dialog/process are
-// deliberately absent (disabled via vendor/sdl/config/'s SDL_*_DISABLED
-// defines) - render/opengl+render/software and tray/dummy are present even
-// though unused because SDL_internal.h/SDL_video.c hard-depend on them
-// whenever render/tray aren't fully disabled (see
-// vendor/sdl/config/SDL_build_config_macos.h's own header comment).
-static const char *sdl_sources[] = {
+// OpenGL+events SDL3 build, validated by compiling and running a real
+// SDL_Init/CreateWindow/GL_CreateContext/PollEvent/GL_SwapWindow test
+// program (see docs/plans/sdl3-backend.md Step 1 for macOS, Step 4 for
+// Windows). Paths are relative to SDL_SRC_ROOT. Audio/camera/joystick/
+// haptic/sensor/GPU/dialog/process are deliberately absent (disabled via
+// vendor/sdl/config/'s SDL_*_DISABLED defines) - render/opengl+
+// render/software and tray/dummy are present even though unused because
+// SDL_internal.h/SDL_video.c hard-depend on them whenever render/tray
+// aren't fully disabled (see vendor/sdl/config/SDL_build_config_macos.h's
+// own header comment).
+//
+// Split into a platform-neutral list plus one list per platform (mirroring
+// sfml_sources_common/sfml_sources_macos below): the previous single list
+// mixed in macOS-only backend files (Cocoa video, pthread threading, dlopen
+// loadso, BSD locale/url) that have no meaning on Windows.
+static const char *sdl_sources_common[] = {
     "atomic/SDL_atomic.c", "atomic/SDL_spinlock.c",
     "cpuinfo/SDL_cpuinfo.c",
     "dynapi/SDL_dynapi.c",
@@ -220,17 +233,16 @@ static const char *sdl_sources[] = {
     "events/SDL_keysym_to_keycode.c", "events/SDL_keysym_to_scancode.c", "events/SDL_mouse.c",
     "events/SDL_pen.c", "events/SDL_quit.c", "events/SDL_scancode_tables.c",
     "events/SDL_touch.c", "events/SDL_windowevents.c",
-    "filesystem/cocoa/SDL_sysfilesystem.m", "filesystem/posix/SDL_sysfsops.c", "filesystem/SDL_filesystem.c",
+    "filesystem/SDL_filesystem.c",
     "io/generic/SDL_asyncio_generic.c", "io/SDL_asyncio.c", "io/SDL_iostream.c",
     "libm/e_atan2.c", "libm/e_exp.c", "libm/e_fmod.c", "libm/e_log.c", "libm/e_log10.c",
     "libm/e_pow.c", "libm/e_rem_pio2.c", "libm/e_sqrt.c", "libm/k_cos.c", "libm/k_rem_pio2.c",
     "libm/k_sin.c", "libm/k_tan.c", "libm/s_atan.c", "libm/s_copysign.c", "libm/s_cos.c",
     "libm/s_fabs.c", "libm/s_floor.c", "libm/s_isinf.c", "libm/s_isinff.c", "libm/s_isnan.c",
     "libm/s_isnanf.c", "libm/s_modf.c", "libm/s_scalbn.c", "libm/s_sin.c", "libm/s_tan.c",
-    "loadso/dlopen/SDL_sysloadso.c",
-    "locale/macos/SDL_syslocale.m", "locale/SDL_locale.c",
+    "locale/SDL_locale.c",
     "main/SDL_main_callbacks.c",
-    "misc/macos/SDL_sysurl.m", "misc/SDL_url.c",
+    "misc/SDL_url.c",
     "render/opengl/SDL_render_gl.c", "render/opengl/SDL_shaders_gl.c",
     "render/SDL_render_unsupported.c", "render/SDL_render.c", "render/SDL_yuv_sw.c",
     "render/software/SDL_blendfillrect.c", "render/software/SDL_blendline.c",
@@ -242,16 +254,10 @@ static const char *sdl_sources[] = {
     "stdlib/SDL_malloc.c", "stdlib/SDL_memcpy.c", "stdlib/SDL_memmove.c", "stdlib/SDL_memset.c",
     "stdlib/SDL_murmur3.c", "stdlib/SDL_qsort.c", "stdlib/SDL_random.c", "stdlib/SDL_stdlib.c",
     "stdlib/SDL_string.c", "stdlib/SDL_strtokr.c",
-    "thread/pthread/SDL_syscond.c", "thread/pthread/SDL_sysmutex.c", "thread/pthread/SDL_sysrwlock.c",
-    "thread/pthread/SDL_syssem.c", "thread/pthread/SDL_systhread.c", "thread/pthread/SDL_systls.c",
     "thread/SDL_thread.c",
-    "time/SDL_time.c", "time/unix/SDL_systime.c",
-    "timer/SDL_timer.c", "timer/unix/SDL_systimer.c",
+    "time/SDL_time.c",
+    "timer/SDL_timer.c",
     "tray/dummy/SDL_tray.c", "tray/SDL_tray_utils.c",
-    "video/cocoa/SDL_cocoaclipboard.m", "video/cocoa/SDL_cocoaevents.m", "video/cocoa/SDL_cocoakeyboard.m",
-    "video/cocoa/SDL_cocoamessagebox.m", "video/cocoa/SDL_cocoamodes.m", "video/cocoa/SDL_cocoamouse.m",
-    "video/cocoa/SDL_cocoaopengl.m", "video/cocoa/SDL_cocoapen.m", "video/cocoa/SDL_cocoashape.m",
-    "video/cocoa/SDL_cocoavideo.m", "video/cocoa/SDL_cocoawindow.m",
     "video/SDL_blit_0.c", "video/SDL_blit_1.c", "video/SDL_blit_A.c", "video/SDL_blit_auto.c",
     "video/SDL_blit_copy.c", "video/SDL_blit_N.c", "video/SDL_blit_slow.c", "video/SDL_blit.c",
     "video/SDL_bmp.c", "video/SDL_clipboard.c", "video/SDL_egl.c", "video/SDL_fillrect.c",
@@ -259,6 +265,75 @@ static const char *sdl_sources[] = {
     "video/SDL_stb.c", "video/SDL_stretch.c", "video/SDL_surface.c", "video/SDL_video.c",
     "video/SDL_vulkan_utils.c", "video/SDL_yuv.c",
     "video/yuv2rgb/yuv_rgb_std.c",
+};
+
+static const char *sdl_sources_macos[] = {
+    "filesystem/cocoa/SDL_sysfilesystem.m", "filesystem/posix/SDL_sysfsops.c",
+    "loadso/dlopen/SDL_sysloadso.c",
+    "locale/macos/SDL_syslocale.m",
+    "misc/macos/SDL_sysurl.m",
+    "thread/pthread/SDL_syscond.c", "thread/pthread/SDL_sysmutex.c", "thread/pthread/SDL_sysrwlock.c",
+    "thread/pthread/SDL_syssem.c", "thread/pthread/SDL_systhread.c", "thread/pthread/SDL_systls.c",
+    "time/unix/SDL_systime.c",
+    "timer/unix/SDL_systimer.c",
+    "video/cocoa/SDL_cocoaclipboard.m", "video/cocoa/SDL_cocoaevents.m", "video/cocoa/SDL_cocoakeyboard.m",
+    "video/cocoa/SDL_cocoamessagebox.m", "video/cocoa/SDL_cocoamodes.m", "video/cocoa/SDL_cocoamouse.m",
+    "video/cocoa/SDL_cocoaopengl.m", "video/cocoa/SDL_cocoapen.m", "video/cocoa/SDL_cocoashape.m",
+    "video/cocoa/SDL_cocoavideo.m", "video/cocoa/SDL_cocoawindow.m",
+};
+
+// Windows equivalents of sdl_sources_macos[] above - see
+// docs/plans/sdl3-backend.md Step 4 for the compile spike that validated
+// this exact file list on MinGW. core/windows/SDL_windows.c provides
+// WIN_SetError()/WIN_StringToUTF8() and similar helpers video/windows/*.c
+// calls into; SDL_windowsrawinput.c/SDL_windowsgameinput.cpp/SDL_hid.c/
+// SDL_xinput.c/SDL_windowsvulkan.c are joystick/Vulkan-only and deliberately
+// absent, matching the "only what's needed" policy already applied to
+// SDL_JOYSTICK_DISABLED/no-Vulkan on every other platform.
+static const char *sdl_sources_win32[] = {
+    "core/windows/SDL_hid.c", "core/windows/SDL_windows.c",
+    "filesystem/windows/SDL_sysfilesystem.c", "filesystem/windows/SDL_sysfsops.c",
+    "loadso/windows/SDL_sysloadso.c",
+    "locale/windows/SDL_syslocale.c",
+    "misc/windows/SDL_sysurl.c",
+    // SDL_THREAD_GENERIC_COND_SUFFIX/RWLOCK_SUFFIX (see config header): the
+    // real Windows CV/SRW-lock-based implementations below both fall back to
+    // these generic ones for mutex kinds they don't natively support -
+    // confirmed by reading SDL_syscond_cv.c/SDL_sysrwlock_srw.c directly,
+    // both #include "../generic/SDL_sys{cond,rwlock}_c.h" and reference
+    // SDL_CreateCondition_generic()/SDL_CreateRWLock_generic() etc.
+    "thread/generic/SDL_syscond.c", "thread/generic/SDL_sysrwlock.c",
+    "thread/windows/SDL_syscond_cv.c", "thread/windows/SDL_sysmutex.c",
+    "thread/windows/SDL_sysrwlock_srw.c",
+    "thread/windows/SDL_syssem.c", "thread/windows/SDL_systhread.c", "thread/windows/SDL_systls.c",
+    "time/windows/SDL_systime.c",
+    "timer/windows/SDL_systimer.c",
+    "video/windows/SDL_windowsclipboard.c", "video/windows/SDL_windowsevents.c",
+    "video/windows/SDL_windowsframebuffer.c", "video/windows/SDL_windowskeyboard.c",
+    "video/windows/SDL_windowsmessagebox.c", "video/windows/SDL_windowsmodes.c",
+    "video/windows/SDL_windowsmouse.c", "video/windows/SDL_windowsopengl.c",
+    // SDL_windowsrawinput.c: real, non-joystick-gated raw mouse/keyboard
+    // input plumbing SDL_windowsvideo.c/mouse.c call into directly (confirmed
+    // by reading the file - its "#if !XBOX" branch, not a joystick-only
+    // path, is what's linked here since this isn't an Xbox target).
+    "video/windows/SDL_windowsrawinput.c",
+    // SDL_windowsgameinput.cpp is C++ but, with HAVE_GAMEINPUT_H left
+    // undefined by this project's trimmed config (no vendored GameInput SDK
+    // header), compiles only its "#else" no-op stub branch (confirmed by
+    // reading the file) - needed anyway because SDL_windowsvideo.c calls
+    // WIN_InitGameInput()/WIN_QuitGameInput()/WIN_UpdateGameInput()
+    // unconditionally.
+    "video/windows/SDL_windowsgameinput.cpp",
+    "video/windows/SDL_windowsshape.c", "video/windows/SDL_windowsvideo.c",
+    "video/windows/SDL_windowswindow.c",
+    // yuv_rgb_sse.c: SDL_yuv.c's software YUV->RGB conversion path always
+    // compiles in the SSE2 variant on x86/x86_64 (see its own "sse2" target
+    // attribute, unconditional - not gated on SDL_VIDEO_RENDER_SW or any
+    // config macro), so this is needed on any x86_64 platform, not something
+    // Windows-specific - the macOS list above didn't need it only because
+    // that spike ran on Apple Silicon (arm64). Revisit if/when Linux/x86_64
+    // validation (Step 4) happens.
+    "video/yuv2rgb/yuv_rgb_sse.c",
 };
 
 // Sources common to every platform, matching src/Makefile's SRC_COMMON.
@@ -811,7 +886,11 @@ static bool build_sdl_object(const char *source, Nob_File_Paths *common_deps)
     }
 
     Nob_Cmd cmd = {0};
-    nob_cmd_append(&cmd, "cc");
+    // SDL_windowsgameinput.cpp (Windows only) is the sole .cpp file in
+    // either platform's source list - its HAVE_GAMEINPUT_H-undefined stub
+    // branch is plain C-shaped code but still needs the C++ driver to parse
+    // the file's extern "C" blocks in its (unused) real-implementation half.
+    nob_cmd_append(&cmd, is_cpp_source(source) ? "c++" : "cc");
     if (is_objc_source(source)) nob_cmd_append(&cmd, "-fobjc-arc");
     // -Wno-deprecated-declarations: some vendored libm/*.c files trip
     // deprecated-declaration warnings against this platform's own SDK
@@ -834,9 +913,9 @@ static bool build_sdl_object(const char *source, Nob_File_Paths *common_deps)
 // -clean` still removes them.
 static bool build_sdl(const char *nob_exe)
 {
-#if !defined(__APPLE__)
-    nob_log(NOB_ERROR, "-examples-sdl is only validated on macOS so far.");
-    nob_log(NOB_ERROR, "See docs/plans/sdl3-backend.md Step 4 for Linux/Windows status.");
+#if !defined(__APPLE__) && !defined(_WIN32)
+    nob_log(NOB_ERROR, "-examples-sdl is only validated on macOS/Windows so far.");
+    nob_log(NOB_ERROR, "See docs/plans/sdl3-backend.md Step 4 for Linux status.");
     return false;
 #endif
 
@@ -847,11 +926,24 @@ static bool build_sdl(const char *nob_exe)
     add_common_build_deps(&common_deps, nob_exe);
 
     Nob_File_Paths objects = {0};
-    for (size_t i = 0; i < NOB_ARRAY_LEN(sdl_sources); ++i) {
-        const char *source = nob_temp_sprintf("%s%s", SDL_SRC_ROOT, sdl_sources[i]);
+    for (size_t i = 0; i < NOB_ARRAY_LEN(sdl_sources_common); ++i) {
+        const char *source = nob_temp_sprintf("%s%s", SDL_SRC_ROOT, sdl_sources_common[i]);
         if (!build_sdl_object(source, &common_deps)) return false;
         nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, source));
     }
+#if defined(_WIN32)
+    for (size_t i = 0; i < NOB_ARRAY_LEN(sdl_sources_win32); ++i) {
+        const char *source = nob_temp_sprintf("%s%s", SDL_SRC_ROOT, sdl_sources_win32[i]);
+        if (!build_sdl_object(source, &common_deps)) return false;
+        nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, source));
+    }
+#else
+    for (size_t i = 0; i < NOB_ARRAY_LEN(sdl_sources_macos); ++i) {
+        const char *source = nob_temp_sprintf("%s%s", SDL_SRC_ROOT, sdl_sources_macos[i]);
+        if (!build_sdl_object(source, &common_deps)) return false;
+        nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, source));
+    }
+#endif
     if (!build_sdl_object(SDL_STUB_SRC, &common_deps)) return false;
     nob_da_append(&objects, object_path(SDL_OBJ_FOLDER, SDL_STUB_SRC));
 
@@ -879,7 +971,17 @@ static void append_sdl_libs(Nob_Cmd *cmd)
 {
     nob_cmd_append(cmd, SDL_LIB);
 #if defined(_WIN32)
-    // Not yet validated - see docs/plans/sdl3-backend.md Step 4.
+    // Validated by the Step 4 compile spike (docs/plans/sdl3-backend.md):
+    // user32/gdi32 for window/device-context management, opengl32 for WGL,
+    // imm32 for SDL_windowskeyboard.c's IME handling, ole32/oleaut32/uuid
+    // for SDL_windowsvideo.c/SDL_windowsevents.c's use of COM (drag-and-drop
+    // registration, IDropTarget), winmm for the multimedia timer used by
+    // SDL_windowsevents.c's message-loop timing, setupapi for the display
+    // device enumeration SDL_windowsmodes.c calls into, version for the
+    // GetFileVersionInfo/VerQueryValue calls SDL_windowskeyboard.c's IME
+    // version-detection code makes.
+    nob_cmd_append(cmd, "-luser32", "-lgdi32", "-lopengl32", "-limm32",
+                        "-lole32", "-loleaut32", "-luuid", "-lwinmm", "-lsetupapi", "-lversion");
 #elif defined(__APPLE__)
     nob_cmd_append(cmd, "-framework", "Cocoa", "-framework", "IOKit", "-framework", "CoreVideo",
                         "-framework", "Carbon", "-framework", "OpenGL", "-framework", "CoreFoundation",
@@ -898,9 +1000,9 @@ static void append_sdl_libs(Nob_Cmd *cmd)
 // and the opposite of vendor/sdl/'s Cocoa files.
 static bool build_sfml(const char *nob_exe)
 {
-#if !defined(__APPLE__)
-    nob_log(NOB_ERROR, "-examples-sfml is only validated on macOS so far.");
-    nob_log(NOB_ERROR, "See docs/plans/sfml3-backend.md for Linux/Windows status.");
+#if !defined(__APPLE__) && !defined(_WIN32)
+    nob_log(NOB_ERROR, "-examples-sfml is only validated on macOS/Windows so far.");
+    nob_log(NOB_ERROR, "See docs/plans/sfml3-backend.md for Linux status.");
     return false;
 #endif
 
@@ -928,14 +1030,21 @@ static bool build_sfml(const char *nob_exe)
 
 static void append_sfml_flags(Nob_Cmd *cmd)
 {
-    nob_cmd_append(cmd, "-std=c++17", "-I" SFML_INCLUDE);
+    // -DSFML_STATIC: a no-op on macOS (see build_sfml()'s own comment - its
+    // import/export macros already collapse to the same visibility
+    // attribute there) but load-bearing on Windows: without it, SFML's
+    // Export.hpp marks every sf::* symbol __declspec(dllimport), which
+    // doesn't match the plain (non-DLL) symbols sfml.o actually exports,
+    // producing "undefined reference to `__imp_...'" link errors - found by
+    // the Step 4/5 Windows compile spike (docs/plans/sfml3-backend.md).
+    nob_cmd_append(cmd, "-std=c++17", "-DSFML_STATIC", "-I" SFML_INCLUDE);
 }
 
 static void append_sfml_libs(Nob_Cmd *cmd)
 {
     nob_cmd_append(cmd, SFML_OBJ);
 #if defined(_WIN32)
-    // Not yet validated - see docs/plans/sfml3-backend.md.
+    nob_cmd_append(cmd, "-lopengl32", "-lgdi32", "-luser32", "-lwinmm", "-lole32");
 #elif defined(__APPLE__)
     nob_cmd_append(cmd, "-framework", "Foundation", "-framework", "AppKit",
                         "-framework", "IOKit", "-framework", "Carbon", "-framework", "OpenGL");
@@ -959,10 +1068,16 @@ static bool build_example(const char *source, const char *nob_exe, bool dynamic,
     if (dynamic) nob_da_append(&inputs, LIB_IMPORT);
 #endif
     nob_da_append(&inputs, GLAD_OBJ);
+    // Each example folder's shared glue header is a real dependency: editing it
+    // must rebuild every example in that folder. Only list headers that exist -
+    // build_needed() treats a missing input as a fatal error.
     switch (backend) {
     case BACKEND_SDL:  nob_da_append(&inputs, SDL_LIB);  break;
     case BACKEND_SFML: nob_da_append(&inputs, SFML_OBJ); break;
-    case BACKEND_GLFW: default: nob_da_append(&inputs, GLFW_OBJ); break;
+    case BACKEND_GLFW: default:
+        nob_da_append(&inputs, GLFW_OBJ);
+        nob_da_append(&inputs, EXAMPLES_GLFW_FOLDER "atb_glfw.h");
+        break;
     }
     add_common_build_deps(&inputs, nob_exe);
 
@@ -1183,9 +1298,9 @@ static void usage(const char *program)
     printf("  -examples-glfw build the GLFW3 examples against build/lib/libAntTweakBarC99.a\n");
     printf("                 (requires the library to already be built with ./nob)\n");
     printf("  -examples-sdl  same as -examples-glfw, but for the SDL3 examples\n");
-    printf("                 (SDL3 backend: macOS only so far, see docs/plans/sdl3-backend.md)\n");
+    printf("                 (SDL3 backend: macOS/Windows so far, see docs/plans/sdl3-backend.md)\n");
     printf("  -examples-sfml same as -examples-glfw, but for the SFML3 examples\n");
-    printf("                 (SFML3 backend: macOS only so far, see docs/plans/sfml3-backend.md)\n");
+    printf("                 (SFML3 backend: macOS/Windows so far, see docs/plans/sfml3-backend.md)\n");
     printf("  -dynamic       with any of the -examples-* flags above, link the examples\n");
     printf("                 against the shared library (build/lib/libAntTweakBarC99.{dll,so,dylib})\n");
     printf("                 instead of the static one (the default)\n");

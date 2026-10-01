@@ -42,6 +42,15 @@
 #   define _snprintf snprintf
 #endif
 
+// M_PI is a common extension, not part of strict C99/C++ - some libcs hide
+// it behind -std=c++17's strict-ANSI mode (confirmed: MinGW's math.h only
+// defines it when __STRICT_ANSI__ isn't set, and this project's SFML build
+// flags request plain -std=c++17). Same guard as Advanced_c99_sfml.cpp/
+// Shapes_sfml.cpp/src/TwBar.c already use.
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 float g_cameraPosX = 0.0f;
 float g_cameraPosY = 0.0f;
 float g_cameraPosZ = 0.0f;

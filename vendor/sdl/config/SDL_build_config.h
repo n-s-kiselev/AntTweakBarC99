@@ -17,7 +17,7 @@
 #elif defined(SDL_PLATFORM_LINUX)
 #error "vendor/sdl/config/SDL_build_config_linux.h not implemented yet - see docs/plans/sdl3-backend.md Step 4"
 #elif defined(SDL_PLATFORM_WIN32)
-#error "vendor/sdl/config/SDL_build_config_windows.h not implemented yet - see docs/plans/sdl3-backend.md Step 4"
+#include "SDL_build_config_windows.h"
 #else
 #error "AntTweakBarC99's vendored SDL3 build has not been configured for this platform"
 #endif
