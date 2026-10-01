@@ -113,6 +113,13 @@ typedef struct TwGraphOpenGLCore
     ITwGraph            base;
 
     bool                m_Drawing;
+    // Current GL state, so a run of primitives pays for a program/VAO/line-smooth
+    // change once instead of once per primitive - see CurProgram()/CurVArray()/
+    // CurLineSmooth(). Reset in BeginDraw, which is also where the real GL state is
+    // put into a known condition.
+    GLuint              m_CurProgram;
+    GLuint              m_CurVArray;
+    int                 m_CurLineSmooth;   // -1 unknown, 0 disabled, 1 enabled
     GLuint              m_FontTexID;
     const CTexFont *    m_FontTex;
 
@@ -287,7 +294,11 @@ static void ResizeTriBuffers(TwGraphOpenGLCore *self, size_t _NewSize)
 {
     self->m_TriBufferSize = _NewSize;
 
+    // Raw bind rather than CurVArray(): this runs before those helpers are declared, and
+    // is also reached from Init() before any frame. Record it so the filter cannot then
+    // skip a bind that is actually needed.
     glBindVertexArray(self->m_TriVArray);
+    self->m_CurVArray = self->m_TriVArray;
 
     glBindBuffer(GL_ARRAY_BUFFER, self->m_TriVertices);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(self->m_TriBufferSize*sizeof(Vec2)), 0, GL_DYNAMIC_DRAW);
@@ -375,6 +386,17 @@ static int TwGraphOpenGLCore_Init(ITwGraph *_This)
     glGenBuffers(1, &self->m_LineRectColors);
     glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(lineRectInitColors), lineRectInitColors, GL_DYNAMIC_DRAW);
+    // Record the attribute format into the VAO once. DrawLine and DrawRect both used to
+    // re-specify exactly this on every primitive; the VAO has held it since the first
+    // call either way, so it belongs here. (The m_TriVArray path deliberately keeps
+    // re-specifying: attribute 1 is a UV in DrawText's glyph pass but a packed colour in
+    // its background pass and in DrawTriangles.)
+    glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectVertices);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 0, NULL);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectColors);
+    glVertexAttribPointer(1, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, 0, NULL);
+    glEnableVertexAttribArray(1);
 
     // Create triangles shaders
     const GLchar *triVS[] = {
@@ -594,6 +616,15 @@ static void TwGraphOpenGLCore_BeginDraw(ITwGraph *_This, int _WndWidth, int _Wnd
     self->m_PrevVArray = 0;
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&self->m_PrevVArray); CHECK_GL_ERROR;
     glBindVertexArray(0); CHECK_GL_ERROR;
+    // Start the frame with the redundant-state filters in a state that cannot skip a
+    // call that is actually needed. m_CurVArray matches the unbind just above; 0 is not
+    // one of this renderer's programs, so the first draw always issues its glUseProgram;
+    // and -1 means "line smooth unknown", so the first line always issues its
+    // glEnable/glDisable - GL_LINE_SMOOTH is only disabled further down, and whatever
+    // the application left enabled is restored by EndDraw.
+    self->m_CurVArray = 0;
+    self->m_CurProgram = 0;
+    self->m_CurLineSmooth = -1;
 
     self->m_PrevLineWidth = 1;
     glGetFloatv(GL_LINE_WIDTH, &self->m_PrevLineWidth); CHECK_GL_ERROR;
@@ -737,6 +768,44 @@ static float ToNormScreenY(float y, int wndHeight)
 }
 
 //  ---------------------------------------------------------------------------
+//  Redundant-state filters. Every draw below used to re-issue its program, its VAO
+//  and (for lines) GL_LINE_SMOOTH on every single primitive, even though a bar
+//  emits long unbroken runs of lines and rects that all want the same three. Only
+//  DrawText/DrawTriangles switch away, so a one-word comparison is enough to skip
+//  the call - there is no need to query the driver.
+//  ---------------------------------------------------------------------------
+
+static void CurProgram(TwGraphOpenGLCore *self, GLuint _Program)
+{
+    if( self->m_CurProgram!=_Program )
+    {
+        glUseProgram(_Program);
+        self->m_CurProgram = _Program;
+    }
+}
+
+static void CurVArray(TwGraphOpenGLCore *self, GLuint _VArray)
+{
+    if( self->m_CurVArray!=_VArray )
+    {
+        glBindVertexArray(_VArray);
+        self->m_CurVArray = _VArray;
+    }
+}
+
+static void CurLineSmooth(TwGraphOpenGLCore *self, int _Enabled)
+{
+    if( self->m_CurLineSmooth!=_Enabled )
+    {
+        if( _Enabled )
+            glEnable(GL_LINE_SMOOTH);
+        else
+            glDisable(GL_LINE_SMOOTH);
+        self->m_CurLineSmooth = _Enabled;
+    }
+}
+
+//  ---------------------------------------------------------------------------
 
 static void TwGraphOpenGLCore_DrawLine(ITwGraph *_This, int _X0, int _Y0, int _X1, int _Y1, color32 _Color0, color32 _Color1, bool _AntiAliased)
 {
@@ -746,12 +815,8 @@ static void TwGraphOpenGLCore_DrawLine(ITwGraph *_This, int _X0, int _Y0, int _X
 
     const GLfloat dx = 0;
     const GLfloat dy = -0.5f;
-    if( _AntiAliased )
-        glEnable(GL_LINE_SMOOTH);
-    else
-        glDisable(GL_LINE_SMOOTH);
-
-    glBindVertexArray(self->m_LineRectVArray);
+    CurLineSmooth(self, _AntiAliased ? 1 : 0);
+    CurVArray(self, self->m_LineRectVArray);
 
     GLfloat x0 = ToNormScreenX((GLfloat)_X0+dx + (GLfloat)self->m_OffsetX, self->m_WndWidth);
     GLfloat y0 = ToNormScreenY((GLfloat)_Y0+dy + (GLfloat)self->m_OffsetY, self->m_WndHeight);
@@ -760,20 +825,13 @@ static void TwGraphOpenGLCore_DrawLine(ITwGraph *_This, int _X0, int _Y0, int _X
     GLfloat vertices[] = { x0,y0,0,  x1,y1,0 };
     glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectVertices);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 0, NULL);
-    glEnableVertexAttribArray(0);
 
     color32 colors[] = { _Color0, _Color1 };
     glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, 0, NULL);
-    glEnableVertexAttribArray(1);
 
-    glUseProgram(self->m_LineRectProgram);
+    CurProgram(self, self->m_LineRectProgram);
     glDrawArrays(GL_LINES, 0, 2);
-
-    if( _AntiAliased )
-        glDisable(GL_LINE_SMOOTH);
 
     CHECK_GL_ERROR;
 }
@@ -796,7 +854,7 @@ static void TwGraphOpenGLCore_DrawRect(ITwGraph *_This, int _X0, int _Y0, int _X
     else if(_Y0>_Y1)
         --_Y1;
 
-    glBindVertexArray(self->m_LineRectVArray);
+    CurVArray(self, self->m_LineRectVArray);
 
     GLfloat x0 = ToNormScreenX((float)_X0 + (float)self->m_OffsetX, self->m_WndWidth);
     GLfloat y0 = ToNormScreenY((float)_Y0 + (float)self->m_OffsetY, self->m_WndHeight);
@@ -805,16 +863,12 @@ static void TwGraphOpenGLCore_DrawRect(ITwGraph *_This, int _X0, int _Y0, int _X
     GLfloat vertices[] = { x0,y0,0, x1,y0,0, x0,y1,0, x1,y1,0 };
     glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectVertices);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 0, NULL);
-    glEnableVertexAttribArray(0);
 
     GLuint colors[] = { _Color00, _Color10, _Color01, _Color11 };
     glBindBuffer(GL_ARRAY_BUFFER, self->m_LineRectColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, 0, NULL);
-    glEnableVertexAttribArray(1);
 
-    glUseProgram(self->m_LineRectProgram);
+    CurProgram(self, self->m_LineRectProgram);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     CHECK_GL_ERROR;
@@ -973,7 +1027,7 @@ static void TwGraphOpenGLCore_DrawText(ITwGraph *_This, void *_TextObj, int _X, 
         if( numBgVerts > self->m_TriBufferSize )
             ResizeTriBuffers(self, numBgVerts + 2048);
 
-        glBindVertexArray(self->m_TriVArray);
+        CurVArray(self, self->m_TriVArray);
 
         glBindBuffer(GL_ARRAY_BUFFER, self->m_TriVertices);
         OrphanTriBuffer(self, sizeof(Vec2));
@@ -991,13 +1045,13 @@ static void TwGraphOpenGLCore_DrawText(ITwGraph *_This, void *_TextObj, int _X, 
             glVertexAttribPointer(1, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, 0, NULL);
             glEnableVertexAttribArray(1);
 
-            glUseProgram(self->m_TriProgram);
+            CurProgram(self, self->m_TriProgram);
             glUniform2f(self->m_TriLocationOffset, (float)_X, (float)_Y);
             glUniform2f(self->m_TriLocationWndSize, (float)self->m_WndWidth, (float)self->m_WndHeight);
         }
         else
         {
-            glUseProgram(self->m_TriUniProgram);
+            CurProgram(self, self->m_TriUniProgram);
             glUniform4f(self->m_TriUniLocationColor, (GLfloat)((_BgColor>>16)&0xff)/256.0f, (GLfloat)((_BgColor>>8)&0xff)/256.0f, (GLfloat)(_BgColor&0xff)/256.0f, (GLfloat)((_BgColor>>24)&0xff)/256.0f);
             glUniform2f(self->m_TriUniLocationOffset, (float)_X, (float)_Y);
             glUniform2f(self->m_TriUniLocationWndSize, (float)self->m_WndWidth, (float)self->m_WndHeight);
@@ -1015,7 +1069,7 @@ static void TwGraphOpenGLCore_DrawText(ITwGraph *_This, void *_TextObj, int _X, 
         if( numTextVerts > self->m_TriBufferSize )
             ResizeTriBuffers(self, numTextVerts + 2048);
 
-        glBindVertexArray(self->m_TriVArray);
+        CurVArray(self, self->m_TriVArray);
         glDisableVertexAttribArray(2);
 
         glBindBuffer(GL_ARRAY_BUFFER, self->m_TriVertices);
@@ -1038,14 +1092,14 @@ static void TwGraphOpenGLCore_DrawText(ITwGraph *_This, void *_TextObj, int _X, 
             glVertexAttribPointer(2, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, 0, NULL);
             glEnableVertexAttribArray(2);
 
-            glUseProgram(self->m_TriTexProgram);
+            CurProgram(self, self->m_TriTexProgram);
             glUniform2f(self->m_TriTexLocationOffset, (float)_X, (float)_Y);
             glUniform2f(self->m_TriTexLocationWndSize, (float)self->m_WndWidth, (float)self->m_WndHeight);
             glUniform1i(self->m_TriTexLocationTexture, 0);
         }
         else
         {
-            glUseProgram(self->m_TriTexUniProgram);
+            CurProgram(self, self->m_TriTexUniProgram);
             glUniform4f(self->m_TriTexUniLocationColor, (GLfloat)((_Color>>16)&0xff)/256.0f, (GLfloat)((_Color>>8)&0xff)/256.0f, (GLfloat)(_Color&0xff)/256.0f, (GLfloat)((_Color>>24)&0xff)/256.0f);
             glUniform2f(self->m_TriTexUniLocationOffset, (float)_X, (float)_Y);
             glUniform2f(self->m_TriTexUniLocationWndSize, (float)self->m_WndWidth, (float)self->m_WndHeight);
@@ -1116,8 +1170,8 @@ static void TwGraphOpenGLCore_DrawTriangles(ITwGraph *_This, int _NumTriangles, 
     else
         glDisable(GL_CULL_FACE);
 
-    glUseProgram(self->m_TriProgram);
-    glBindVertexArray(self->m_TriVArray);
+    CurProgram(self, self->m_TriProgram);
+    CurVArray(self, self->m_TriVArray);
     glUniform2f(self->m_TriLocationOffset, (float)self->m_OffsetX+dx, (float)self->m_OffsetY+dy);
     glUniform2f(self->m_TriLocationWndSize, (float)self->m_WndWidth, (float)self->m_WndHeight);
     glDisableVertexAttribArray(2);
