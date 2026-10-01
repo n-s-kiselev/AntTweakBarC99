@@ -607,3 +607,29 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   variables. The baseline now verifies that both custom widgets are registered
   and placed in the visible hierarchy, in addition to recording their drawing.
 - `./nob -test` passes; no fixture output changed.
+
+### 2026-10-01: Windows (MinGW) validation at 29a5dca
+
+- Host: Windows 10 Pro 19045, MinGW-w64 GCC 14.2.0 (x86_64-win32-seh).
+  Bootstrapped with `gcc nob.c -o nob`, which produces `nob.exe`; the
+  extensionless `nob` synced from macOS is a Mach-O binary and must not be
+  run on Windows.
+- `nob.exe -clean` followed by `nob.exe` rebuilt `libAntTweakBarC99.a`,
+  `libAntTweakBarC99.dll` and its import library with no warnings. The
+  GLAD privatization from 29a5dca works on MinGW: no `glad_*`/`GLAD_*`/
+  `gladLoad*`/`GLVersion` symbol is global in the archive or exported from
+  the DLL (52 exports), and the DLL imports only system and UCRT DLLs.
+- `nob.exe -test` passes all 44 parameter/scene checks and the drawing
+  baseline.
+- `-examples-glfw`, `-examples-sdl`, `-examples-sfml` and `-examples-raylib`,
+  each static and with `-dynamic`, all build with no warnings: 80 executables
+  (13 per GLFW3/SDL3/SFML3 variant, 1 per raylib variant).
+- Every executable was launched for about 4 seconds (shared builds with
+  `build/lib` on `PATH`) and stayed running, so window, GL context and
+  `TwInit` start up. Interaction with the bars was not exercised.
+- Intermittent, cause not found: one `-examples-raylib -dynamic` run failed
+  because `build/examples/libraylib_vendored.a` was locked by another process
+  (likely Dropbox sync; an immediate rerun passed), and SFML3 C++ examples
+  occasionally exited at startup with `0xC0000139` (entry point not found),
+  passing on rerun. Recheck outside a Dropbox-synced folder if either
+  recurs.
