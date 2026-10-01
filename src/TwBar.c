@@ -3793,6 +3793,21 @@ static inline CTwVarAtom *CTwBar_MultilineAtomAtLine(const CTwBar *_Bar, int _Li
     return (CTwVarAtom *)Tag->m_Var;
 }
 
+// m_Layout's content rectangle is in absolute screen coordinates, so it has to follow the
+// bar whenever the bar moves. CTwBar_Update() recomputes it, but dragging the title
+// deliberately does NOT go through Update - that would re-tessellate every label and value
+// on each mouse-move - so the origin is refreshed directly from the drag instead. Leaving it
+// stale drew every m_Layout-derived widget (the multiline-text blocks and their scrollbars)
+// at the bar's pre-drag position, detached above or below it, until the next unrelated
+// Update happened to fix it up.
+static inline void CTwBar_UpdateLayoutOrigin(CTwBar *_Bar)
+{
+    _Bar->m_Layout.content_x0 = _Bar->m_PosX + _Bar->m_VarX0;
+    _Bar->m_Layout.content_x1 = _Bar->m_PosX + _Bar->m_VarX2 + 1;
+    _Bar->m_Layout.content_y0 = _Bar->m_PosY + _Bar->m_VarY0;
+    _Bar->m_Layout.content_y1 = _Bar->m_PosY + _Bar->m_VarY1 + 1;
+}
+
 static inline int CTwBar_LayoutRowY(const CTwBar *_Bar, int _Line)
 {
     return _Bar->m_Layout.content_y0 + _Line*_Bar->m_Layout.row_height_px;
@@ -4842,10 +4857,7 @@ void CTwBar_Update(CTwBar *_Bar)
     int visible_row_count = (_Bar->m_VarY1-_Bar->m_VarY0+1)/(_Bar->m_Font->m_CharHeight+_Bar->m_LineSep);
     if( visible_row_count<= 0 )
         visible_row_count = 1;
-    _Bar->m_Layout.content_x0 = _Bar->m_PosX + _Bar->m_VarX0;
-    _Bar->m_Layout.content_x1 = _Bar->m_PosX + _Bar->m_VarX2 + 1;
-    _Bar->m_Layout.content_y0 = _Bar->m_PosY + _Bar->m_VarY0;
-    _Bar->m_Layout.content_y1 = _Bar->m_PosY + _Bar->m_VarY1 + 1;
+    CTwBar_UpdateLayoutOrigin(_Bar);
     _Bar->m_Layout.row_height_px = _Bar->m_Font->m_CharHeight + _Bar->m_LineSep;
     _Bar->m_Layout.visible_row_count = visible_row_count;
     if( !_Bar->m_IsMinimized )
@@ -6138,6 +6150,7 @@ bool CTwBar_MouseMotion(CTwBar *_Bar, int _X, int _Y)
                 _Bar->m_ScrollY0 += _Bar->m_PosY-y;
                 _Bar->m_ScrollY1 += _Bar->m_PosY-y;
                 CTwBar_MultilineOffsetScrollY(_Bar, _Bar->m_PosY-y);
+                CTwBar_UpdateLayoutOrigin(_Bar);
                 ANT_SET_CURSOR(Move);
                 Handled = true;
             }
