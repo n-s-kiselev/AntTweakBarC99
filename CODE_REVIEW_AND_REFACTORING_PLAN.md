@@ -190,10 +190,20 @@ existing geometry except the requested active-font RotoSlider scaling.
 ### Stage 3: Derived layout and row model
 
 Status: Completed for the current row geometry boundary. `TwBarLayout` now owns
-half-open content bounds, row height and visible row count; multiline blocks,
-highlight bands, keyboard activation and popup anchoring use the shared row
-origin. Scrollbar-specific geometry remains separate because outer and
-multiline scrollbars have intentionally different policies.
+row height only; multiline blocks, highlight bands, keyboard activation and
+popup anchoring use the shared row origin, which is derived from `m_PosY` on use
+rather than cached. Scrollbar-specific geometry remains separate because outer
+and multiline scrollbars have intentionally different policies.
+
+Revised 2026-10-01: the content bounds were originally cached in absolute screen
+coordinates, which required every code path that moves a bar to re-patch them.
+One path did not, and multiline blocks drew detached from their bar until an
+unrelated update corrected them. The bounds are now derived on use, so the
+staleness is unrepresentable; `content_x0`/`content_x1`/`visible_row_count` were
+removed as dead on the same pass. Two caches of the same kind remain outside the
+layout model and still hand-patched - `CTwBar::m_ScrollY0/Y1` and the per-atom
+multiline thumb bounds - because the thumb position depends on scroll state, not
+only on the origin.
 
 ### Stage 4: Widget and property extension points
 
@@ -213,9 +223,19 @@ transitions are explicit helpers. Scrollbar painting remains split by policy.
 ### Stage 6: Reliability and measured performance work
 
 Status: Completed for the measured low-risk slice. RotoSlider pointer motion no
-longer repeats the step query after the callback-sensitive value update. Broader
-allocation, popup lifetime and benchmark work remains optional follow-up because
-no profiling data currently demonstrates a larger bottleneck.
+longer repeats the step query after the callback-sensitive value update.
+
+Revised 2026-10-01: profiling data now exists, and it did demonstrate a larger
+bottleneck. Under `TW_OPENGL_CORE` every primitive overwrote a persistent vertex
+buffer that the preceding draw was still reading, which on Apple's Metal-backed
+GL flushed the whole command context once per primitive: `TwDraw` cost 8.086 ms
+a frame on an ordinary bar against 0.039 ms for the compatibility renderer, and
+`glBufferSubData` accounted for 2186 of ~2261 samples under `TwDraw`. Buffer
+orphaning brought that to 0.087 ms, and removing the per-primitive state the VAO
+already held took it to 0.063 ms. Remaining measured headroom is small: a
+worst-case RotoSlider frame is ~947 primitives, now ~0.34 ms, so batching those
+into ~44 draw calls is an architecture question rather than a performance one.
+Allocation and popup-lifetime work still has no profiling evidence behind it.
 
 ### Stage 7: Future public theme API, only after internal style stabilizes
 
@@ -652,3 +672,28 @@ Before implementation, reread `AGENTS.md`, `PLANS.md`, this plan, `git status`, 
   GL context and `TwInit` start up. Interaction was not exercised.
 - Not validated: `-examples-sdl` and `-examples-sfml` are blocked by `nob.c`
   on Linux (macOS/Windows only so far).
+
+### 2026-10-01: Core renderer profiling and the RotoSlider stutter
+
+- Symptom: dragging the RotoSlider made host animation stutter under
+  `TW_OPENGL_CORE`, while `TW_OPENGL` stayed smooth. The RotoSlider only exposed
+  the problem - an ordinary bar with no RotoSlider cost `TwDraw` 8.086 ms a frame
+  on the Core renderer against 0.039 ms on the compatibility one.
+- Cause: every primitive wrote a persistent VBO that the immediately preceding
+  `glDrawArrays` was still reading, then drew from it again. A `sample` profile
+  put `glBufferSubData` at 2186 of ~2261 samples under `TwDraw`, through
+  `GLDContextRec::flushResource` -> `flushContext`. The compatibility path cannot
+  hit this because `glBegin`/`glEnd` names no buffer object.
+- Fixes, in order: buffer orphaning (8.086 -> 0.087 ms), then removing the
+  per-primitive program/VAO/attribute-format/line-smooth state that the VAO
+  already held (0.086 -> 0.063 ms over four runs each). Core now matches the
+  compatibility renderer.
+- Appearance unchanged throughout, verified by an offscreen framebuffer hash
+  (`d40389f39c9e8d4a`) before and after each step.
+- Note for future renderer work: `./nob -test` cannot validate the Core renderer.
+  `nob.c` excludes `TwOpenGLCore.c` from the test binary and
+  `tests/record_graph.c` substitutes the stub factory, so the recorded baseline
+  is identical whether that renderer is correct or draws nothing. It is a useful
+  negative control - a change there means `TwBar.c`/`TwMgr.c` sequencing moved -
+  but renderer changes need pixel comparison.
+- Validated on macOS only.
